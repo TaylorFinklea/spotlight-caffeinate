@@ -24,7 +24,12 @@
 - `SpotlightCaffeinate/Services/CaffeinateService.swift`
   - Actor that launches and stops `/usr/bin/caffeinate`.
   - Persists shared state to `~/Library/Application Support/SpotlightCaffeinate/state.json`.
+  - Schedules and cancels completion notifications through the notification service so all entry points behave consistently.
   - Important: use `URL.path` (property), not `URL.path()` (method), for filesystem calls. `path()` percent-encodes spaces and previously caused the app to think active runs were missing.
+
+- `SpotlightCaffeinate/Services/CaffeinateNotificationService.swift`
+  - Owns the local notification preference and schedules the completion alert.
+  - Preference defaults to enabled and can be disabled from the menu bar UI.
 
 - `SpotlightCaffeinate/Models/CaffeinateSnapshot.swift`
   - Pure snapshot model.

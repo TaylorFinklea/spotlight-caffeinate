@@ -37,8 +37,11 @@ actor CaffeinateService {
     private let stateURL: URL
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
+    private let notificationService: CaffeinateNotificationService
 
-    init() {
+    init(notificationService: CaffeinateNotificationService = .shared) {
+        self.notificationService = notificationService
+
         let baseDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? URL(fileURLWithPath: NSHomeDirectory()).appending(path: "Library/Application Support", directoryHint: .isDirectory)
 
@@ -50,12 +53,12 @@ actor CaffeinateService {
         decoder.dateDecodingStrategy = .iso8601
     }
 
-    func start(minutes: Int) throws -> CaffeinateSnapshot {
+    func start(minutes: Int) async throws -> CaffeinateSnapshot {
         guard (1...1440).contains(minutes) else {
             throw CaffeinateServiceError.invalidMinutes
         }
 
-        _ = try stop()
+        _ = try await stop()
 
         let seconds = minutes * 60
         let process = Process()
@@ -77,11 +80,15 @@ actor CaffeinateService {
         )
 
         try persist(record)
-        return snapshot(from: record)
+
+        let snapshot = snapshot(from: record)
+        await notificationService.scheduleCompletionNotificationIfNeeded(for: snapshot)
+        return snapshot
     }
 
-    func stop() throws -> CaffeinateSnapshot {
+    func stop() async throws -> CaffeinateSnapshot {
         guard let record = try loadRecord() else {
+            await notificationService.cancelPendingCompletionNotification()
             return .inactive
         }
 
@@ -91,16 +98,19 @@ actor CaffeinateService {
         }
 
         try clearRecord()
+        await notificationService.cancelPendingCompletionNotification()
         return .inactive
     }
 
-    func status() throws -> CaffeinateSnapshot {
+    func status() async throws -> CaffeinateSnapshot {
         guard let record = try loadRecord() else {
+            await notificationService.cancelPendingCompletionNotification()
             return .inactive
         }
 
         guard isProcessRunning(record.pid), record.endsAt > Date() else {
             try clearRecord()
+            await notificationService.cancelPendingCompletionNotification()
             return .inactive
         }
 

@@ -24,6 +24,7 @@ This app adds that missing layer.
 - Spotlight actions to start, stop, and check status
 - A menu bar extra with active and idle states
 - A live countdown while `caffeinate` is running
+- Optional completion notifications with an in-app disable toggle
 - A companion CLI for terminal-only environments
 - Shared state between the app, Spotlight, and the CLI
 
@@ -69,6 +70,8 @@ After launch, use `Cmd-Space` and search for:
 - `Check Caffeinate Status`
 
 For the start action, tab into the `Minutes` field, type a duration such as `5`, then press `Return`.
+
+If notifications are enabled, the app will ask for notification permission the first time it needs to schedule a completion alert. You can turn that behavior off from the menu bar UI.
 
 ## CLI
 

@@ -16,6 +16,7 @@ struct StatusMenuView: View {
             statusHeader
             presetsSection
             customDurationSection
+            notificationsSection
             footerSection
         }
         .padding(16)
@@ -117,6 +118,28 @@ struct StatusMenuView: View {
             Text("Spotlight actions: Start, Stop, Check Status")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+        }
+    }
+
+    private var notificationsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Notifications")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Toggle(
+                "Notify When Caffeinate Ends",
+                isOn: Binding(
+                    get: { controller.notificationsEnabled },
+                    set: { controller.setNotificationsEnabled($0) }
+                )
+            )
+
+            if let notificationStatus = controller.notificationStatus {
+                Text(notificationStatus)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
         }
     }
 
