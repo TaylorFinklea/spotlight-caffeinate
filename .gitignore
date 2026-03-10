@@ -1,0 +1,11 @@
+.DS_Store
+.build
+DerivedData
+build
+*.swp
+*.xcuserdatad
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+*.xcworkspace/xcuserdata
+*.xcodeproj/xcuserdata
