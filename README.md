@@ -1,47 +1,78 @@
 # Spotlight Caffeinate
 
-`Spotlight Caffeinate` is a small macOS 26 menu bar app that exposes `caffeinate` through Spotlight using App Intents.
+Keep your Mac awake from Spotlight, the menu bar, or the terminal.
 
-The repo is intentionally focused on one command instead of being a generic terminal wrapper. That keeps the Spotlight action names clear, keeps the process model simple, and avoids turning the app into a privileged command launcher. The internal service layer is small and isolated, so it can be generalized later if there is a real need.
+`Spotlight Caffeinate` is a focused macOS 26 utility built around one job: running `/usr/bin/caffeinate` with a friendlier interface. It stays intentionally narrow instead of becoming a generic terminal wrapper, which keeps the Spotlight actions clear, the process model simple, and the status tracking reliable.
 
-## Features
+<p align="center">
+  <img src="docs/screenshots/menu-active.png" alt="Spotlight Caffeinate menu bar app showing an active caffeinate run" width="720">
+</p>
 
-- Start `caffeinate` from Spotlight for a custom number of minutes
-- Stop the current run from Spotlight or the menu bar
-- Check current run status from Spotlight
-- See active state and time remaining in a native menu bar extra
-- Use a companion CLI when you cannot install the app into `/Applications`
+## Why It Exists
 
-## Spotlight Flows
+The built-in `caffeinate` command is good at starting an assertion, but not at answering practical questions later.
 
-After the app is built and installed in `/Applications`, invoke Spotlight with `Cmd-Space` and try:
+- Is it still running?
+- How much time is left?
+- Can I start it from Spotlight without remembering flags?
+- Can I check the same state from the menu bar and the terminal?
 
-- `start spotlight caffeinate`
-- `stop spotlight caffeinate`
-- `check spotlight caffeinate status`
+This app adds that missing layer.
 
-When Spotlight selects the start action, tab into the `Minutes` field, type a duration such as `5`, and press `Return`.
+## What You Get
 
-## Build
+- Spotlight actions to start, stop, and check status
+- A menu bar extra with active and idle states
+- A live countdown while `caffeinate` is running
+- A companion CLI for terminal-only environments
+- Shared state between the app, Spotlight, and the CLI
 
-1. Generate the Xcode project:
+## Screenshots
 
-   ```bash
-   xcodegen generate
-   ```
+<table>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/spotlight-actions.jpeg" alt="Spotlight showing Start, Stop, and Check Caffeinate Status actions">
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/spotlight-start.jpeg" alt="Spotlight start action with a minutes parameter filled in">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/spotlight-status.jpeg" alt="Spotlight status snippet showing an active caffeinate run">
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/menu-idle.png" alt="Menu bar app showing the idle state">
+    </td>
+  </tr>
+</table>
 
-2. Open the generated project:
+## Install
 
-   ```bash
-   open SpotlightCaffeinate.xcodeproj
-   ```
+The app is distributed as a Homebrew cask:
 
-3. Build and run the `SpotlightCaffeinate` scheme.
-4. Copy the built `.app` into `/Applications` so Spotlight can index it reliably.
+```bash
+brew install --cask TaylorFinklea/tap/spotlight-caffeinate
+```
+
+If Gatekeeper blocks first launch, remove quarantine and try again:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Spotlight Caffeinate.app"
+```
+
+After launch, use `Cmd-Space` and search for:
+
+- `Start Caffeinate`
+- `Stop Caffeinate`
+- `Check Caffeinate Status`
+
+For the start action, tab into the `Minutes` field, type a duration such as `5`, then press `Return`.
 
 ## CLI
 
-The repo also ships a companion CLI for terminal-only environments:
+The repo also ships a companion CLI for machines where installing the app into `/Applications` is not practical.
 
 ```bash
 spotlight-caffeinate-cli start 15
@@ -50,17 +81,13 @@ spotlight-caffeinate-cli watch
 spotlight-caffeinate-cli stop
 ```
 
-The CLI uses the same shared state file as the menu bar app, so both surfaces report the same active run.
-
-### Install the CLI
-
 Build and install it into `~/.local/bin`:
 
 ```bash
 ./scripts/install_cli.sh
 ```
 
-If `~/.local/bin` is not already on your `PATH`, add it in your shell profile before trying to invoke `spotlight-caffeinate-cli` directly.
+If `~/.local/bin` is not already on your `PATH`, add it in your shell profile before invoking `spotlight-caffeinate-cli` directly.
 
 Install it somewhere else by passing a destination directory:
 
@@ -68,32 +95,36 @@ Install it somewhere else by passing a destination directory:
 ./scripts/install_cli.sh /usr/local/bin
 ```
 
-### CLI Commands
+The CLI uses the same shared state file as the menu bar app, so both surfaces report the same active run.
 
-- `spotlight-caffeinate-cli start <minutes>` starts a new `caffeinate` run
-- `spotlight-caffeinate-cli stop` stops the current run
-- `spotlight-caffeinate-cli status` prints the current state once
-- `spotlight-caffeinate-cli watch` refreshes the status every second until you press `Ctrl-C`
+## Development
 
-## Install With Homebrew
-
-If you want the Homebrew path, use the custom tap cask:
+Generate the Xcode project:
 
 ```bash
-brew install --cask TaylorFinklea/tap/spotlight-caffeinate
+xcodegen generate
+open SpotlightCaffeinate.xcodeproj
 ```
 
-Because the current release artifacts are not Developer ID signed or notarized, macOS may still prompt on first launch. If Gatekeeper blocks the app after install, remove quarantine and try again:
+Build the app target:
 
 ```bash
-xattr -dr com.apple.quarantine "/Applications/Spotlight Caffeinate.app"
+xcodebuild -project SpotlightCaffeinate.xcodeproj -scheme SpotlightCaffeinate -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
 ```
+
+Build the CLI target:
+
+```bash
+xcodebuild -project SpotlightCaffeinate.xcodeproj -scheme SpotlightCaffeinateCLI -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
+```
+
+For Spotlight indexing, copy the built app into `/Applications`.
 
 ## Notes
 
-- The app tracks only the `caffeinate` process it starts itself.
+- The app only tracks the `caffeinate` process it launches itself.
 - The current implementation runs `caffeinate -t <seconds>`.
-- Status is shared between the menu bar UI and App Intents through a small JSON state file in Application Support.
+- State is shared through a JSON file in `~/Library/Application Support/SpotlightCaffeinate/state.json`.
 
 ## License
 
