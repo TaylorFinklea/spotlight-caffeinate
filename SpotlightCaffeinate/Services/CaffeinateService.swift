@@ -29,7 +29,6 @@ private struct CaffeinateRecord: Codable, Sendable {
     let startedAt: Date
     let endsAt: Date
     let minutes: Int
-    let processStartIdentifier: String?
 }
 
 actor CaffeinateService {
@@ -74,8 +73,7 @@ actor CaffeinateService {
             pid: process.processIdentifier,
             startedAt: now,
             endsAt: now.addingTimeInterval(TimeInterval(seconds)),
-            minutes: minutes,
-            processStartIdentifier: processStartIdentifier(for: process.processIdentifier)
+            minutes: minutes
         )
 
         try persist(record)
@@ -87,7 +85,7 @@ actor CaffeinateService {
             return .inactive
         }
 
-        if matchesTrackedProcess(record), kill(record.pid, SIGTERM) != 0, errno != ESRCH {
+        if isProcessRunning(record.pid), kill(record.pid, SIGTERM) != 0, errno != ESRCH {
             let reason = String(cString: strerror(errno))
             throw CaffeinateServiceError.failedToStop(reason)
         }
@@ -101,7 +99,7 @@ actor CaffeinateService {
             return .inactive
         }
 
-        guard matchesTrackedProcess(record), record.endsAt > Date() else {
+        guard isProcessRunning(record.pid), record.endsAt > Date() else {
             try clearRecord()
             return .inactive
         }
@@ -132,7 +130,7 @@ actor CaffeinateService {
     }
 
     private func loadRecord() throws -> CaffeinateRecord? {
-        guard FileManager.default.fileExists(atPath: stateURL.path()) else {
+        guard FileManager.default.fileExists(atPath: stateURL.path) else {
             return nil
         }
 
@@ -145,7 +143,7 @@ actor CaffeinateService {
     }
 
     private func clearRecord() throws {
-        guard FileManager.default.fileExists(atPath: stateURL.path()) else {
+        guard FileManager.default.fileExists(atPath: stateURL.path) else {
             return
         }
 
@@ -156,43 +154,7 @@ actor CaffeinateService {
         }
     }
 
-    private func matchesTrackedProcess(_ record: CaffeinateRecord) -> Bool {
-        guard kill(record.pid, 0) == 0 || errno == EPERM else {
-            return false
-        }
-
-        guard let expectedProcessStartIdentifier = record.processStartIdentifier else {
-            return true
-        }
-
-        return processStartIdentifier(for: record.pid) == expectedProcessStartIdentifier
-    }
-
-    private func processStartIdentifier(for pid: Int32) -> String? {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/bin/ps")
-        process.arguments = ["-p", String(pid), "-o", "lstart="]
-
-        let output = Pipe()
-        process.standardOutput = output
-        process.standardError = Pipe()
-
-        do {
-            try process.run()
-        } catch {
-            return nil
-        }
-
-        process.waitUntilExit()
-
-        guard process.terminationStatus == 0 else {
-            return nil
-        }
-
-        let data = output.fileHandleForReading.readDataToEndOfFile()
-        let value = String(decoding: data, as: UTF8.self)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        return value.isEmpty ? nil : value
+    private func isProcessRunning(_ pid: Int32) -> Bool {
+        kill(pid, 0) == 0 || errno == EPERM
     }
 }
