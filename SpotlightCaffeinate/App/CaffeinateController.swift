@@ -26,7 +26,11 @@ final class CaffeinateController {
     ) {
         self.service = service
         self.notificationService = notificationService
-        notificationsEnabled = CaffeinateNotificationService.notificationsEnabledPreference()
+        notificationsEnabled = false
+
+        Task { [weak self] in
+            await self?.syncNotificationSettings()
+        }
 
         pollingTask = Task { [weak self] in
             guard let self else {
@@ -59,7 +63,7 @@ final class CaffeinateController {
                 snapshot = try await service.start(minutes: minutes)
                 currentTime = .now
                 suggestedMinutes = minutes
-                notificationsEnabled = CaffeinateNotificationService.notificationsEnabledPreference()
+                await syncNotificationSettings()
                 lastError = nil
             } catch {
                 lastError = error.localizedDescription
@@ -72,7 +76,7 @@ final class CaffeinateController {
             do {
                 snapshot = try await service.stop()
                 currentTime = .now
-                notificationsEnabled = CaffeinateNotificationService.notificationsEnabledPreference()
+                await syncNotificationSettings()
                 lastError = nil
             } catch {
                 lastError = error.localizedDescription
@@ -95,7 +99,7 @@ final class CaffeinateController {
                 notificationStatus = nil
             case .disabled:
                 notificationsEnabled = false
-                notificationStatus = nil
+                notificationStatus = "Turn this on to get a macOS notification when caffeinate finishes."
             case .denied:
                 notificationsEnabled = false
                 notificationStatus = "Allow notifications for Spotlight Caffeinate in System Settings to enable completion alerts."
@@ -107,12 +111,26 @@ final class CaffeinateController {
         do {
             snapshot = try await service.status()
             currentTime = .now
-            notificationsEnabled = CaffeinateNotificationService.notificationsEnabledPreference()
+            await syncNotificationSettings()
             if !snapshot.isRunning {
                 lastError = nil
             }
         } catch {
             lastError = error.localizedDescription
+        }
+    }
+
+    private func syncNotificationSettings() async {
+        let settings = await notificationService.currentSettings()
+        notificationsEnabled = settings.preferenceEnabled && settings.authorization == .granted
+
+        switch settings.authorization {
+        case .granted:
+            notificationStatus = notificationsEnabled ? nil : "Turn this on to get a macOS notification when caffeinate finishes."
+        case .notDetermined:
+            notificationStatus = "Turn this on to allow completion notifications."
+        case .denied:
+            notificationStatus = "Allow notifications for Spotlight Caffeinate in System Settings to enable completion alerts."
         }
     }
 }

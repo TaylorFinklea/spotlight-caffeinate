@@ -29,7 +29,7 @@
 
 - `SpotlightCaffeinate/Services/CaffeinateNotificationService.swift`
   - Owns the local notification preference and schedules the completion alert.
-  - Preference defaults to enabled and can be disabled from the menu bar UI.
+  - Notifications are opt-in. Turning the toggle on should be the moment macOS asks for permission.
 
 - `SpotlightCaffeinate/Models/CaffeinateSnapshot.swift`
   - Pure snapshot model.

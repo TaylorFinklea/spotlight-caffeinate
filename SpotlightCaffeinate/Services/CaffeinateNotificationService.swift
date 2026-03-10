@@ -1,6 +1,12 @@
 import Foundation
 import UserNotifications
 
+enum NotificationAuthorizationState {
+    case notDetermined
+    case granted
+    case denied
+}
+
 enum NotificationPreferenceUpdateResult {
     case enabled
     case disabled
@@ -25,10 +31,17 @@ actor CaffeinateNotificationService {
 
     nonisolated static func notificationsEnabledPreference(defaults: UserDefaults = .standard) -> Bool {
         guard let value = defaults.object(forKey: notificationsEnabledKey) as? Bool else {
-            return true
+            return false
         }
 
         return value
+    }
+
+    func currentSettings() async -> (preferenceEnabled: Bool, authorization: NotificationAuthorizationState) {
+        (
+            preferenceEnabled: Self.notificationsEnabledPreference(defaults: defaults),
+            authorization: await authorizationState()
+        )
     }
 
     func updatePreference(enabled: Bool, currentSnapshot: CaffeinateSnapshot) async -> NotificationPreferenceUpdateResult {
@@ -107,15 +120,26 @@ actor CaffeinateNotificationService {
     }
 
     private func ensureAuthorization() async -> Bool {
-        switch await authorizationStatus() {
-        case .authorized, .provisional:
+        switch await authorizationState() {
+        case .granted:
             return true
         case .notDetermined:
             return (try? await requestAuthorization()) ?? false
         case .denied:
             return false
+        }
+    }
+
+    private func authorizationState() async -> NotificationAuthorizationState {
+        switch await authorizationStatus() {
+        case .authorized, .provisional:
+            return .granted
+        case .notDetermined:
+            return .notDetermined
+        case .denied:
+            return .denied
         @unknown default:
-            return false
+            return .denied
         }
     }
 
