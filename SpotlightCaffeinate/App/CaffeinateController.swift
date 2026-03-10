@@ -5,6 +5,7 @@ import Observation
 @Observable
 final class CaffeinateController {
     var snapshot: CaffeinateSnapshot = .inactive
+    var currentTime = Date()
     var suggestedMinutes = 5
     var lastError: String?
 
@@ -23,6 +24,7 @@ final class CaffeinateController {
             }
 
             while !Task.isCancelled {
+                currentTime = .now
                 await refresh()
                 try? await Task.sleep(for: .seconds(1))
             }
@@ -34,7 +36,7 @@ final class CaffeinateController {
     }
 
     var isRunning: Bool {
-        snapshot.isRunning
+        snapshot.isRunning(at: currentTime)
     }
 
     func start() {
@@ -45,6 +47,7 @@ final class CaffeinateController {
         Task {
             do {
                 snapshot = try await service.start(minutes: minutes)
+                currentTime = .now
                 suggestedMinutes = minutes
                 lastError = nil
             } catch {
@@ -57,6 +60,7 @@ final class CaffeinateController {
         Task {
             do {
                 snapshot = try await service.stop()
+                currentTime = .now
                 lastError = nil
             } catch {
                 lastError = error.localizedDescription
@@ -67,6 +71,7 @@ final class CaffeinateController {
     func refresh() async {
         do {
             snapshot = try await service.status()
+            currentTime = .now
             if !snapshot.isRunning {
                 lastError = nil
             }

@@ -20,20 +20,28 @@ struct CaffeinateSnapshot: Codable, Equatable, Sendable {
         minutesRequested: nil
     )
 
-    var isRunning: Bool {
-        state == .active && remainingSeconds > 0
+    func isRunning(at now: Date) -> Bool {
+        state == .active && remainingSeconds(at: now) > 0
     }
 
-    var remainingSeconds: Int {
+    var isRunning: Bool {
+        isRunning(at: .now)
+    }
+
+    func remainingSeconds(at now: Date) -> Int {
         guard let endsAt else {
             return 0
         }
 
-        return max(0, Int(endsAt.timeIntervalSinceNow.rounded(.down)))
+        return max(0, Int(endsAt.timeIntervalSince(now).rounded(.down)))
     }
 
-    var remainingText: String {
-        let totalSeconds = remainingSeconds
+    var remainingSeconds: Int {
+        remainingSeconds(at: .now)
+    }
+
+    func remainingText(at now: Date) -> String {
+        let totalSeconds = remainingSeconds(at: now)
 
         guard totalSeconds > 0 else {
             return "0s"
@@ -54,27 +62,47 @@ struct CaffeinateSnapshot: Codable, Equatable, Sendable {
         return "\(seconds)s"
     }
 
-    var statusLine: String {
-        if isRunning {
-            return "Running, \(remainingText) left"
+    var remainingText: String {
+        remainingText(at: .now)
+    }
+
+    func statusLine(at now: Date) -> String {
+        if isRunning(at: now) {
+            return "Running, \(remainingText(at: now)) left"
         }
 
         return "Not running"
     }
 
-    var spokenStatus: String {
-        if isRunning {
-            return "Caffeinate is running with \(remainingText) remaining."
+    var statusLine: String {
+        statusLine(at: .now)
+    }
+
+    func spokenStatus(at now: Date) -> String {
+        if isRunning(at: now) {
+            return "Caffeinate is running with \(remainingText(at: now)) remaining."
         }
 
         return "Caffeinate is not running."
     }
 
+    var spokenStatus: String {
+        spokenStatus(at: .now)
+    }
+
+    func menuBarTitle(at now: Date) -> String {
+        isRunning(at: now) ? remainingText(at: now) : "Idle"
+    }
+
     var menuBarTitle: String {
-        isRunning ? remainingText : "Idle"
+        menuBarTitle(at: .now)
+    }
+
+    func menuBarSymbolName(at now: Date) -> String {
+        isRunning(at: now) ? "cup.and.saucer.fill" : "cup.and.saucer"
     }
 
     var menuBarSymbolName: String {
-        isRunning ? "cup.and.saucer.fill" : "cup.and.saucer"
+        menuBarSymbolName(at: .now)
     }
 }

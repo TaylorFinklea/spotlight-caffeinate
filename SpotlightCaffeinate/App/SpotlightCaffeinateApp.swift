@@ -10,10 +10,16 @@ struct SpotlightCaffeinateApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra {
+        let now = controller.currentTime
+
+        return MenuBarExtra {
             StatusMenuView(controller: controller)
         } label: {
-            Label(controller.snapshot.menuBarTitle, systemImage: controller.snapshot.menuBarSymbolName)
+            Label(
+                controller.snapshot.menuBarTitle(at: now),
+                systemImage: controller.snapshot.menuBarSymbolName(at: now)
+            )
+            .monospacedDigit()
         }
         .menuBarExtraStyle(.window)
     }

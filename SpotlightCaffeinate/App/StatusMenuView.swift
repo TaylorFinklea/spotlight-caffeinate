@@ -23,9 +23,11 @@ struct StatusMenuView: View {
     }
 
     private var statusHeader: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let now = controller.currentTime
+
+        return VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top, spacing: 12) {
-                Image(systemName: controller.snapshot.menuBarSymbolName)
+                Image(systemName: controller.snapshot.menuBarSymbolName(at: now))
                     .font(.system(size: 28, weight: .semibold))
                     .foregroundStyle(controller.isRunning ? .green : .secondary)
 
@@ -33,8 +35,9 @@ struct StatusMenuView: View {
                     Text(controller.isRunning ? "Caffeinate Active" : "Caffeinate Idle")
                         .font(.headline)
 
-                    Text(controller.snapshot.statusLine)
+                    Text(controller.snapshot.statusLine(at: now))
                         .font(.subheadline)
+                        .monospacedDigit()
                         .foregroundStyle(.secondary)
                 }
 
