@@ -1,4 +1,5 @@
 import AppIntents
+import SwiftUI
 
 struct StartCaffeinateIntent: AppIntent {
     static let title: LocalizedStringResource = "Start Caffeinate"
@@ -16,9 +17,16 @@ struct StartCaffeinateIntent: AppIntent {
         Summary("Keep the Mac awake for \(\.$minutes) minutes")
     }
 
-    func perform() async throws -> some IntentResult & ProvidesDialog {
+    func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView {
         let snapshot = try await CaffeinateService.shared.start(minutes: minutes)
-        return .result(dialog: IntentDialog("Caffeinate started for \(snapshot.minutesRequested ?? minutes) minutes."))
+        return .result(
+            dialog: IntentDialog("Caffeinate started for \(snapshot.minutesRequested ?? minutes) minutes."),
+            view: CaffeinateStatusSnippetView(
+                snapshot: snapshot,
+                title: "Caffeinate Active",
+                now: .now
+            )
+        )
     }
 }
 
@@ -27,15 +35,29 @@ struct StopCaffeinateIntent: AppIntent {
     static let description = IntentDescription("Stop the current caffeinate run.")
     static let supportedModes: IntentModes = .background
 
-    func perform() async throws -> some IntentResult & ProvidesDialog {
+    func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView {
         let snapshot = try await CaffeinateService.shared.status()
 
         guard snapshot.isRunning else {
-            return .result(dialog: IntentDialog("Caffeinate is not running."))
+            return .result(
+                dialog: IntentDialog("Caffeinate is not running."),
+                view: CaffeinateStatusSnippetView(
+                    snapshot: .inactive,
+                    title: "Caffeinate Idle",
+                    now: .now
+                )
+            )
         }
 
         _ = try await CaffeinateService.shared.stop()
-        return .result(dialog: IntentDialog("Caffeinate stopped."))
+        return .result(
+            dialog: IntentDialog("Caffeinate stopped."),
+            view: CaffeinateStatusSnippetView(
+                snapshot: .inactive,
+                title: "Caffeinate Idle",
+                now: .now
+            )
+        )
     }
 }
 
@@ -44,14 +66,29 @@ struct CheckCaffeinateStatusIntent: AppIntent {
     static let description = IntentDescription("Check whether caffeinate is currently running.")
     static let supportedModes: IntentModes = .background
 
-    func perform() async throws -> some IntentResult & ProvidesDialog {
+    func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView {
         let snapshot = try await CaffeinateService.shared.status()
+        let now = Date()
 
         if snapshot.isRunning {
-            return .result(dialog: "Caffeinate is running with \(snapshot.remainingText) remaining.")
+            return .result(
+                dialog: "Caffeinate is running with \(snapshot.remainingText(at: now)) remaining.",
+                view: CaffeinateStatusSnippetView(
+                    snapshot: snapshot,
+                    title: "Caffeinate Active",
+                    now: now
+                )
+            )
         }
 
-        return .result(dialog: "Caffeinate is not running.")
+        return .result(
+            dialog: "Caffeinate is not running.",
+            view: CaffeinateStatusSnippetView(
+                snapshot: .inactive,
+                title: "Caffeinate Idle",
+                now: now
+            )
+        )
     }
 }
 

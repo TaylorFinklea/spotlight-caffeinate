@@ -32,6 +32,7 @@
 
 - `SpotlightCaffeinate/Intents/CaffeinateIntents.swift`
   - App Intents for start, stop, and status.
+  - Spotlight actions should return visible snippet cards, not just background dialogs, so status is obvious when invoked from Spotlight.
   - Keep shortcut phrases simple. App Intents metadata export rejected the integer duration inside the shortcut phrase, so duration is collected as a prompted parameter instead.
 
 - `project.yml`
