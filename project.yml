@@ -32,3 +32,17 @@ targets:
         NSSupportsAutomaticGraphicsSwitching: true
     scheme:
       gatherCoverageData: false
+  SpotlightCaffeinateCLI:
+    type: tool
+    platform: macOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: SpotlightCaffeinateCLI
+      - path: SpotlightCaffeinate/Models
+      - path: SpotlightCaffeinate/Services
+    settings:
+      base:
+        PRODUCT_NAME: spotlight-caffeinate-cli
+        CODE_SIGNING_ALLOWED: NO
+    scheme:
+      gatherCoverageData: false

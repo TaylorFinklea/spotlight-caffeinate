@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		304C747FF34E9391A3909795 /* CaffeinateSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5140115420CD7C5CA54132A2 /* CaffeinateSnapshot.swift */; };
+		5893992BA959E1FF4B5BC059 /* SpotlightCaffeinateCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BADBC26D038A002B754F0B5 /* SpotlightCaffeinateCLI.swift */; };
+		5C86BC47FC80D921F7816F9E /* CaffeinateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC3857F8AD00A17FF0BAAC9B /* CaffeinateService.swift */; };
 		6F439079E0A0CCEA81AFC6B0 /* StatusMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E2430731258FFD7AF398CC7 /* StatusMenuView.swift */; };
 		B82BB33FEF6AACB10D296ACB /* CaffeinateIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12B4E366227AFA92A38B89DB /* CaffeinateIntents.swift */; };
 		C8105E2A253EAE53E6FEFCAE /* CaffeinateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC3857F8AD00A17FF0BAAC9B /* CaffeinateService.swift */; };
@@ -23,6 +26,8 @@
 		3E86A2FF81B718DE23ED2D7D /* SpotlightCaffeinate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpotlightCaffeinate.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5140115420CD7C5CA54132A2 /* CaffeinateSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateSnapshot.swift; sourceTree = "<group>"; };
 		703E5325FF1425977F518A1B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		7BADBC26D038A002B754F0B5 /* SpotlightCaffeinateCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightCaffeinateCLI.swift; sourceTree = "<group>"; };
+		E03E61DE9F34D4C809F28C15 /* SpotlightCaffeinateCLI */ = {isa = PBXFileReference; includeInIndex = 0; path = SpotlightCaffeinateCLI; sourceTree = BUILT_PRODUCTS_DIR; };
 		FC3857F8AD00A17FF0BAAC9B /* CaffeinateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -31,6 +36,7 @@
 			isa = PBXGroup;
 			children = (
 				3E86A2FF81B718DE23ED2D7D /* SpotlightCaffeinate.app */,
+				E03E61DE9F34D4C809F28C15 /* SpotlightCaffeinateCLI */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -39,6 +45,7 @@
 			isa = PBXGroup;
 			children = (
 				086A8F09A3AE67DBCF948D21 /* SpotlightCaffeinate */,
+				6A072CEE8AF76E32E4AE3A41 /* SpotlightCaffeinateCLI */,
 				039CDEC57C9EE1AA044B95C6 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -73,6 +80,14 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
+		6A072CEE8AF76E32E4AE3A41 /* SpotlightCaffeinateCLI */ = {
+			isa = PBXGroup;
+			children = (
+				7BADBC26D038A002B754F0B5 /* SpotlightCaffeinateCLI.swift */,
+			);
+			path = SpotlightCaffeinateCLI;
+			sourceTree = "<group>";
+		};
 		6C5DEEB06E0ED304B85F2F9A /* Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -92,6 +107,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		3A4EBF3E4C0315676383D144 /* SpotlightCaffeinateCLI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 17B1B515804EA738B664995D /* Build configuration list for PBXNativeTarget "SpotlightCaffeinateCLI" */;
+			buildPhases = (
+				A793D77BD20FF83597CC6515 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SpotlightCaffeinateCLI;
+			packageProductDependencies = (
+			);
+			productName = SpotlightCaffeinateCLI;
+			productReference = E03E61DE9F34D4C809F28C15 /* SpotlightCaffeinateCLI */;
+			productType = "com.apple.product-type.tool";
+		};
 		72B2B7669E2C4D2162BF66CB /* SpotlightCaffeinate */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3A0473B352A5AB67AF18540E /* Build configuration list for PBXNativeTarget "SpotlightCaffeinate" */;
@@ -139,11 +171,22 @@
 			projectRoot = "";
 			targets = (
 				72B2B7669E2C4D2162BF66CB /* SpotlightCaffeinate */,
+				3A4EBF3E4C0315676383D144 /* SpotlightCaffeinateCLI */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		A793D77BD20FF83597CC6515 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5C86BC47FC80D921F7816F9E /* CaffeinateService.swift in Sources */,
+				304C747FF34E9391A3909795 /* CaffeinateSnapshot.swift in Sources */,
+				5893992BA959E1FF4B5BC059 /* SpotlightCaffeinateCLI.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CE7F8524044899D1787FDAC7 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -321,9 +364,48 @@
 			};
 			name = Release;
 		};
+		C1C9A1D4D76CF4E983294ED7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_NAME = "spotlight-caffeinate-cli";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		DFA143BCCA80F944B318E977 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_NAME = "spotlight-caffeinate-cli";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		17B1B515804EA738B664995D /* Build configuration list for PBXNativeTarget "SpotlightCaffeinateCLI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C1C9A1D4D76CF4E983294ED7 /* Debug */,
+				DFA143BCCA80F944B318E977 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		3A0473B352A5AB67AF18540E /* Build configuration list for PBXNativeTarget "SpotlightCaffeinate" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

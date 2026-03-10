@@ -10,6 +10,7 @@ The repo is intentionally focused on one command instead of being a generic term
 - Stop the current run from Spotlight or the menu bar
 - Check current run status from Spotlight
 - See active state and time remaining in a native menu bar extra
+- Use a companion CLI when you cannot install the app into `/Applications`
 
 ## Spotlight Flows
 
@@ -37,6 +38,42 @@ When Spotlight selects the start action, tab into the `Minutes` field, type a du
 
 3. Build and run the `SpotlightCaffeinate` scheme.
 4. Copy the built `.app` into `/Applications` so Spotlight can index it reliably.
+
+## CLI
+
+The repo also ships a companion CLI for terminal-only environments:
+
+```bash
+spotlight-caffeinate-cli start 15
+spotlight-caffeinate-cli status
+spotlight-caffeinate-cli watch
+spotlight-caffeinate-cli stop
+```
+
+The CLI uses the same shared state file as the menu bar app, so both surfaces report the same active run.
+
+### Install the CLI
+
+Build and install it into `~/.local/bin`:
+
+```bash
+./scripts/install_cli.sh
+```
+
+If `~/.local/bin` is not already on your `PATH`, add it in your shell profile before trying to invoke `spotlight-caffeinate-cli` directly.
+
+Install it somewhere else by passing a destination directory:
+
+```bash
+./scripts/install_cli.sh /usr/local/bin
+```
+
+### CLI Commands
+
+- `spotlight-caffeinate-cli start <minutes>` starts a new `caffeinate` run
+- `spotlight-caffeinate-cli stop` stops the current run
+- `spotlight-caffeinate-cli status` prints the current state once
+- `spotlight-caffeinate-cli watch` refreshes the status every second until you press `Ctrl-C`
 
 ## Install With Homebrew
 

@@ -11,6 +11,11 @@
   - Uses `MenuBarExtra` and `LSUIElement` for a menu-bar-only utility.
   - The menu bar label reads from `controller.currentTime` so the countdown can tick live.
 
+- `SpotlightCaffeinateCLI/SpotlightCaffeinateCLI.swift`
+  - Companion terminal interface for environments where the app cannot live in `/Applications`.
+  - Supports `start`, `stop`, `status`, and `watch`.
+  - Reuses the same `CaffeinateService` and `CaffeinateSnapshot` types as the app.
+
 - `SpotlightCaffeinate/App/CaffeinateController.swift`
   - MainActor observable UI controller.
   - Polls the service every second.
@@ -33,6 +38,10 @@
   - Source of truth for the Xcode project.
   - After editing project settings, run `xcodegen generate`.
 
+- `scripts/install_cli.sh`
+  - Builds the CLI target and copies `spotlight-caffeinate-cli` into a destination directory.
+  - Defaults to `~/.local/bin`.
+
 ## Change Workflow
 
 1. Pull before committing or pushing:
@@ -41,7 +50,9 @@
    - `xcodegen generate`
 3. Verify the app builds:
    - `xcodebuild -project SpotlightCaffeinate.xcodeproj -scheme SpotlightCaffeinate -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build`
-4. Create a small descriptive commit.
+4. If the CLI changed or `project.yml` changed, verify the CLI builds too:
+   - `xcodebuild -project SpotlightCaffeinate.xcodeproj -scheme SpotlightCaffeinateCLI -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build`
+5. Create a small descriptive commit.
 
 ## Release Workflow
 
