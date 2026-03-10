@@ -38,6 +38,20 @@ When Spotlight selects the start action, tab into the `Minutes` field, type a du
 3. Build and run the `SpotlightCaffeinate` scheme.
 4. Copy the built `.app` into `/Applications` so Spotlight can index it reliably.
 
+## Install With Homebrew
+
+If you want the Homebrew path, use the custom tap cask:
+
+```bash
+brew install --cask TaylorFinklea/tap/spotlight-caffeinate
+```
+
+Because the current release artifacts are not Developer ID signed or notarized, macOS may still prompt on first launch. If Gatekeeper blocks the app after install, remove quarantine and try again:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Spotlight Caffeinate.app"
+```
+
 ## Notes
 
 - The app tracks only the `caffeinate` process it starts itself.
