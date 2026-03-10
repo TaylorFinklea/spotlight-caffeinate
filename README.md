@@ -57,3 +57,7 @@ xattr -dr com.apple.quarantine "/Applications/Spotlight Caffeinate.app"
 - The app tracks only the `caffeinate` process it starts itself.
 - The current implementation runs `caffeinate -t <seconds>`.
 - Status is shared between the menu bar UI and App Intents through a small JSON state file in Application Support.
+
+## License
+
+This project is licensed under the GNU General Public License v3.0. See [LICENSE](LICENSE).
