@@ -1,0 +1,65 @@
+# Repository Notes
+
+## Purpose
+
+`Spotlight Caffeinate` is a focused macOS menu bar app for running `/usr/bin/caffeinate` through App Intents and Spotlight. Keep it dedicated to `caffeinate` unless the user explicitly asks to generalize it. Do not turn it into a generic terminal-command launcher by default.
+
+## Architecture
+
+- `SpotlightCaffeinate/App/SpotlightCaffeinateApp.swift`
+  - App entry point.
+  - Uses `MenuBarExtra` and `LSUIElement` for a menu-bar-only utility.
+  - The menu bar label reads from `controller.currentTime` so the countdown can tick live.
+
+- `SpotlightCaffeinate/App/CaffeinateController.swift`
+  - MainActor observable UI controller.
+  - Polls the service every second.
+  - `currentTime` is intentionally updated every second to drive live countdown rendering even when the snapshot itself is unchanged.
+
+- `SpotlightCaffeinate/Services/CaffeinateService.swift`
+  - Actor that launches and stops `/usr/bin/caffeinate`.
+  - Persists shared state to `~/Library/Application Support/SpotlightCaffeinate/state.json`.
+  - Important: use `URL.path` (property), not `URL.path()` (method), for filesystem calls. `path()` percent-encodes spaces and previously caused the app to think active runs were missing.
+
+- `SpotlightCaffeinate/Models/CaffeinateSnapshot.swift`
+  - Pure snapshot model.
+  - Time-derived helpers accept an explicit `Date` so the UI can render against a live clock.
+
+- `SpotlightCaffeinate/Intents/CaffeinateIntents.swift`
+  - App Intents for start, stop, and status.
+  - Keep shortcut phrases simple. App Intents metadata export rejected the integer duration inside the shortcut phrase, so duration is collected as a prompted parameter instead.
+
+- `project.yml`
+  - Source of truth for the Xcode project.
+  - After editing project settings, run `xcodegen generate`.
+
+## Change Workflow
+
+1. Pull before committing or pushing:
+   - `git pull --rebase origin main`
+2. If `project.yml` changed:
+   - `xcodegen generate`
+3. Verify the app builds:
+   - `xcodebuild -project SpotlightCaffeinate.xcodeproj -scheme SpotlightCaffeinate -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build`
+4. Create a small descriptive commit.
+
+## Release Workflow
+
+When a source change should ship to users:
+
+1. Bump `MARKETING_VERSION` and `CFBundleShortVersionString` in `project.yml`.
+2. Run `xcodegen generate`.
+3. Build and zip the app:
+   - `./scripts/package_release.sh`
+4. Create a GitHub release tag like `v0.1.2` with `build/SpotlightCaffeinate.zip`.
+5. Update the Homebrew tap repo `TaylorFinklea/homebrew-tap`:
+   - `Casks/spotlight-caffeinate.rb`
+   - set the new `version`
+   - set the new `sha256`
+
+## Distribution Notes
+
+- Homebrew distribution is via cask, not formula:
+  - `brew install --cask TaylorFinklea/tap/spotlight-caffeinate`
+- Artifacts are not notarized today. macOS quarantine may need removal after install:
+  - `xattr -dr com.apple.quarantine "/Applications/Spotlight Caffeinate.app"`
