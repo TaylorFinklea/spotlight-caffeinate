@@ -16,8 +16,6 @@ struct StatusMenuView: View {
             statusHeader
             presetsSection
             customDurationSection
-            appSection
-            notificationsSection
             footerSection
         }
         .padding(16)
@@ -46,18 +44,18 @@ struct StatusMenuView: View {
                 Spacer()
             }
 
-            if controller.isRunning {
-                if let startedAt = controller.snapshot.startedAt {
-                    Label("Started at \(startedAt, formatter: Self.timeFormatter)", systemImage: "clock")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+            if controller.isRunning, controller.snapshot.startedAt != nil || controller.snapshot.endsAt != nil {
+                HStack(spacing: 14) {
+                    if let startedAt = controller.snapshot.startedAt {
+                        Label("Started at \(startedAt, formatter: Self.timeFormatter)", systemImage: "clock")
+                    }
 
-                if let endsAt = controller.snapshot.endsAt {
-                    Label("Ending at \(endsAt, formatter: Self.timeFormatter)", systemImage: "alarm")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    if let endsAt = controller.snapshot.endsAt {
+                        Label("Ending at \(endsAt, formatter: Self.timeFormatter)", systemImage: "alarm")
+                    }
                 }
+                .font(.caption)
+                .foregroundStyle(.secondary)
             }
 
             if let lastError = controller.lastError {
@@ -105,6 +103,8 @@ struct StatusMenuView: View {
             Divider()
 
             HStack {
+                settingsMenu
+
                 Button("Refresh") {
                     Task {
                         await controller.refresh()
@@ -130,48 +130,39 @@ struct StatusMenuView: View {
         }
     }
 
-    private var notificationsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Notifications")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
-            Toggle(
-                "Notify When Caffeinate Ends",
-                isOn: Binding(
-                    get: { controller.notificationsEnabled },
-                    set: { controller.setNotificationsEnabled($0) }
+    private var settingsMenu: some View {
+        Menu {
+            Section("App") {
+                Toggle(
+                    "Open Spotlight Caffeinate at Login",
+                    isOn: Binding(
+                        get: { controller.launchAtLoginEnabled },
+                        set: { controller.setLaunchAtLoginEnabled($0) }
+                    )
                 )
-            )
 
-            if let notificationStatus = controller.notificationStatus {
-                Text(notificationStatus)
-                    .font(.caption)
-                    .foregroundStyle(.red)
+                if let launchAtLoginStatus = controller.launchAtLoginStatus {
+                    Text(launchAtLoginStatus)
+                }
             }
-        }
-    }
 
-    private var appSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("App")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
-            Toggle(
-                "Open Spotlight Caffeinate at Login",
-                isOn: Binding(
-                    get: { controller.launchAtLoginEnabled },
-                    set: { controller.setLaunchAtLoginEnabled($0) }
+            Section("Notifications") {
+                Toggle(
+                    "Notify When Caffeinate Ends",
+                    isOn: Binding(
+                        get: { controller.notificationsEnabled },
+                        set: { controller.setNotificationsEnabled($0) }
+                    )
                 )
-            )
 
-            if let launchAtLoginStatus = controller.launchAtLoginStatus {
-                Text(launchAtLoginStatus)
-                    .font(.caption)
-                    .foregroundStyle(controller.launchAtLoginStatusIsError ? .red : .secondary)
+                if let notificationStatus = controller.notificationStatus {
+                    Text(notificationStatus)
+                }
             }
+        } label: {
+            Label("Settings", systemImage: "gearshape")
         }
+        .menuStyle(.borderlessButton)
     }
 
     private func presetButton(_ minutes: Int) -> some View {
