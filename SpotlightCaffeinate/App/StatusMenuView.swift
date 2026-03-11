@@ -4,7 +4,7 @@ import SwiftUI
 struct StatusMenuView: View {
     @Bindable var controller: CaffeinateController
 
-    private static let startedFormatter: DateFormatter = {
+    private static let timeFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .none
         formatter.timeStyle = .short
@@ -46,10 +46,18 @@ struct StatusMenuView: View {
                 Spacer()
             }
 
-            if controller.isRunning, let startedAt = controller.snapshot.startedAt {
-                Label("Started at \(startedAt, formatter: Self.startedFormatter)", systemImage: "clock")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            if controller.isRunning {
+                if let startedAt = controller.snapshot.startedAt {
+                    Label("Started at \(startedAt, formatter: Self.timeFormatter)", systemImage: "clock")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                if let endsAt = controller.snapshot.endsAt {
+                    Label("Ending at \(endsAt, formatter: Self.timeFormatter)", systemImage: "alarm")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             if let lastError = controller.lastError {

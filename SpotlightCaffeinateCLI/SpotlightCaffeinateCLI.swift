@@ -115,13 +115,15 @@ struct SpotlightCaffeinateCLI {
     }
 
     private static func renderStatus(_ snapshot: CaffeinateSnapshot, now: Date) -> String {
-        let startedText = snapshot.startedAt.map { startedFormatter.string(from: $0) } ?? "-"
+        let startedText = snapshot.startedAt.map { timestampFormatter.string(from: $0) } ?? "-"
+        let endingText = snapshot.endsAt.map { timestampFormatter.string(from: $0) } ?? "-"
         let pidText = snapshot.pid.map(String.init) ?? "-"
 
         return """
         State: \(snapshot.isRunning(at: now) ? "running" : "idle")
         Remaining: \(snapshot.remainingText(at: now))
         Started: \(startedText)
+        Ending: \(endingText)
         PID: \(pidText)
         """
     }
@@ -157,7 +159,7 @@ struct SpotlightCaffeinateCLI {
         )
     }
 
-    private static let startedFormatter: DateFormatter = {
+    private static let timestampFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .medium

@@ -16,7 +16,11 @@ struct CaffeinateStatusSnippetView: View {
 
             if snapshot.isRunning(at: now) {
                 if let startedAt = snapshot.startedAt {
-                    detailRow(label: "Started", value: startedFormatter.string(from: startedAt))
+                    detailRow(label: "Started", value: timeFormatter.string(from: startedAt))
+                }
+
+                if let endsAt = snapshot.endsAt {
+                    detailRow(label: "Ending", value: timeFormatter.string(from: endsAt))
                 }
 
                 if let minutesRequested = snapshot.minutesRequested {
@@ -39,7 +43,7 @@ struct CaffeinateStatusSnippetView: View {
         .font(.caption)
     }
 
-    private var startedFormatter: DateFormatter {
+    private var timeFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
         formatter.dateStyle = .none

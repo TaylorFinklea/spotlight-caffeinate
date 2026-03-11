@@ -19,8 +19,13 @@ struct StartCaffeinateIntent: AppIntent {
 
     func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView {
         let snapshot = try await CaffeinateService.shared.start(minutes: minutes)
+        let endingText = snapshot.endsAt?.formatted(date: .omitted, time: .shortened)
         return .result(
-            dialog: IntentDialog("Caffeinate started for \(snapshot.minutesRequested ?? minutes) minutes."),
+            dialog: IntentDialog(
+                endingText.map {
+                    "Caffeinate started for \(snapshot.minutesRequested ?? minutes) minutes and ends at \($0)."
+                } ?? "Caffeinate started for \(snapshot.minutesRequested ?? minutes) minutes."
+            ),
             view: CaffeinateStatusSnippetView(
                 snapshot: snapshot,
                 title: "Caffeinate Active",
@@ -71,8 +76,11 @@ struct CheckCaffeinateStatusIntent: AppIntent {
         let now = Date()
 
         if snapshot.isRunning {
+            let endingText = snapshot.endsAt?.formatted(date: .omitted, time: .shortened)
             return .result(
-                dialog: "Caffeinate is running with \(snapshot.remainingText(at: now)) remaining.",
+                dialog: endingText.map {
+                    "Caffeinate is running with \(snapshot.remainingText(at: now)) remaining and ends at \($0)."
+                } ?? "Caffeinate is running with \(snapshot.remainingText(at: now)) remaining.",
                 view: CaffeinateStatusSnippetView(
                     snapshot: snapshot,
                     title: "Caffeinate Active",
