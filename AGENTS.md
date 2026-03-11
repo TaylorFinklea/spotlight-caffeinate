@@ -31,6 +31,11 @@
   - Owns the local notification preference and schedules the completion alert.
   - Notifications are opt-in. Turning the toggle on should be the moment macOS asks for permission.
 
+- `SpotlightCaffeinate/Services/LaunchAtLoginService.swift`
+  - Wraps `SMAppService.mainApp` for the menu bar app's launch-at-login toggle.
+  - Treat `.requiresApproval` as a pending-enabled state and surface guidance in the menu UI.
+  - This path depends on a signed app build; unsigned/debug builds may report that launch at login is unavailable.
+
 - `SpotlightCaffeinate/Models/CaffeinateSnapshot.swift`
   - Pure snapshot model.
   - Time-derived helpers accept an explicit `Date` so the UI can render against a live clock.

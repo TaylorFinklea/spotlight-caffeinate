@@ -16,6 +16,7 @@ struct StatusMenuView: View {
             statusHeader
             presetsSection
             customDurationSection
+            appSection
             notificationsSection
             footerSection
         }
@@ -139,6 +140,28 @@ struct StatusMenuView: View {
                 Text(notificationStatus)
                     .font(.caption)
                     .foregroundStyle(.red)
+            }
+        }
+    }
+
+    private var appSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("App")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Toggle(
+                "Open Spotlight Caffeinate at Login",
+                isOn: Binding(
+                    get: { controller.launchAtLoginEnabled },
+                    set: { controller.setLaunchAtLoginEnabled($0) }
+                )
+            )
+
+            if let launchAtLoginStatus = controller.launchAtLoginStatus {
+                Text(launchAtLoginStatus)
+                    .font(.caption)
+                    .foregroundStyle(controller.launchAtLoginStatusIsError ? .red : .secondary)
             }
         }
     }

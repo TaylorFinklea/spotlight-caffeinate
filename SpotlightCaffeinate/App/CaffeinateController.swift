@@ -7,6 +7,9 @@ final class CaffeinateController {
     var snapshot: CaffeinateSnapshot = .inactive
     var currentTime = Date()
     var suggestedMinutes = 5
+    var launchAtLoginEnabled: Bool
+    var launchAtLoginStatus: String?
+    var launchAtLoginStatusIsError: Bool
     var notificationsEnabled: Bool
     var notificationStatus: String?
     var lastError: String?
@@ -18,18 +21,27 @@ final class CaffeinateController {
     private let notificationService: CaffeinateNotificationService
 
     @ObservationIgnored
+    private let launchAtLoginService: LaunchAtLoginService
+
+    @ObservationIgnored
     private var pollingTask: Task<Void, Never>?
 
     init(
         service: CaffeinateService = .shared,
-        notificationService: CaffeinateNotificationService = .shared
+        notificationService: CaffeinateNotificationService = .shared,
+        launchAtLoginService: LaunchAtLoginService = .shared
     ) {
         self.service = service
         self.notificationService = notificationService
+        self.launchAtLoginService = launchAtLoginService
+        launchAtLoginEnabled = false
+        launchAtLoginStatus = nil
+        launchAtLoginStatusIsError = false
         notificationsEnabled = false
 
         Task { [weak self] in
             await self?.syncNotificationSettings()
+            await self?.syncLaunchAtLoginSettings()
         }
 
         pollingTask = Task { [weak self] in
@@ -84,6 +96,15 @@ final class CaffeinateController {
         }
     }
 
+    func setLaunchAtLoginEnabled(_ enabled: Bool) {
+        launchAtLoginEnabled = enabled
+
+        Task {
+            let settings = await launchAtLoginService.updatePreference(enabled: enabled)
+            applyLaunchAtLoginSettings(settings)
+        }
+    }
+
     func setNotificationsEnabled(_ enabled: Bool) {
         notificationsEnabled = enabled
 
@@ -112,6 +133,7 @@ final class CaffeinateController {
             snapshot = try await service.status()
             currentTime = .now
             await syncNotificationSettings()
+            await syncLaunchAtLoginSettings()
             if !snapshot.isRunning {
                 lastError = nil
             }
@@ -132,5 +154,22 @@ final class CaffeinateController {
         case .denied:
             notificationStatus = "Allow notifications for Spotlight Caffeinate in System Settings to enable completion alerts."
         }
+    }
+
+    private func syncLaunchAtLoginSettings() async {
+        let settings = await launchAtLoginService.currentSettings()
+
+        if !settings.isEnabled, settings.statusMessage == nil, launchAtLoginStatusIsError {
+            launchAtLoginEnabled = false
+            return
+        }
+
+        applyLaunchAtLoginSettings(settings)
+    }
+
+    private func applyLaunchAtLoginSettings(_ settings: LaunchAtLoginSettings) {
+        launchAtLoginEnabled = settings.isEnabled
+        launchAtLoginStatus = settings.statusMessage
+        launchAtLoginStatusIsError = settings.statusIsError
     }
 }
