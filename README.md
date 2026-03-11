@@ -152,7 +152,7 @@ For Spotlight indexing, copy the built app into `/Applications`.
 ## Notes
 
 - The app only tracks the `caffeinate` process it launches itself.
-- The current implementation runs `caffeinate -t <seconds>`.
+- The current implementation runs `caffeinate -disu -t <seconds>`.
 - State is shared through a JSON file in `~/Library/Application Support/SpotlightCaffeinate/state.json`.
 - Release builds intended for direct distribution should use `scripts/package_signed_release.sh` so they are signed with Hardened Runtime enabled.
 

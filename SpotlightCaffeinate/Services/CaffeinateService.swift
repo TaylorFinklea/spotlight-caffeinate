@@ -63,7 +63,7 @@ actor CaffeinateService {
         let seconds = minutes * 60
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/caffeinate")
-        process.arguments = ["-t", String(seconds)]
+        process.arguments = ["-d", "-i", "-s", "-u", "-t", String(seconds)]
 
         do {
             try process.run()
