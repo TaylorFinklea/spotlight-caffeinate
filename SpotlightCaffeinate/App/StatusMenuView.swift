@@ -3,6 +3,7 @@ import SwiftUI
 
 struct StatusMenuView: View {
     @Bindable var controller: CaffeinateController
+    @State private var settingsExpanded = false
 
     private static let timeFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -102,8 +103,12 @@ struct StatusMenuView: View {
         VStack(alignment: .leading, spacing: 10) {
             Divider()
 
+            if settingsExpanded {
+                settingsSection
+            }
+
             HStack {
-                settingsMenu
+                settingsDisclosure
 
                 Button("Refresh") {
                     Task {
@@ -130,9 +135,26 @@ struct StatusMenuView: View {
         }
     }
 
-    private var settingsMenu: some View {
-        Menu {
-            Section("App") {
+    private var settingsDisclosure: some View {
+        Button {
+            settingsExpanded.toggle()
+        } label: {
+            HStack(spacing: 6) {
+                Label("Settings", systemImage: "gearshape")
+
+                Image(systemName: settingsExpanded ? "chevron.up" : "chevron.down")
+                    .font(.caption.weight(.semibold))
+            }
+        }
+    }
+
+    private var settingsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            settingsGroup(
+                title: "App",
+                status: controller.launchAtLoginStatus,
+                statusIsError: controller.launchAtLoginStatusIsError
+            ) {
                 Toggle(
                     "Open Spotlight Caffeinate at Login",
                     isOn: Binding(
@@ -140,13 +162,13 @@ struct StatusMenuView: View {
                         set: { controller.setLaunchAtLoginEnabled($0) }
                     )
                 )
-
-                if let launchAtLoginStatus = controller.launchAtLoginStatus {
-                    Text(launchAtLoginStatus)
-                }
             }
 
-            Section("Notifications") {
+            settingsGroup(
+                title: "Notifications",
+                status: controller.notificationStatus,
+                statusIsError: controller.notificationStatus != nil && !controller.notificationsEnabled
+            ) {
                 Toggle(
                     "Notify When Caffeinate Ends",
                     isOn: Binding(
@@ -154,15 +176,32 @@ struct StatusMenuView: View {
                         set: { controller.setNotificationsEnabled($0) }
                     )
                 )
-
-                if let notificationStatus = controller.notificationStatus {
-                    Text(notificationStatus)
-                }
             }
-        } label: {
-            Label("Settings", systemImage: "gearshape")
         }
-        .menuStyle(.borderlessButton)
+        .padding(12)
+        .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private func settingsGroup<Content: View>(
+        title: String,
+        status: String?,
+        statusIsError: Bool,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            content()
+
+            if let status {
+                Text(status)
+                    .font(.caption)
+                    .foregroundStyle(statusIsError ? .red : .secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
     }
 
     private func presetButton(_ minutes: Int) -> some View {
