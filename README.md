@@ -26,6 +26,7 @@ This app adds that missing layer.
 - A live countdown while `caffeinate` is running
 - An optional launch-at-login toggle in the menu bar UI
 - Optional completion notifications with an in-app opt-in toggle
+- An immediate confirmation banner when notifications are enabled
 - A companion CLI for terminal-only environments
 - Shared state between the app, Spotlight, and the CLI
 

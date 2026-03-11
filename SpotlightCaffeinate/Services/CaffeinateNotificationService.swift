@@ -18,6 +18,7 @@ actor CaffeinateNotificationService {
 
     private static let notificationsEnabledKey = "notifyOnCompletion"
     private let notificationIdentifier = "io.taylorfinklea.spotlightcaffeinate.completion"
+    private let enabledNotificationIdentifier = "io.taylorfinklea.spotlightcaffeinate.notifications-enabled"
     private let center: UNUserNotificationCenter
     private let defaults: UserDefaults
 
@@ -58,6 +59,8 @@ actor CaffeinateNotificationService {
         }
 
         storePreference(true)
+
+        await scheduleEnabledNotification()
 
         if currentSnapshot.isRunning {
             await scheduleCompletionNotificationIfNeeded(for: currentSnapshot)
@@ -105,6 +108,25 @@ actor CaffeinateNotificationService {
     func cancelPendingCompletionNotification() {
         center.removePendingNotificationRequests(withIdentifiers: [notificationIdentifier])
         center.removeDeliveredNotifications(withIdentifiers: [notificationIdentifier])
+    }
+
+    func scheduleEnabledNotification() async {
+        let content = UNMutableNotificationContent()
+        content.title = "Notifications Enabled"
+        content.body = "Spotlight Caffeinate will alert you when the current session finishes."
+        content.sound = .default
+
+        let request = UNNotificationRequest(
+            identifier: enabledNotificationIdentifier,
+            content: content,
+            trigger: nil
+        )
+
+        do {
+            try await add(request)
+        } catch {
+            // Keep failures non-fatal. Notification preference can still be enabled.
+        }
     }
 
     private func notificationBody(for snapshot: CaffeinateSnapshot) -> String {

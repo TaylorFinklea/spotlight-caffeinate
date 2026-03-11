@@ -30,6 +30,11 @@
 - `SpotlightCaffeinate/Services/CaffeinateNotificationService.swift`
   - Owns the local notification preference and schedules the completion alert.
   - Notifications are opt-in. Turning the toggle on should be the moment macOS asks for permission.
+  - Enabling notifications should also send an immediate confirmation banner so the user can verify alerts are working.
+
+- `SpotlightCaffeinate/App/NotificationCenterDelegate.swift`
+  - Installs the app as the `UNUserNotificationCenter` delegate.
+  - Foreground notifications should still present as banners and play sound.
 
 - `SpotlightCaffeinate/Services/LaunchAtLoginService.swift`
   - Wraps `SMAppService.mainApp` for the menu bar app's launch-at-login toggle.

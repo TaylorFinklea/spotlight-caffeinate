@@ -3,6 +3,7 @@ import SwiftUI
 
 @main
 struct SpotlightCaffeinateApp: App {
+    @NSApplicationDelegateAdaptor(NotificationCenterDelegate.self) private var notificationCenterDelegate
     @State private var controller = CaffeinateController()
 
     init() {

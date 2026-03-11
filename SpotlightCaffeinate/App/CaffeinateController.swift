@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import Observation
 
@@ -109,6 +110,10 @@ final class CaffeinateController {
         notificationsEnabled = enabled
 
         Task {
+            if enabled {
+                NSApplication.shared.activate(ignoringOtherApps: true)
+            }
+
             let result = await notificationService.updatePreference(
                 enabled: enabled,
                 currentSnapshot: snapshot

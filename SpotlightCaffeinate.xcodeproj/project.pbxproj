@@ -13,6 +13,7 @@
 		5893992BA959E1FF4B5BC059 /* SpotlightCaffeinateCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BADBC26D038A002B754F0B5 /* SpotlightCaffeinateCLI.swift */; };
 		5C86BC47FC80D921F7816F9E /* CaffeinateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC3857F8AD00A17FF0BAAC9B /* CaffeinateService.swift */; };
 		6F439079E0A0CCEA81AFC6B0 /* StatusMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E2430731258FFD7AF398CC7 /* StatusMenuView.swift */; };
+		999AA9ABEEAC6D0E431D4D29 /* NotificationCenterDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA156B79414F9C48608179E /* NotificationCenterDelegate.swift */; };
 		B4046FBA7CFA77BD71A80518 /* CaffeinateNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934B068A4F0818E26BB81619 /* CaffeinateNotificationService.swift */; };
 		B82BB33FEF6AACB10D296ACB /* CaffeinateIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12B4E366227AFA92A38B89DB /* CaffeinateIntents.swift */; };
 		C8105E2A253EAE53E6FEFCAE /* CaffeinateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC3857F8AD00A17FF0BAAC9B /* CaffeinateService.swift */; };
@@ -35,6 +36,7 @@
 		703E5325FF1425977F518A1B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7BADBC26D038A002B754F0B5 /* SpotlightCaffeinateCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightCaffeinateCLI.swift; sourceTree = "<group>"; };
 		934B068A4F0818E26BB81619 /* CaffeinateNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateNotificationService.swift; sourceTree = "<group>"; };
+		ABA156B79414F9C48608179E /* NotificationCenterDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCenterDelegate.swift; sourceTree = "<group>"; };
 		E03E61DE9F34D4C809F28C15 /* SpotlightCaffeinateCLI */ = {isa = PBXFileReference; includeInIndex = 0; path = SpotlightCaffeinateCLI; sourceTree = BUILT_PRODUCTS_DIR; };
 		FC3857F8AD00A17FF0BAAC9B /* CaffeinateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -74,6 +76,7 @@
 			isa = PBXGroup;
 			children = (
 				36E7F2962E86312CA442468E /* CaffeinateController.swift */,
+				ABA156B79414F9C48608179E /* NotificationCenterDelegate.swift */,
 				023F546C09192BEB6AF4065B /* SpotlightCaffeinateApp.swift */,
 				2E2430731258FFD7AF398CC7 /* StatusMenuView.swift */,
 			);
@@ -211,6 +214,7 @@
 				F04967BFFA7F4A4350D75D42 /* CaffeinateSnapshot.swift in Sources */,
 				D4C4ED5313D501D27A5D8F99 /* CaffeinateStatusSnippetView.swift in Sources */,
 				E4AEC4518C65DFCEB5C1CB6C /* LaunchAtLoginService.swift in Sources */,
+				999AA9ABEEAC6D0E431D4D29 /* NotificationCenterDelegate.swift in Sources */,
 				E1D01DC49F01DC3BBC9028E6 /* SpotlightCaffeinateApp.swift in Sources */,
 				6F439079E0A0CCEA81AFC6B0 /* StatusMenuView.swift in Sources */,
 			);
