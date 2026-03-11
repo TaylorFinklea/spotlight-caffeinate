@@ -73,6 +73,30 @@ For the start action, tab into the `Minutes` field, type a duration such as `5`,
 
 If you turn notifications on from the menu bar UI, macOS will ask for notification permission at that moment. You can turn the setting back off at any time.
 
+## Signed Releases
+
+For direct distribution outside Homebrew, the repo now includes a Developer ID and notarization path.
+
+One-time notary setup:
+
+```bash
+./scripts/configure_notarytool_profile.sh spotlight-caffeinate-notary --team-id YOURTEAMID
+```
+
+Build a signed release:
+
+```bash
+./scripts/package_signed_release.sh --team-id YOURTEAMID
+```
+
+Build a signed and notarized release:
+
+```bash
+./scripts/package_signed_release.sh --team-id YOURTEAMID --notary-profile spotlight-caffeinate-notary
+```
+
+Full setup notes live in [docs/developer-id-notarization.md](docs/developer-id-notarization.md).
+
 ## CLI
 
 The repo also ships a companion CLI for machines where installing the app into `/Applications` is not practical.
@@ -128,6 +152,7 @@ For Spotlight indexing, copy the built app into `/Applications`.
 - The app only tracks the `caffeinate` process it launches itself.
 - The current implementation runs `caffeinate -t <seconds>`.
 - State is shared through a JSON file in `~/Library/Application Support/SpotlightCaffeinate/state.json`.
+- Release builds intended for direct distribution should use `scripts/package_signed_release.sh` so they are signed with Hardened Runtime enabled.
 
 ## License
 

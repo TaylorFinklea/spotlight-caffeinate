@@ -48,6 +48,13 @@
   - Builds the CLI target and copies `spotlight-caffeinate-cli` into a destination directory.
   - Defaults to `~/.local/bin`.
 
+- `scripts/package_signed_release.sh`
+  - Archives and exports a Developer ID signed release build.
+  - Optionally notarizes and staples the app when a `notarytool` keychain profile is provided.
+
+- `scripts/configure_notarytool_profile.sh`
+  - Stores reusable `notarytool` credentials in the keychain.
+
 ## Change Workflow
 
 1. Pull before committing or pushing:
@@ -66,10 +73,12 @@ When a source change should ship to users:
 
 1. Bump `MARKETING_VERSION` and `CFBundleShortVersionString` in `project.yml`.
 2. Run `xcodegen generate`.
-3. Build and zip the app:
+3. Build and zip the unsigned app when you only need a local/dev artifact:
    - `./scripts/package_release.sh`
-4. Create a GitHub release tag like `v0.1.2` with `build/SpotlightCaffeinate.zip`.
-5. Update the Homebrew tap repo `TaylorFinklea/homebrew-tap`:
+4. For end-user direct downloads, build the signed artifact instead:
+   - `./scripts/package_signed_release.sh --team-id <TEAM_ID> --notary-profile <PROFILE>`
+5. Create a GitHub release tag like `v0.1.2` with `build/SpotlightCaffeinate.zip`.
+6. Update the Homebrew tap repo `TaylorFinklea/homebrew-tap`:
    - `Casks/spotlight-caffeinate.rb`
    - set the new `version`
    - set the new `sha256`
@@ -78,5 +87,7 @@ When a source change should ship to users:
 
 - Homebrew distribution is via cask, not formula:
   - `brew install --cask TaylorFinklea/tap/spotlight-caffeinate`
-- Artifacts are not notarized today. macOS quarantine may need removal after install:
+- `scripts/package_release.sh` is still the unsigned packaging path for local/dev builds.
+- Release builds intended for end users should prefer `scripts/package_signed_release.sh`.
+- Unsigned artifacts may still need quarantine removal after install:
   - `xattr -dr com.apple.quarantine "/Applications/Spotlight Caffeinate.app"`

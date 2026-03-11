@@ -22,6 +22,9 @@ targets:
         INFOPLIST_FILE: SpotlightCaffeinate/Info.plist
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: ""
+      configs:
+        Release:
+          ENABLE_HARDENED_RUNTIME: YES
     info:
       path: SpotlightCaffeinate/Info.plist
       properties:
