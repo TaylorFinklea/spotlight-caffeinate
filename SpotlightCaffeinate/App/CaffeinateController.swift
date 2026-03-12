@@ -12,6 +12,7 @@ final class CaffeinateController {
     var launchAtLoginStatus: String?
     var launchAtLoginStatusIsError: Bool
     var notificationsEnabled: Bool
+    var notificationAuthorizationState: NotificationAuthorizationState
     var notificationStatus: String?
     var notificationStatusIsError: Bool
     var lastError: String?
@@ -45,6 +46,7 @@ final class CaffeinateController {
         launchAtLoginStatus = nil
         launchAtLoginStatusIsError = false
         notificationsEnabled = false
+        notificationAuthorizationState = .notDetermined
         notificationStatusIsError = false
 
         Task { [weak self] in
@@ -118,27 +120,26 @@ final class CaffeinateController {
 
         Task {
             if enabled {
-                NSApplication.shared.activate(ignoringOtherApps: true)
+                await runNotificationEnableFlow { [self] in
+                    await self.notificationService.updatePreference(
+                        enabled: enabled,
+                        currentSnapshot: self.snapshot
+                    )
+                }
+            } else {
+                let result = await notificationService.updatePreference(
+                    enabled: enabled,
+                    currentSnapshot: snapshot
+                )
+                await applyNotificationPreferenceUpdate(result)
             }
+        }
+    }
 
-            let result = await notificationService.updatePreference(
-                enabled: enabled,
-                currentSnapshot: snapshot
-            )
-
-            switch result {
-            case .enabled:
-                notificationsEnabled = true
-                notificationStatus = nil
-                notificationStatusIsError = false
-            case .disabled:
-                notificationsEnabled = false
-                notificationStatus = "Turn this on to get a macOS notification when caffeinate finishes."
-                notificationStatusIsError = false
-            case .denied:
-                notificationsEnabled = false
-                notificationStatus = "Allow notifications for Spotlight Caffeinate in System Settings to enable completion alerts."
-                notificationStatusIsError = true
+    func requestNotificationAuthorization() {
+        Task {
+            await runNotificationEnableFlow { [self] in
+                await self.notificationService.requestAuthorizationAndEnable(currentSnapshot: self.snapshot)
             }
         }
     }
@@ -170,6 +171,7 @@ final class CaffeinateController {
 
     private func syncNotificationSettings() async {
         let settings = await notificationService.currentSettings()
+        notificationAuthorizationState = settings.authorization
         notificationsEnabled = settings.preferenceEnabled && settings.authorization == .granted
 
         switch settings.authorization {
@@ -177,12 +179,60 @@ final class CaffeinateController {
             notificationStatus = notificationsEnabled ? nil : "Turn this on to get a macOS notification when caffeinate finishes."
             notificationStatusIsError = false
         case .notDetermined:
-            notificationStatus = "Turn this on to allow completion notifications."
+            notificationStatus = "Click Enable Notifications to show the macOS prompt."
             notificationStatusIsError = false
         case .denied:
             notificationStatus = "Allow notifications for Spotlight Caffeinate in System Settings to enable completion alerts."
             notificationStatusIsError = true
         }
+    }
+
+    private func runNotificationEnableFlow(
+        operation: @escaping () async -> NotificationPreferenceUpdateResult
+    ) async {
+        let previousPolicy = NSApplication.shared.activationPolicy()
+        if previousPolicy != .regular {
+            NSApplication.shared.setActivationPolicy(.regular)
+        }
+
+        NSApplication.shared.activate(ignoringOtherApps: true)
+
+        do {
+            try await Task.sleep(for: .milliseconds(200))
+        } catch {
+            // Ignore cancellation here. If the task was cancelled, the next await will no-op naturally.
+        }
+
+        let result = await operation()
+
+        if previousPolicy != .regular {
+            NSApplication.shared.setActivationPolicy(previousPolicy)
+        }
+
+        await applyNotificationPreferenceUpdate(result)
+    }
+
+    private func applyNotificationPreferenceUpdate(_ result: NotificationPreferenceUpdateResult) async {
+        switch result {
+        case .enabled:
+            notificationsEnabled = true
+            notificationStatus = nil
+            notificationStatusIsError = false
+        case .disabled:
+            notificationsEnabled = false
+            notificationStatus = "Turn this on to get a macOS notification when caffeinate finishes."
+            notificationStatusIsError = false
+        case .denied:
+            notificationsEnabled = false
+            notificationStatus = "Allow notifications for Spotlight Caffeinate in System Settings to enable completion alerts."
+            notificationStatusIsError = true
+        case .failed(let message):
+            notificationsEnabled = false
+            notificationStatus = message
+            notificationStatusIsError = true
+        }
+
+        await syncNotificationSettings()
     }
 
     private func syncLaunchAtLoginSettings() async {

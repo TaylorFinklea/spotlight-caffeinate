@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import UserNotifications
 
 enum NotificationAuthorizationState {
@@ -11,12 +12,14 @@ enum NotificationPreferenceUpdateResult {
     case enabled
     case disabled
     case denied
+    case failed(String)
 }
 
 actor CaffeinateNotificationService {
     static let shared = CaffeinateNotificationService()
 
     private static let notificationsEnabledKey = "notifyOnCompletion"
+    private let logger = Logger(subsystem: "io.taylorfinklea.spotlightcaffeinate", category: "notifications")
     private let notificationIdentifier = "io.taylorfinklea.spotlightcaffeinate.completion"
     private let enabledNotificationIdentifier = "io.taylorfinklea.spotlightcaffeinate.notifications-enabled"
     private let center: UNUserNotificationCenter
@@ -52,21 +55,11 @@ actor CaffeinateNotificationService {
             return .disabled
         }
 
-        guard await ensureAuthorization() else {
-            storePreference(false)
-            cancelPendingCompletionNotification()
-            return .denied
-        }
+        return await enablePreference(for: currentSnapshot, source: "toggle")
+    }
 
-        storePreference(true)
-
-        await scheduleEnabledNotification()
-
-        if currentSnapshot.isRunning {
-            await scheduleCompletionNotificationIfNeeded(for: currentSnapshot)
-        }
-
-        return .enabled
+    func requestAuthorizationAndEnable(currentSnapshot: CaffeinateSnapshot) async -> NotificationPreferenceUpdateResult {
+        await enablePreference(for: currentSnapshot, source: "button")
     }
 
     func scheduleCompletionNotificationIfNeeded(for snapshot: CaffeinateSnapshot) async {
@@ -77,6 +70,7 @@ actor CaffeinateNotificationService {
         }
 
         guard await ensureAuthorization() else {
+            logger.error("Skipping completion notification because authorization is unavailable.")
             storePreference(false)
             return
         }
@@ -101,7 +95,7 @@ actor CaffeinateNotificationService {
         do {
             try await add(request)
         } catch {
-            // Keep failures non-fatal. The caffeinate run itself still succeeded.
+            logger.error("Failed to schedule completion notification: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -125,7 +119,7 @@ actor CaffeinateNotificationService {
         do {
             try await add(request)
         } catch {
-            // Keep failures non-fatal. Notification preference can still be enabled.
+            logger.error("Failed to schedule enabled notification: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -139,6 +133,59 @@ actor CaffeinateNotificationService {
 
     private func storePreference(_ enabled: Bool) {
         defaults.set(enabled, forKey: Self.notificationsEnabledKey)
+    }
+
+    private func enablePreference(
+        for snapshot: CaffeinateSnapshot,
+        source: StaticString
+    ) async -> NotificationPreferenceUpdateResult {
+        let before = await authorizationState()
+        logger.log("Notification enable requested from \(source, privacy: .public). Authorization before: \(Self.describe(before), privacy: .public)")
+
+        switch before {
+        case .granted:
+            return await finishEnabling(for: snapshot)
+        case .denied:
+            storePreference(false)
+            cancelPendingCompletionNotification()
+            return .denied
+        case .notDetermined:
+            do {
+                let granted = try await requestAuthorization()
+                let after = await authorizationState()
+                logger.log("Notification authorization request returned granted=\(granted, privacy: .public). Authorization after: \(Self.describe(after), privacy: .public)")
+
+                switch after {
+                case .granted:
+                    return await finishEnabling(for: snapshot)
+                case .denied:
+                    storePreference(false)
+                    cancelPendingCompletionNotification()
+                    return .denied
+                case .notDetermined:
+                    storePreference(false)
+                    cancelPendingCompletionNotification()
+                    return .failed("macOS did not complete notification authorization for Spotlight Caffeinate.")
+                }
+            } catch {
+                logger.error("Notification authorization request failed: \(error.localizedDescription, privacy: .public)")
+                storePreference(false)
+                cancelPendingCompletionNotification()
+                return .failed("Spotlight Caffeinate could not request notification authorization.")
+            }
+        }
+    }
+
+    private func finishEnabling(for snapshot: CaffeinateSnapshot) async -> NotificationPreferenceUpdateResult {
+        storePreference(true)
+
+        await scheduleEnabledNotification()
+
+        if snapshot.isRunning {
+            await scheduleCompletionNotificationIfNeeded(for: snapshot)
+        }
+
+        return .enabled
     }
 
     private func ensureAuthorization() async -> Bool {
@@ -194,6 +241,17 @@ actor CaffeinateNotificationService {
                     continuation.resume()
                 }
             }
+        }
+    }
+
+    private nonisolated static func describe(_ state: NotificationAuthorizationState) -> String {
+        switch state {
+        case .notDetermined:
+            return "notDetermined"
+        case .granted:
+            return "granted"
+        case .denied:
+            return "denied"
         }
     }
 }

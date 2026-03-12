@@ -170,15 +170,20 @@ struct StatusMenuView: View {
                 statusIsError: controller.notificationStatusIsError
             ) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Toggle(
-                        "Notify When Caffeinate Ends",
-                        isOn: Binding(
-                            get: { controller.notificationsEnabled },
-                            set: { controller.setNotificationsEnabled($0) }
+                    if controller.notificationAuthorizationState == .granted {
+                        Toggle(
+                            "Notify When Caffeinate Ends",
+                            isOn: Binding(
+                                get: { controller.notificationsEnabled },
+                                set: { controller.setNotificationsEnabled($0) }
+                            )
                         )
-                    )
+                    } else {
+                        Button("Enable Notifications") {
+                            controller.requestNotificationAuthorization()
+                        }
+                        .buttonStyle(.borderedProminent)
 
-                    if !controller.notificationsEnabled {
                         Button("Open Notification Settings") {
                             controller.openNotificationSettings()
                         }
