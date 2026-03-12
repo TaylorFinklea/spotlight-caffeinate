@@ -13,6 +13,7 @@ final class CaffeinateController {
     var launchAtLoginStatusIsError: Bool
     var notificationsEnabled: Bool
     var notificationStatus: String?
+    var notificationStatusIsError: Bool
     var lastError: String?
 
     @ObservationIgnored
@@ -27,6 +28,11 @@ final class CaffeinateController {
     @ObservationIgnored
     private var pollingTask: Task<Void, Never>?
 
+    @ObservationIgnored
+    private static let notificationSettingsURL = URL(
+        string: "x-apple.systempreferences:com.apple.preference.notifications"
+    )!
+
     init(
         service: CaffeinateService = .shared,
         notificationService: CaffeinateNotificationService = .shared,
@@ -39,6 +45,7 @@ final class CaffeinateController {
         launchAtLoginStatus = nil
         launchAtLoginStatusIsError = false
         notificationsEnabled = false
+        notificationStatusIsError = false
 
         Task { [weak self] in
             await self?.syncNotificationSettings()
@@ -123,12 +130,15 @@ final class CaffeinateController {
             case .enabled:
                 notificationsEnabled = true
                 notificationStatus = nil
+                notificationStatusIsError = false
             case .disabled:
                 notificationsEnabled = false
                 notificationStatus = "Turn this on to get a macOS notification when caffeinate finishes."
+                notificationStatusIsError = false
             case .denied:
                 notificationsEnabled = false
                 notificationStatus = "Allow notifications for Spotlight Caffeinate in System Settings to enable completion alerts."
+                notificationStatusIsError = true
             }
         }
     }
@@ -147,6 +157,17 @@ final class CaffeinateController {
         }
     }
 
+    func openNotificationSettings() {
+        guard NSWorkspace.shared.open(Self.notificationSettingsURL) else {
+            notificationStatus = "Could not open Notification Settings."
+            notificationStatusIsError = true
+            return
+        }
+
+        notificationStatus = "Notification Settings opened."
+        notificationStatusIsError = false
+    }
+
     private func syncNotificationSettings() async {
         let settings = await notificationService.currentSettings()
         notificationsEnabled = settings.preferenceEnabled && settings.authorization == .granted
@@ -154,10 +175,13 @@ final class CaffeinateController {
         switch settings.authorization {
         case .granted:
             notificationStatus = notificationsEnabled ? nil : "Turn this on to get a macOS notification when caffeinate finishes."
+            notificationStatusIsError = false
         case .notDetermined:
             notificationStatus = "Turn this on to allow completion notifications."
+            notificationStatusIsError = false
         case .denied:
             notificationStatus = "Allow notifications for Spotlight Caffeinate in System Settings to enable completion alerts."
+            notificationStatusIsError = true
         }
     }
 

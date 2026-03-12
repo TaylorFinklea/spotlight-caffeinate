@@ -167,15 +167,24 @@ struct StatusMenuView: View {
             settingsGroup(
                 title: "Notifications",
                 status: controller.notificationStatus,
-                statusIsError: controller.notificationStatus != nil && !controller.notificationsEnabled
+                statusIsError: controller.notificationStatusIsError
             ) {
-                Toggle(
-                    "Notify When Caffeinate Ends",
-                    isOn: Binding(
-                        get: { controller.notificationsEnabled },
-                        set: { controller.setNotificationsEnabled($0) }
+                VStack(alignment: .leading, spacing: 8) {
+                    Toggle(
+                        "Notify When Caffeinate Ends",
+                        isOn: Binding(
+                            get: { controller.notificationsEnabled },
+                            set: { controller.setNotificationsEnabled($0) }
+                        )
                     )
-                )
+
+                    if !controller.notificationsEnabled {
+                        Button("Open Notification Settings") {
+                            controller.openNotificationSettings()
+                        }
+                        .buttonStyle(.link)
+                    }
+                }
             }
         }
         .padding(12)
