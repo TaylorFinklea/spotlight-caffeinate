@@ -17,11 +17,12 @@ struct SpotlightCaffeinateApp: App {
             StatusMenuView(controller: controller)
         } label: {
             HStack(spacing: 4) {
-                BoltIconView(size: 11)
+                MenuBarBoltIconView()
 
                 Text(controller.snapshot.menuBarTitle(at: now))
                     .monospacedDigit()
             }
+            .fixedSize()
             .foregroundStyle(.primary)
         }
         .menuBarExtraStyle(.window)
