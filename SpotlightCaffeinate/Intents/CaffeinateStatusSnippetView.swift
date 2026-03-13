@@ -7,8 +7,13 @@ struct CaffeinateStatusSnippetView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label(title, systemImage: snapshot.menuBarSymbolName(at: now))
-                .font(.headline)
+            HStack(spacing: 8) {
+                BoltIconView(size: 18)
+                    .foregroundStyle(snapshot.isRunning(at: now) ? .green : .secondary)
+
+                Text(title)
+                    .font(.headline)
+            }
 
             Text(snapshot.statusLine(at: now))
                 .font(.subheadline)

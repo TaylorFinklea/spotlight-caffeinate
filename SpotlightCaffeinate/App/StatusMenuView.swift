@@ -28,8 +28,7 @@ struct StatusMenuView: View {
 
         return VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top, spacing: 12) {
-                Image(systemName: controller.snapshot.menuBarSymbolName(at: now))
-                    .font(.system(size: 28, weight: .semibold))
+                BoltIconView(size: 28)
                     .foregroundStyle(controller.isRunning ? .green : .secondary)
 
                 VStack(alignment: .leading, spacing: 4) {

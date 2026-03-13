@@ -97,12 +97,4 @@ struct CaffeinateSnapshot: Codable, Equatable, Sendable {
     var menuBarTitle: String {
         menuBarTitle(at: .now)
     }
-
-    func menuBarSymbolName(at now: Date) -> String {
-        isRunning(at: now) ? "cup.and.saucer.fill" : "cup.and.saucer"
-    }
-
-    var menuBarSymbolName: String {
-        menuBarSymbolName(at: .now)
-    }
 }

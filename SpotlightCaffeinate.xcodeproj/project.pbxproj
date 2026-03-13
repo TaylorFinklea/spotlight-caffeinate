@@ -12,7 +12,9 @@
 		34E7C8E475F605514AC23446 /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44B3064CCC9C71AB532C285C /* LaunchAtLoginService.swift */; };
 		5893992BA959E1FF4B5BC059 /* SpotlightCaffeinateCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BADBC26D038A002B754F0B5 /* SpotlightCaffeinateCLI.swift */; };
 		5C86BC47FC80D921F7816F9E /* CaffeinateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC3857F8AD00A17FF0BAAC9B /* CaffeinateService.swift */; };
+		6E53D02E71C208FADD6D375A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3D6A7C14BF00564D09FBD99 /* Assets.xcassets */; };
 		6F439079E0A0CCEA81AFC6B0 /* StatusMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E2430731258FFD7AF398CC7 /* StatusMenuView.swift */; };
+		791E5F9CA4A5EAADC39A903D /* BoltIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 087A7E8706BE5A4951BE384A /* BoltIconView.swift */; };
 		999AA9ABEEAC6D0E431D4D29 /* NotificationCenterDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA156B79414F9C48608179E /* NotificationCenterDelegate.swift */; };
 		B4046FBA7CFA77BD71A80518 /* CaffeinateNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934B068A4F0818E26BB81619 /* CaffeinateNotificationService.swift */; };
 		B82BB33FEF6AACB10D296ACB /* CaffeinateIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12B4E366227AFA92A38B89DB /* CaffeinateIntents.swift */; };
@@ -26,6 +28,7 @@
 
 /* Begin PBXFileReference section */
 		023F546C09192BEB6AF4065B /* SpotlightCaffeinateApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightCaffeinateApp.swift; sourceTree = "<group>"; };
+		087A7E8706BE5A4951BE384A /* BoltIconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoltIconView.swift; sourceTree = "<group>"; };
 		12B4E366227AFA92A38B89DB /* CaffeinateIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateIntents.swift; sourceTree = "<group>"; };
 		2E2430731258FFD7AF398CC7 /* StatusMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMenuView.swift; sourceTree = "<group>"; };
 		36E7F2962E86312CA442468E /* CaffeinateController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateController.swift; sourceTree = "<group>"; };
@@ -37,6 +40,7 @@
 		7BADBC26D038A002B754F0B5 /* SpotlightCaffeinateCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightCaffeinateCLI.swift; sourceTree = "<group>"; };
 		934B068A4F0818E26BB81619 /* CaffeinateNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateNotificationService.swift; sourceTree = "<group>"; };
 		ABA156B79414F9C48608179E /* NotificationCenterDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCenterDelegate.swift; sourceTree = "<group>"; };
+		B3D6A7C14BF00564D09FBD99 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E03E61DE9F34D4C809F28C15 /* SpotlightCaffeinateCLI */ = {isa = PBXFileReference; includeInIndex = 0; path = SpotlightCaffeinateCLI; sourceTree = BUILT_PRODUCTS_DIR; };
 		FC3857F8AD00A17FF0BAAC9B /* CaffeinateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -63,6 +67,7 @@
 		086A8F09A3AE67DBCF948D21 /* SpotlightCaffeinate */ = {
 			isa = PBXGroup;
 			children = (
+				B3D6A7C14BF00564D09FBD99 /* Assets.xcassets */,
 				703E5325FF1425977F518A1B /* Info.plist */,
 				217023042EB9E70E8FA11B24 /* App */,
 				C50D78762444B8C2B110292B /* Intents */,
@@ -75,6 +80,7 @@
 		217023042EB9E70E8FA11B24 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				087A7E8706BE5A4951BE384A /* BoltIconView.swift */,
 				36E7F2962E86312CA442468E /* CaffeinateController.swift */,
 				ABA156B79414F9C48608179E /* NotificationCenterDelegate.swift */,
 				023F546C09192BEB6AF4065B /* SpotlightCaffeinateApp.swift */,
@@ -143,6 +149,7 @@
 			buildConfigurationList = 3A0473B352A5AB67AF18540E /* Build configuration list for PBXNativeTarget "SpotlightCaffeinate" */;
 			buildPhases = (
 				CE7F8524044899D1787FDAC7 /* Sources */,
+				4D682FEF9A7116B294143B17 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -190,6 +197,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		4D682FEF9A7116B294143B17 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6E53D02E71C208FADD6D375A /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		A793D77BD20FF83597CC6515 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -207,6 +225,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				791E5F9CA4A5EAADC39A903D /* BoltIconView.swift in Sources */,
 				C849AA7B81D2138ACECE87E8 /* CaffeinateController.swift in Sources */,
 				B82BB33FEF6AACB10D296ACB /* CaffeinateIntents.swift in Sources */,
 				331D4DA53D745387B06AEB49 /* CaffeinateNotificationService.swift in Sources */,
