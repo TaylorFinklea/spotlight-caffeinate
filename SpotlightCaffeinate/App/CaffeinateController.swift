@@ -8,6 +8,7 @@ final class CaffeinateController {
     var snapshot: CaffeinateSnapshot = .inactive
     var currentTime = Date()
     var suggestedMinutes = 5
+    var showMenuBarTime: Bool
     var launchAtLoginEnabled: Bool
     var launchAtLoginStatus: String?
     var launchAtLoginStatusIsError: Bool
@@ -27,6 +28,9 @@ final class CaffeinateController {
     private let launchAtLoginService: LaunchAtLoginService
 
     @ObservationIgnored
+    private let defaults: UserDefaults
+
+    @ObservationIgnored
     private var pollingTask: Task<Void, Never>?
 
     @ObservationIgnored
@@ -34,14 +38,20 @@ final class CaffeinateController {
         string: "x-apple.systempreferences:com.apple.preference.notifications"
     )!
 
+    @ObservationIgnored
+    private static let showMenuBarTimeKey = "showMenuBarTime"
+
     init(
         service: CaffeinateService = .shared,
         notificationService: CaffeinateNotificationService = .shared,
-        launchAtLoginService: LaunchAtLoginService = .shared
+        launchAtLoginService: LaunchAtLoginService = .shared,
+        defaults: UserDefaults = .standard
     ) {
         self.service = service
         self.notificationService = notificationService
         self.launchAtLoginService = launchAtLoginService
+        self.defaults = defaults
+        showMenuBarTime = Self.showMenuBarTimePreference(defaults: defaults)
         launchAtLoginEnabled = false
         launchAtLoginStatus = nil
         launchAtLoginStatusIsError = false
@@ -113,6 +123,11 @@ final class CaffeinateController {
             let settings = await launchAtLoginService.updatePreference(enabled: enabled)
             applyLaunchAtLoginSettings(settings)
         }
+    }
+
+    func setShowMenuBarTime(_ enabled: Bool) {
+        showMenuBarTime = enabled
+        defaults.set(enabled, forKey: Self.showMenuBarTimeKey)
     }
 
     func setNotificationsEnabled(_ enabled: Bool) {
@@ -250,5 +265,13 @@ final class CaffeinateController {
         launchAtLoginEnabled = settings.isEnabled
         launchAtLoginStatus = settings.statusMessage
         launchAtLoginStatusIsError = settings.statusIsError
+    }
+
+    private nonisolated static func showMenuBarTimePreference(defaults: UserDefaults) -> Bool {
+        guard let value = defaults.object(forKey: "showMenuBarTime") as? Bool else {
+            return true
+        }
+
+        return value
     }
 }

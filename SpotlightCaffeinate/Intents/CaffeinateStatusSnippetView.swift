@@ -6,10 +6,11 @@ struct CaffeinateStatusSnippetView: View {
     let now: Date
 
     var body: some View {
+        let isRunning = snapshot.isRunning(at: now)
+
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                BoltIconView(size: 18)
-                    .foregroundStyle(snapshot.isRunning(at: now) ? .green : .secondary)
+                BoltIconView(isRunning: isRunning, size: 18)
 
                 Text(title)
                     .font(.headline)
@@ -19,7 +20,7 @@ struct CaffeinateStatusSnippetView: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
-            if snapshot.isRunning(at: now) {
+            if isRunning {
                 if let startedAt = snapshot.startedAt {
                     detailRow(label: "Started", value: timeFormatter.string(from: startedAt))
                 }

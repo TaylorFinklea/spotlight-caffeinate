@@ -28,8 +28,7 @@ struct StatusMenuView: View {
 
         return VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top, spacing: 12) {
-                BoltIconView(size: 28)
-                    .foregroundStyle(controller.isRunning ? .green : .secondary)
+                BoltIconView(isRunning: controller.isRunning, size: 28)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(controller.isRunning ? "Caffeinate Active" : "Caffeinate Idle")
@@ -149,6 +148,20 @@ struct StatusMenuView: View {
 
     private var settingsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
+            settingsGroup(
+                title: "Menu Bar",
+                status: "Turn this off to show only the icon. The filled tile means caffeinate is running.",
+                statusIsError: false
+            ) {
+                Toggle(
+                    "Show Remaining Time in Menu Bar",
+                    isOn: Binding(
+                        get: { controller.showMenuBarTime },
+                        set: { controller.setShowMenuBarTime($0) }
+                    )
+                )
+            }
+
             settingsGroup(
                 title: "App",
                 status: controller.launchAtLoginStatus,

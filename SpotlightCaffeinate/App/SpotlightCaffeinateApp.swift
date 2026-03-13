@@ -12,15 +12,18 @@ struct SpotlightCaffeinateApp: App {
 
     var body: some Scene {
         let now = controller.currentTime
+        let isRunning = controller.snapshot.isRunning(at: now)
 
         return MenuBarExtra {
             StatusMenuView(controller: controller)
         } label: {
-            HStack(spacing: 4) {
-                MenuBarBoltIconView()
+            HStack(spacing: controller.showMenuBarTime ? 4 : 0) {
+                MenuBarBoltIconView(isRunning: isRunning)
 
-                Text(controller.snapshot.menuBarTitle(at: now))
-                    .monospacedDigit()
+                if controller.showMenuBarTime {
+                    Text(controller.snapshot.menuBarTitle(at: now))
+                        .monospacedDigit()
+                }
             }
             .fixedSize()
             .foregroundStyle(.primary)
