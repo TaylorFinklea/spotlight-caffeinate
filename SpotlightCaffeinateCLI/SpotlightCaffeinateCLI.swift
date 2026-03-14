@@ -115,32 +115,16 @@ struct SpotlightCaffeinateCLI {
     }
 
     private static func renderStatus(_ snapshot: CaffeinateSnapshot, now: Date) -> String {
-        let startedText = snapshot.startedAt.map { timestampFormatter.string(from: $0) } ?? "-"
-        let endingText = snapshot.endsAt.map { timestampFormatter.string(from: $0) } ?? "-"
-        let pidText = snapshot.pid.map(String.init) ?? "-"
-
-        return """
-        State: \(snapshot.isRunning(at: now) ? "running" : "idle")
-        Remaining: \(snapshot.remainingText(at: now))
-        Started: \(startedText)
-        Ending: \(endingText)
-        PID: \(pidText)
-        """
+        CaffeinateStatusFormatter.renderStatus(snapshot, now: now) {
+            timestampFormatter.string(from: $0)
+        }
     }
 
     private static func renderWatch(_ snapshot: CaffeinateSnapshot, now: Date) {
-        let clear = "\u{001B}[2J\u{001B}[H"
-        let title = "Spotlight Caffeinate CLI"
-        let divider = String(repeating: "=", count: title.count)
-
         print(
-            """
-            \(clear)\(title)
-            \(divider)
-            \(renderStatus(snapshot, now: now))
-
-            Press Ctrl-C to stop watching.
-            """,
+            CaffeinateStatusFormatter.renderWatchScreen(snapshot, now: now) {
+                timestampFormatter.string(from: $0)
+            },
             terminator: "\n"
         )
     }

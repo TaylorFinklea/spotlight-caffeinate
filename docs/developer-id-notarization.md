@@ -61,3 +61,4 @@ If you want to verify the commands before using your signing credentials:
 
 - `scripts/package_release.sh` remains the unsigned packaging path used for local/dev builds.
 - `Spotlight Caffeinate` is not sandboxed today, so this Developer ID path is for direct distribution only, not the Mac App Store.
+- Validate notifications and launch-at-login only from a signed app copied into `/Applications`. The maintainer release checklist lives in [release-checklist.md](release-checklist.md).

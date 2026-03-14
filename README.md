@@ -24,6 +24,7 @@ This app adds that missing layer.
 - Spotlight actions to start, stop, and check status
 - A menu bar extra with active and idle states
 - A live countdown while `caffeinate` is running
+- An optional icon-only menu bar mode with a draining progress glyph
 - An optional launch-at-login toggle in the menu bar UI
 - Optional completion notifications with an in-app opt-in toggle
 - An immediate confirmation banner when notifications are enabled
@@ -43,7 +44,7 @@ This app adds that missing layer.
   </tr>
   <tr>
     <td width="50%">
-      <img src="docs/screenshots/spotlight-status.jpeg" alt="Spotlight status snippet showing an active caffeinate run">
+      <img src="docs/screenshots/spotlight-status.png" alt="Spotlight status snippet showing an active caffeinate run">
     </td>
     <td width="50%">
       <img src="docs/screenshots/menu-idle.png" alt="Menu bar app showing the idle state">
@@ -98,6 +99,7 @@ Build a signed and notarized release:
 ```
 
 Full setup notes live in [docs/developer-id-notarization.md](docs/developer-id-notarization.md).
+The signed-build validation checklist lives in [docs/release-checklist.md](docs/release-checklist.md).
 
 ## CLI
 
@@ -145,6 +147,12 @@ Build the CLI target:
 
 ```bash
 xcodebuild -project SpotlightCaffeinate.xcodeproj -scheme SpotlightCaffeinateCLI -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
+```
+
+Run the test target:
+
+```bash
+xcodebuild -project SpotlightCaffeinate.xcodeproj -scheme SpotlightCaffeinate -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO test
 ```
 
 For Spotlight indexing, copy the built app into `/Applications`.

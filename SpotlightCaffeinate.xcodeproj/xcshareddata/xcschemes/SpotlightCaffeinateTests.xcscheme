@@ -15,9 +15,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "72B2B7669E2C4D2162BF66CB"
-               BuildableName = "SpotlightCaffeinate.app"
-               BlueprintName = "SpotlightCaffeinate"
+               BlueprintIdentifier = "4F792EE72D0BA3F079C93E6A"
+               BuildableName = "SpotlightCaffeinateTests.xctest"
+               BlueprintName = "SpotlightCaffeinateTests"
                ReferencedContainer = "container:SpotlightCaffeinate.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,24 +32,13 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "72B2B7669E2C4D2162BF66CB"
-            BuildableName = "SpotlightCaffeinate.app"
-            BlueprintName = "SpotlightCaffeinate"
+            BlueprintIdentifier = "4F792EE72D0BA3F079C93E6A"
+            BuildableName = "SpotlightCaffeinateTests.xctest"
+            BlueprintName = "SpotlightCaffeinateTests"
             ReferencedContainer = "container:SpotlightCaffeinate.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "4F792EE72D0BA3F079C93E6A"
-               BuildableName = "SpotlightCaffeinateTests.xctest"
-               BlueprintName = "SpotlightCaffeinateTests"
-               ReferencedContainer = "container:SpotlightCaffeinate.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>
@@ -64,16 +53,15 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "72B2B7669E2C4D2162BF66CB"
-            BuildableName = "SpotlightCaffeinate.app"
-            BlueprintName = "SpotlightCaffeinate"
+            BlueprintIdentifier = "4F792EE72D0BA3F079C93E6A"
+            BuildableName = "SpotlightCaffeinateTests.xctest"
+            BlueprintName = "SpotlightCaffeinateTests"
             ReferencedContainer = "container:SpotlightCaffeinate.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
       <CommandLineArguments>
       </CommandLineArguments>
    </LaunchAction>
@@ -83,18 +71,17 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "72B2B7669E2C4D2162BF66CB"
-            BuildableName = "SpotlightCaffeinate.app"
-            BlueprintName = "SpotlightCaffeinate"
-            ReferencedContainer = "container:SpotlightCaffeinate.xcodeproj">
-         </BuildableReference>
-      </BuildableProductRunnable>
       <CommandLineArguments>
       </CommandLineArguments>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "4F792EE72D0BA3F079C93E6A"
+            BuildableName = "SpotlightCaffeinateTests.xctest"
+            BlueprintName = "SpotlightCaffeinateTests"
+            ReferencedContainer = "container:SpotlightCaffeinate.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

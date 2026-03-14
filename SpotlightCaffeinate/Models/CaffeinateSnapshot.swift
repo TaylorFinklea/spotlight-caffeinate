@@ -57,13 +57,13 @@ struct CaffeinateSnapshot: Codable, Equatable, Sendable {
             return 1
         }
 
+        guard let totalDuration, totalDuration > 0 else {
+            return 1
+        }
+
         let remaining = endsAt.timeIntervalSince(now)
         guard remaining > 0 else {
             return 0
-        }
-
-        guard let totalDuration, totalDuration > 0 else {
-            return 1
         }
 
         return min(max(remaining / totalDuration, 0), 1)

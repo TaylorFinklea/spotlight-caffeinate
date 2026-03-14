@@ -5,8 +5,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: 6.0
-    MARKETING_VERSION: 0.1.2
-    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: 0.2.0
+    CURRENT_PROJECT_VERSION: 2
 targets:
   SpotlightCaffeinate:
     type: application
@@ -20,6 +20,7 @@ targets:
         PRODUCT_NAME: Spotlight Caffeinate
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: SpotlightCaffeinate/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: ""
       configs:
@@ -29,12 +30,14 @@ targets:
       path: SpotlightCaffeinate/Info.plist
       properties:
         CFBundleDisplayName: Spotlight Caffeinate
-        CFBundleShortVersionString: "0.1.2"
-        CFBundleVersion: "1"
+        CFBundleShortVersionString: "0.2.0"
+        CFBundleVersion: "2"
         LSUIElement: true
         NSSupportsAutomaticGraphicsSwitching: true
     scheme:
       gatherCoverageData: false
+      testTargets:
+        - SpotlightCaffeinateTests
   SpotlightCaffeinateCLI:
     type: tool
     platform: macOS
@@ -42,10 +45,24 @@ targets:
     sources:
       - path: SpotlightCaffeinateCLI
       - path: SpotlightCaffeinate/Models
+      - path: SpotlightCaffeinate/Support
       - path: SpotlightCaffeinate/Services
     settings:
       base:
         PRODUCT_NAME: spotlight-caffeinate-cli
         CODE_SIGNING_ALLOWED: NO
+    scheme:
+      gatherCoverageData: false
+  SpotlightCaffeinateTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: SpotlightCaffeinateTests
+      - path: SpotlightCaffeinate/Models
+      - path: SpotlightCaffeinate/Support
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
     scheme:
       gatherCoverageData: false

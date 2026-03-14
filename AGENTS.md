@@ -76,7 +76,9 @@
    - `xcodebuild -project SpotlightCaffeinate.xcodeproj -scheme SpotlightCaffeinate -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build`
 4. If the CLI changed or `project.yml` changed, verify the CLI builds too:
    - `xcodebuild -project SpotlightCaffeinate.xcodeproj -scheme SpotlightCaffeinateCLI -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build`
-5. Create a small descriptive commit.
+5. Verify tests:
+   - `xcodebuild -project SpotlightCaffeinate.xcodeproj -scheme SpotlightCaffeinate -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO test`
+6. Create a small descriptive commit.
 
 ## Release Workflow
 
@@ -93,6 +95,7 @@ When a source change should ship to users:
    - `Casks/spotlight-caffeinate.rb`
    - set the new `version`
    - set the new `sha256`
+7. Use `docs/release-checklist.md` for the signed `/Applications` validation pass before announcing the release.
 
 ## Distribution Notes
 
