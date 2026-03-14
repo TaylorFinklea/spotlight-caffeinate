@@ -28,6 +28,14 @@ struct CaffeinateSnapshot: Codable, Equatable, Sendable {
         isRunning(at: .now)
     }
 
+    var totalDuration: TimeInterval? {
+        guard let startedAt, let endsAt, endsAt > startedAt else {
+            return nil
+        }
+
+        return endsAt.timeIntervalSince(startedAt)
+    }
+
     func remainingSeconds(at now: Date) -> Int {
         guard let endsAt else {
             return 0
@@ -38,6 +46,31 @@ struct CaffeinateSnapshot: Codable, Equatable, Sendable {
 
     var remainingSeconds: Int {
         remainingSeconds(at: .now)
+    }
+
+    func remainingFraction(at now: Date) -> Double {
+        guard state == .active else {
+            return 0
+        }
+
+        guard let endsAt else {
+            return 1
+        }
+
+        let remaining = endsAt.timeIntervalSince(now)
+        guard remaining > 0 else {
+            return 0
+        }
+
+        guard let totalDuration, totalDuration > 0 else {
+            return 1
+        }
+
+        return min(max(remaining / totalDuration, 0), 1)
+    }
+
+    var remainingFraction: Double {
+        remainingFraction(at: .now)
     }
 
     func remainingText(at now: Date) -> String {

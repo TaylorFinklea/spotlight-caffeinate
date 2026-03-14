@@ -25,10 +25,11 @@ struct StatusMenuView: View {
 
     private var statusHeader: some View {
         let now = controller.currentTime
+        let remainingFraction = CGFloat(controller.snapshot.remainingFraction(at: now))
 
         return VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top, spacing: 12) {
-                BoltIconView(isRunning: controller.isRunning, size: 28)
+                BoltIconView(fillFraction: remainingFraction, size: 28)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(controller.isRunning ? "Caffeinate Active" : "Caffeinate Idle")
@@ -150,7 +151,7 @@ struct StatusMenuView: View {
         VStack(alignment: .leading, spacing: 12) {
             settingsGroup(
                 title: "Menu Bar",
-                status: "Turn this off to show only the icon. The filled tile means caffeinate is running.",
+                status: "Turn this off to show only the icon. The icon drains as the session counts down.",
                 statusIsError: false
             ) {
                 Toggle(

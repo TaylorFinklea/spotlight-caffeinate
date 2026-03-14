@@ -16,99 +16,172 @@ private struct BoltShape: Shape {
     }
 }
 
-private struct MenuBarTemplateBoltIconView: View {
-    let isRunning: Bool
+private struct BoltIconMetrics {
     let size: CGFloat
 
-    private var cornerRadius: CGFloat { size * 0.24 }
-    private var strokeWidth: CGFloat { max(1, size * 0.10) }
-    private var boltInset: CGFloat { size * 0.19 }
+    var cornerRadius: CGFloat { size * 0.24 }
+    var strokeWidth: CGFloat { max(1, size * 0.08) }
+    var innerInset: CGFloat { strokeWidth + max(0.5, size * 0.03) }
+    var boltInset: CGFloat { size * 0.19 }
+}
+
+private struct BoltFillMaskView: View {
+    let metrics: BoltIconMetrics
+    let fillFraction: CGFloat
 
     var body: some View {
-        ZStack {
-            if isRunning {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(.black)
+        let innerSize = max(0, metrics.size - (metrics.innerInset * 2))
 
-                BoltShape()
-                    .padding(boltInset)
-                    .blendMode(.destinationOut)
-            } else {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(.black, lineWidth: strokeWidth)
-
-                BoltShape()
-                    .padding(boltInset)
-                    .foregroundStyle(.black)
-            }
-        }
-        .compositingGroup()
-        .frame(width: size, height: size)
+        Rectangle()
+            .frame(width: innerSize, height: innerSize * fillFraction)
+            .frame(width: innerSize, height: innerSize, alignment: .bottom)
+            .padding(metrics.innerInset)
     }
 }
 
-@MainActor
-private enum MenuBarBoltRenderer {
-    private static var cache: [Bool: NSImage] = [:]
-
-    static func image(isRunning: Bool, size: CGFloat) -> NSImage {
-        if let cached = cache[isRunning] {
-            return cached
-        }
-
-        let renderer = ImageRenderer(
-            content: MenuBarTemplateBoltIconView(isRunning: isRunning, size: size)
-        )
-        renderer.scale = NSScreen.main?.backingScaleFactor ?? 2
-
-        let image = renderer.nsImage ?? NSImage(size: NSSize(width: size, height: size))
-        image.size = NSSize(width: size, height: size)
-        image.isTemplate = true
-        cache[isRunning] = image
-        return image
-    }
+private enum BoltIconStyle {
+    case app
+    case menuBarTemplate
 }
 
-struct BoltIconView: View {
-    let isRunning: Bool
+private struct ProgressBoltIconView: View {
+    let fillFraction: CGFloat
     let size: CGFloat
+    let style: BoltIconStyle
 
-    private var cornerRadius: CGFloat { size * 0.24 }
-    private var strokeWidth: CGFloat { max(1, size * 0.08) }
-    private var boltInset: CGFloat { size * 0.19 }
+    private var clampedFillFraction: CGFloat {
+        min(max(fillFraction, 0), 1)
+    }
+
+    private var metrics: BoltIconMetrics {
+        BoltIconMetrics(size: size)
+    }
+
+    private var tileShape: RoundedRectangle {
+        RoundedRectangle(cornerRadius: metrics.cornerRadius, style: .continuous)
+    }
+
+    private var clippedFillMask: some View {
+        BoltFillMaskView(metrics: metrics, fillFraction: clampedFillFraction)
+            .clipShape(tileShape.inset(by: metrics.innerInset))
+    }
 
     var body: some View {
         ZStack {
-            if isRunning {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(.black)
-
-                BoltShape()
-                    .padding(boltInset)
-                    .foregroundStyle(.white)
-            } else {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(.white)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .stroke(.black, lineWidth: strokeWidth)
-                    }
-
-                BoltShape()
-                    .padding(boltInset)
-                    .foregroundStyle(.black)
+            switch style {
+            case .app:
+                appIcon
+            case .menuBarTemplate:
+                menuBarTemplateIcon
             }
         }
         .frame(width: size, height: size)
         .accessibilityHidden(true)
     }
+
+    private var appIcon: some View {
+        ZStack {
+            tileShape
+                .fill(.white)
+
+            if clampedFillFraction > 0 {
+                clippedFillMask
+                    .foregroundStyle(.black)
+            }
+
+            BoltShape()
+                .padding(metrics.boltInset)
+                .foregroundStyle(.black)
+
+            if clampedFillFraction > 0 {
+                BoltShape()
+                    .padding(metrics.boltInset)
+                    .foregroundStyle(.white)
+                    .mask(clippedFillMask)
+            }
+
+            tileShape
+                .stroke(.black, lineWidth: metrics.strokeWidth)
+        }
+    }
+
+    private var menuBarTemplateIcon: some View {
+        ZStack {
+            if clampedFillFraction > 0 {
+                clippedFillMask
+                    .foregroundStyle(.black)
+            }
+
+            BoltShape()
+                .padding(metrics.boltInset)
+                .foregroundStyle(.black)
+
+            if clampedFillFraction > 0 {
+                BoltShape()
+                    .padding(metrics.boltInset)
+                    .foregroundStyle(.black)
+                    .mask(clippedFillMask)
+                    .blendMode(.destinationOut)
+            }
+
+            tileShape
+                .stroke(.black, lineWidth: metrics.strokeWidth)
+        }
+        .compositingGroup()
+    }
+}
+
+private struct MenuBarBoltCacheKey: Hashable {
+    let pixelRows: Int
+    let step: Int
+}
+
+@MainActor
+private enum MenuBarBoltRenderer {
+    private static var cache: [MenuBarBoltCacheKey: NSImage] = [:]
+
+    static func image(fillFraction: CGFloat, size: CGFloat) -> NSImage {
+        let scale = NSScreen.main?.backingScaleFactor ?? 2
+        let pixelRows = max(1, Int(round(size * scale)))
+        let step = max(0, min(pixelRows, Int((min(max(fillFraction, 0), 1) * CGFloat(pixelRows)).rounded())))
+        let cacheKey = MenuBarBoltCacheKey(pixelRows: pixelRows, step: step)
+
+        if let cached = cache[cacheKey] {
+            return cached
+        }
+
+        let quantizedFillFraction = CGFloat(step) / CGFloat(pixelRows)
+        let renderer = ImageRenderer(
+            content: ProgressBoltIconView(
+                fillFraction: quantizedFillFraction,
+                size: size,
+                style: .menuBarTemplate
+            )
+        )
+        renderer.scale = scale
+
+        let image = renderer.nsImage ?? NSImage(size: NSSize(width: size, height: size))
+        image.size = NSSize(width: size, height: size)
+        image.isTemplate = true
+        cache[cacheKey] = image
+        return image
+    }
+}
+
+struct BoltIconView: View {
+    let fillFraction: CGFloat
+    let size: CGFloat
+
+    var body: some View {
+        ProgressBoltIconView(fillFraction: fillFraction, size: size, style: .app)
+    }
 }
 
 struct MenuBarBoltIconView: View {
-    let isRunning: Bool
+    let fillFraction: CGFloat
 
     var body: some View {
-        Image(nsImage: MenuBarBoltRenderer.image(isRunning: isRunning, size: 15))
+        Image(nsImage: MenuBarBoltRenderer.image(fillFraction: fillFraction, size: 15))
             .interpolation(.high)
             .accessibilityHidden(true)
     }

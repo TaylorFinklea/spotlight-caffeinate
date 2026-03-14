@@ -7,10 +7,11 @@ struct CaffeinateStatusSnippetView: View {
 
     var body: some View {
         let isRunning = snapshot.isRunning(at: now)
+        let remainingFraction = CGFloat(snapshot.remainingFraction(at: now))
 
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                BoltIconView(isRunning: isRunning, size: 18)
+                BoltIconView(fillFraction: remainingFraction, size: 18)
 
                 Text(title)
                     .font(.headline)
