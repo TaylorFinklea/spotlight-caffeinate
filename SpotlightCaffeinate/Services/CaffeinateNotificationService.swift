@@ -15,7 +15,7 @@ enum NotificationPreferenceUpdateResult {
     case failed(String)
 }
 
-actor CaffeinateNotificationService {
+actor CaffeinateNotificationService: CaffeinateNotificationScheduling {
     static let shared = CaffeinateNotificationService()
 
     private static let notificationsEnabledKey = "notifyOnCompletion"
@@ -51,7 +51,7 @@ actor CaffeinateNotificationService {
     func updatePreference(enabled: Bool, currentSnapshot: CaffeinateSnapshot) async -> NotificationPreferenceUpdateResult {
         guard enabled else {
             storePreference(false)
-            cancelPendingCompletionNotification()
+            await cancelPendingCompletionNotification()
             return .disabled
         }
 
@@ -63,7 +63,7 @@ actor CaffeinateNotificationService {
     }
 
     func scheduleCompletionNotificationIfNeeded(for snapshot: CaffeinateSnapshot) async {
-        cancelPendingCompletionNotification()
+        await cancelPendingCompletionNotification()
 
         guard Self.notificationsEnabledPreference(defaults: defaults), snapshot.isRunning else {
             return
@@ -99,7 +99,7 @@ actor CaffeinateNotificationService {
         }
     }
 
-    func cancelPendingCompletionNotification() {
+    func cancelPendingCompletionNotification() async {
         center.removePendingNotificationRequests(withIdentifiers: [notificationIdentifier])
         center.removeDeliveredNotifications(withIdentifiers: [notificationIdentifier])
     }
@@ -147,7 +147,7 @@ actor CaffeinateNotificationService {
             return await finishEnabling(for: snapshot)
         case .denied:
             storePreference(false)
-            cancelPendingCompletionNotification()
+            await cancelPendingCompletionNotification()
             return .denied
         case .notDetermined:
             do {
@@ -160,17 +160,17 @@ actor CaffeinateNotificationService {
                     return await finishEnabling(for: snapshot)
                 case .denied:
                     storePreference(false)
-                    cancelPendingCompletionNotification()
+                    await cancelPendingCompletionNotification()
                     return .denied
                 case .notDetermined:
                     storePreference(false)
-                    cancelPendingCompletionNotification()
+                    await cancelPendingCompletionNotification()
                     return .failed("macOS did not complete notification authorization for Spotlight Caffeinate.")
                 }
             } catch {
                 logger.error("Notification authorization request failed: \(error.localizedDescription, privacy: .public)")
                 storePreference(false)
-                cancelPendingCompletionNotification()
+                await cancelPendingCompletionNotification()
                 return .failed("Spotlight Caffeinate could not request notification authorization.")
             }
         }

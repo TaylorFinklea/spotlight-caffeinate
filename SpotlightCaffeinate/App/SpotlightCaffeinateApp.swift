@@ -14,7 +14,7 @@ struct SpotlightCaffeinateApp: App {
         let now = controller.currentTime
         let remainingFraction = CGFloat(controller.snapshot.remainingFraction(at: now))
 
-        return MenuBarExtra {
+        MenuBarExtra {
             StatusMenuView(controller: controller)
         } label: {
             HStack(spacing: controller.showMenuBarTime ? 4 : 0) {
@@ -29,5 +29,10 @@ struct SpotlightCaffeinateApp: App {
             .foregroundStyle(.primary)
         }
         .menuBarExtraStyle(.window)
+
+        Window("Preset Manager", id: "preset-manager") {
+            PresetManagerView(controller: controller)
+        }
+        .defaultSize(width: 720, height: 430)
     }
 }

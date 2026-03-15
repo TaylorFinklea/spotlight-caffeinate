@@ -3,6 +3,7 @@ import SwiftUI
 
 struct StatusMenuView: View {
     @Bindable var controller: CaffeinateController
+    @Environment(\.openWindow) private var openWindow
     @State private var settingsExpanded = false
 
     private static let timeFormatter: DateFormatter = {
@@ -16,11 +17,17 @@ struct StatusMenuView: View {
         VStack(alignment: .leading, spacing: 18) {
             statusHeader
             presetsSection
+            if controller.isRunning {
+                activeSessionSection
+            }
             customDurationSection
+            if !controller.recentSessions.isEmpty {
+                recentSessionsSection
+            }
             footerSection
         }
         .padding(16)
-        .frame(width: 340)
+        .frame(width: 360)
     }
 
     private var statusHeader: some View {
@@ -68,16 +75,52 @@ struct StatusMenuView: View {
 
     private var presetsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Quick Start")
+            HStack {
+                Text("Quick Start")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Spacer()
+
+                Button("Manage") {
+                    openPresetManager()
+                }
+                .buttonStyle(.link)
+                .font(.caption)
+            }
+
+            if controller.pinnedPresets.isEmpty {
+                Text("No pinned presets yet. Use Preset Manager to create or pin them.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                HStack(spacing: 8) {
+                    ForEach(Array(controller.pinnedPresets.prefix(4))) { preset in
+                        presetButton(preset)
+                    }
+                }
+            }
+        }
+    }
+
+    private var activeSessionSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Active Session")
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 8) {
-                presetButton(5)
-                presetButton(15)
-                presetButton(30)
-                presetButton(60)
+                extendButton(5)
+                extendButton(15)
+                extendButton(30)
             }
+
+            Button("Restart Last") {
+                controller.restartLast()
+            }
+            .buttonStyle(.bordered)
+            .disabled(controller.recentSessions.isEmpty)
         }
     }
 
@@ -91,10 +134,42 @@ struct StatusMenuView: View {
                 Text("\(controller.suggestedMinutes) minutes")
             }
 
+            Picker("Power Mode", selection: $controller.suggestedPowerMode) {
+                ForEach(PowerMode.allCases) { mode in
+                    Text(mode.title).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+
             Button(controller.isRunning ? "Restart for \(controller.suggestedMinutes) Minutes" : "Start for \(controller.suggestedMinutes) Minutes") {
                 controller.start()
             }
             .buttonStyle(.borderedProminent)
+        }
+    }
+
+    private var recentSessionsSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Recent Sessions")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            ForEach(controller.recentSessions) { entry in
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(entry.displayName)
+                        Text("\(entry.minutesRequested)m • \(entry.powerMode.title) • \(entry.source.title)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    Text("\(entry.endedAt, formatter: Self.timeFormatter)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
     }
 
@@ -107,6 +182,10 @@ struct StatusMenuView: View {
             }
 
             HStack {
+                Button("Presets") {
+                    openPresetManager()
+                }
+
                 settingsDisclosure
 
                 Button("Refresh") {
@@ -168,13 +247,20 @@ struct StatusMenuView: View {
                 status: controller.launchAtLoginStatus,
                 statusIsError: controller.launchAtLoginStatusIsError
             ) {
-                Toggle(
-                    "Open Spotlight Caffeinate at Login",
-                    isOn: Binding(
-                        get: { controller.launchAtLoginEnabled },
-                        set: { controller.setLaunchAtLoginEnabled($0) }
+                VStack(alignment: .leading, spacing: 8) {
+                    Toggle(
+                        "Open Spotlight Caffeinate at Login",
+                        isOn: Binding(
+                            get: { controller.launchAtLoginEnabled },
+                            set: { controller.setLaunchAtLoginEnabled($0) }
+                        )
                     )
-                )
+
+                    Button("Open Preset Manager") {
+                        openPresetManager()
+                    }
+                    .buttonStyle(.link)
+                }
             }
 
             settingsGroup(
@@ -231,11 +317,23 @@ struct StatusMenuView: View {
         }
     }
 
-    private func presetButton(_ minutes: Int) -> some View {
-        Button("\(minutes)m") {
-            controller.start(minutes: minutes)
+    private func presetButton(_ preset: CaffeinatePreset) -> some View {
+        Button(preset.name) {
+            controller.startPreset(preset)
         }
         .buttonStyle(.bordered)
         .frame(maxWidth: .infinity)
+    }
+
+    private func extendButton(_ minutes: Int) -> some View {
+        Button("+\(minutes)m") {
+            controller.extend(minutes: minutes)
+        }
+        .buttonStyle(.bordered)
+        .frame(maxWidth: .infinity)
+    }
+
+    private func openPresetManager() {
+        openWindow(id: "preset-manager")
     }
 }

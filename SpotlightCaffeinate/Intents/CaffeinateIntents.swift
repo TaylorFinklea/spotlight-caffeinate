@@ -1,6 +1,63 @@
 import AppIntents
 import SwiftUI
 
+struct CaffeinatePresetEntity: AppEntity, Identifiable, Sendable {
+    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Caffeinate Preset")
+    static let defaultQuery = CaffeinatePresetQuery()
+
+    let id: String
+    let name: String
+    let minutes: Int
+    let powerMode: PowerMode
+
+    var displayRepresentation: DisplayRepresentation {
+        DisplayRepresentation(
+            title: "\(name)",
+            subtitle: "\(minutes)m • \(powerMode.title)"
+        )
+    }
+
+    fileprivate var uuid: UUID? {
+        UUID(uuidString: id)
+    }
+
+    init(_ preset: CaffeinatePreset) {
+        id = preset.id.uuidString
+        name = preset.name
+        minutes = preset.minutes
+        powerMode = preset.powerMode
+    }
+}
+
+struct CaffeinatePresetQuery: EntityStringQuery {
+    func entities(for identifiers: [String]) async throws -> [CaffeinatePresetEntity] {
+        let presets = try await CaffeinateService.shared.presets()
+        let lookup = Set(identifiers)
+        return presets
+            .filter { lookup.contains($0.id.uuidString) }
+            .map(CaffeinatePresetEntity.init)
+    }
+
+    func suggestedEntities() async throws -> [CaffeinatePresetEntity] {
+        try await CaffeinateService.shared.presets().map(CaffeinatePresetEntity.init)
+    }
+
+    func entities(matching string: String) async throws -> [CaffeinatePresetEntity] {
+        let search = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        let presets = try await CaffeinateService.shared.presets()
+
+        guard !search.isEmpty else {
+            return presets.map(CaffeinatePresetEntity.init)
+        }
+
+        return presets
+            .filter { preset in
+                preset.name.localizedCaseInsensitiveContains(search)
+            }
+            .map(CaffeinatePresetEntity.init)
+    }
+}
+
 struct StartCaffeinateIntent: AppIntent {
     static let title: LocalizedStringResource = "Start Caffeinate"
     static let description = IntentDescription("Start caffeinate for a custom number of minutes.")
@@ -18,18 +75,45 @@ struct StartCaffeinateIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView {
-        let snapshot = try await CaffeinateService.shared.start(minutes: minutes)
-        let endingText = snapshot.endsAt?.formatted(date: .omitted, time: .shortened)
+        let snapshot = try await CaffeinateService.shared.start(minutes: minutes, source: .spotlight)
+        let now = Date()
         return .result(
-            dialog: IntentDialog(
-                endingText.map {
-                    "Caffeinate started for \(snapshot.minutesRequested ?? minutes) minutes and ends at \($0)."
-                } ?? "Caffeinate started for \(snapshot.minutesRequested ?? minutes) minutes."
-            ),
+            dialog: IntentDialog(stringLiteral: CaffeinateIntentMessageFormatter.startDialog(for: snapshot, fallbackMinutes: minutes)),
             view: CaffeinateStatusSnippetView(
                 snapshot: snapshot,
                 title: "Caffeinate Active",
-                now: .now
+                now: now
+            )
+        )
+    }
+}
+
+struct StartPresetIntent: AppIntent {
+    static let title: LocalizedStringResource = "Start Preset"
+    static let description = IntentDescription("Start caffeinate using one of your saved presets.")
+    static let supportedModes: IntentModes = .background
+
+    @Parameter(title: "Preset")
+    var preset: CaffeinatePresetEntity
+
+    static var parameterSummary: some ParameterSummary {
+        Summary("Start \(\.$preset)")
+    }
+
+    func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView {
+        guard let presetID = preset.uuid else {
+            throw CaffeinateServiceError.presetNotFound(preset.name)
+        }
+
+        let snapshot = try await CaffeinateService.shared.startPreset(id: presetID, source: .spotlight)
+        let now = Date()
+
+        return .result(
+            dialog: IntentDialog(stringLiteral: CaffeinateIntentMessageFormatter.startDialog(for: snapshot, fallbackMinutes: preset.minutes)),
+            view: CaffeinateStatusSnippetView(
+                snapshot: snapshot,
+                title: "Caffeinate Active",
+                now: now
             )
         )
     }
@@ -76,11 +160,8 @@ struct CheckCaffeinateStatusIntent: AppIntent {
         let now = Date()
 
         if snapshot.isRunning {
-            let endingText = snapshot.endsAt?.formatted(date: .omitted, time: .shortened)
             return .result(
-                dialog: endingText.map {
-                    "Caffeinate is running with \(snapshot.remainingText(at: now)) remaining and ends at \($0)."
-                } ?? "Caffeinate is running with \(snapshot.remainingText(at: now)) remaining.",
+                dialog: IntentDialog(stringLiteral: CaffeinateIntentMessageFormatter.statusDialog(for: snapshot, now: now)),
                 view: CaffeinateStatusSnippetView(
                     snapshot: snapshot,
                     title: "Caffeinate Active",
@@ -100,6 +181,69 @@ struct CheckCaffeinateStatusIntent: AppIntent {
     }
 }
 
+struct ExtendCaffeinateIntent: AppIntent {
+    static let title: LocalizedStringResource = "Extend Caffeinate"
+    static let description = IntentDescription("Extend the active caffeinate run by a number of minutes.")
+    static let supportedModes: IntentModes = .background
+
+    @Parameter(
+        title: "Minutes",
+        default: 15,
+        requestValueDialog: IntentDialog("How many minutes should be added to the current caffeinate run?")
+    )
+    var minutes: Int
+
+    static var parameterSummary: some ParameterSummary {
+        Summary("Extend caffeinate by \(\.$minutes) minutes")
+    }
+
+    func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView {
+        let snapshot = try await CaffeinateService.shared.extend(minutes: minutes, source: .spotlight)
+        let now = Date()
+
+        return .result(
+            dialog: IntentDialog(stringLiteral: CaffeinateIntentMessageFormatter.extendDialog(for: snapshot, addedMinutes: minutes, now: now)),
+            view: CaffeinateStatusSnippetView(
+                snapshot: snapshot,
+                title: "Caffeinate Active",
+                now: now
+            )
+        )
+    }
+}
+
+struct RestartLastSessionIntent: AppIntent {
+    static let title: LocalizedStringResource = "Restart Last Session"
+    static let description = IntentDescription("Restart the most recent completed caffeinate session.")
+    static let supportedModes: IntentModes = .background
+
+    func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView {
+        do {
+            let snapshot = try await CaffeinateService.shared.restartLast(source: .spotlight)
+            let now = Date()
+
+            return .result(
+                dialog: IntentDialog("Last session restarted. \(CaffeinateIntentMessageFormatter.statusDialog(for: snapshot, now: now))"),
+                view: CaffeinateStatusSnippetView(
+                    snapshot: snapshot,
+                    title: "Caffeinate Active",
+                    now: now
+                )
+            )
+        } catch CaffeinateServiceError.noRecentSession {
+            let now = Date()
+            return .result(
+                dialog: IntentDialog(stringLiteral: CaffeinateIntentMessageFormatter.restartUnavailableDialog()),
+                view: CaffeinateStatusSnippetView(
+                    snapshot: .inactive,
+                    title: "Caffeinate Idle",
+                    now: now
+                )
+            )
+        }
+    }
+}
+
 struct SpotlightCaffeinateShortcuts: AppShortcutsProvider {
     static let shortcutTileColor: ShortcutTileColor = .orange
 
@@ -112,6 +256,15 @@ struct SpotlightCaffeinateShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "Start",
             systemImageName: "play.circle"
+        )
+        AppShortcut(
+            intent: StartPresetIntent(),
+            phrases: [
+                "Start preset with \(.applicationName)",
+                "Run a caffeinate preset with \(.applicationName)"
+            ],
+            shortTitle: "Preset",
+            systemImageName: "bookmark.circle"
         )
         AppShortcut(
             intent: StopCaffeinateIntent(),
@@ -130,6 +283,24 @@ struct SpotlightCaffeinateShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "Status",
             systemImageName: "waveform.path.ecg"
+        )
+        AppShortcut(
+            intent: ExtendCaffeinateIntent(),
+            phrases: [
+                "Extend \(.applicationName)",
+                "Add time to \(.applicationName)"
+            ],
+            shortTitle: "Extend",
+            systemImageName: "plus.circle"
+        )
+        AppShortcut(
+            intent: RestartLastSessionIntent(),
+            phrases: [
+                "Restart last session with \(.applicationName)",
+                "Restart last \(.applicationName) run"
+            ],
+            shortTitle: "Restart",
+            systemImageName: "arrow.clockwise.circle"
         )
     }
 }

@@ -11,7 +11,11 @@ struct CaffeinateSnapshotTests {
             pid: 42,
             startedAt: startedAt,
             endsAt: endsAt,
-            minutesRequested: 30
+            minutesRequested: 30,
+            powerMode: .full,
+            presetID: nil,
+            presetName: nil,
+            source: .app
         )
 
         #expect(snapshot.totalDuration == 1_800)
@@ -24,7 +28,11 @@ struct CaffeinateSnapshotTests {
             pid: 42,
             startedAt: testCase.startedAt,
             endsAt: testCase.endsAt,
-            minutesRequested: 30
+            minutesRequested: 30,
+            powerMode: .full,
+            presetID: nil,
+            presetName: nil,
+            source: .app
         )
 
         #expect(snapshot.remainingFraction(at: testCase.now) == testCase.expectedFraction)
@@ -39,7 +47,11 @@ struct CaffeinateSnapshotTests {
             pid: 42,
             startedAt: startedAt,
             endsAt: endsAt,
-            minutesRequested: 2
+            minutesRequested: 2,
+            powerMode: .full,
+            presetID: nil,
+            presetName: nil,
+            source: .app
         )
 
         #expect(snapshot.remainingText(at: Date(timeIntervalSinceReferenceDate: 0)) == "2m 5s")

@@ -6,8 +6,11 @@ import Observation
 @Observable
 final class CaffeinateController {
     var snapshot: CaffeinateSnapshot = .inactive
+    var presets: [CaffeinatePreset] = []
+    var recentSessions: [RecentSessionEntry] = []
     var currentTime = Date()
     var suggestedMinutes = 5
+    var suggestedPowerMode: PowerMode = .full
     var showMenuBarTime: Bool
     var launchAtLoginEnabled: Bool
     var launchAtLoginStatus: String?
@@ -60,6 +63,7 @@ final class CaffeinateController {
         notificationStatusIsError = false
 
         Task { [weak self] in
+            await self?.refresh()
             await self?.syncNotificationSettings()
             await self?.syncLaunchAtLoginSettings()
         }
@@ -85,18 +89,40 @@ final class CaffeinateController {
         snapshot.isRunning(at: currentTime)
     }
 
-    func start() {
-        start(minutes: suggestedMinutes)
+    var pinnedPresets: [CaffeinatePreset] {
+        presets.filter(\.isPinned)
     }
 
-    func start(minutes: Int) {
+    func start() {
+        start(minutes: suggestedMinutes, powerMode: suggestedPowerMode)
+    }
+
+    func start(minutes: Int, powerMode: PowerMode = .full) {
         Task {
             do {
-                snapshot = try await service.start(minutes: minutes)
+                snapshot = try await service.start(minutes: minutes, powerMode: powerMode, source: .app)
                 currentTime = .now
                 suggestedMinutes = minutes
+                suggestedPowerMode = powerMode
+                recentSessions = try await service.recentSessions(limit: 5)
                 await syncNotificationSettings()
                 lastError = nil
+            } catch {
+                lastError = error.localizedDescription
+            }
+        }
+    }
+
+    func startPreset(_ preset: CaffeinatePreset) {
+        Task {
+            do {
+                snapshot = try await service.startPreset(id: preset.id, source: .app)
+                currentTime = .now
+                suggestedMinutes = preset.minutes
+                suggestedPowerMode = preset.powerMode
+                recentSessions = try await service.recentSessions(limit: 5)
+                lastError = nil
+                await syncNotificationSettings()
             } catch {
                 lastError = error.localizedDescription
             }
@@ -108,11 +134,81 @@ final class CaffeinateController {
             do {
                 snapshot = try await service.stop()
                 currentTime = .now
+                recentSessions = try await service.recentSessions(limit: 5)
                 await syncNotificationSettings()
                 lastError = nil
             } catch {
                 lastError = error.localizedDescription
             }
+        }
+    }
+
+    func extend(minutes: Int) {
+        Task {
+            do {
+                snapshot = try await service.extend(minutes: minutes, source: .app)
+                currentTime = .now
+                recentSessions = try await service.recentSessions(limit: 5)
+                lastError = nil
+                await syncNotificationSettings()
+            } catch {
+                lastError = error.localizedDescription
+            }
+        }
+    }
+
+    func restartLast() {
+        Task {
+            do {
+                snapshot = try await service.restartLast(source: .app)
+                currentTime = .now
+                recentSessions = try await service.recentSessions(limit: 5)
+                lastError = nil
+                await syncNotificationSettings()
+            } catch {
+                lastError = error.localizedDescription
+            }
+        }
+    }
+
+    func savePreset(
+        id: UUID?,
+        name: String,
+        minutes: Int,
+        powerMode: PowerMode,
+        isPinned: Bool
+    ) async -> UUID? {
+        do {
+            presets = try await savePresetList(
+                id: id,
+                name: name,
+                minutes: minutes,
+                powerMode: powerMode,
+                isPinned: isPinned
+            )
+            lastError = nil
+            return id ?? presets.last?.id
+        } catch {
+            lastError = error.localizedDescription
+            return nil
+        }
+    }
+
+    func deletePreset(id: UUID) async {
+        do {
+            presets = try await service.deletePreset(id: id)
+            lastError = nil
+        } catch {
+            lastError = error.localizedDescription
+        }
+    }
+
+    func movePreset(id: UUID, direction: PresetMoveDirection) async {
+        do {
+            presets = try await service.movePreset(id: id, direction: direction)
+            lastError = nil
+        } catch {
+            lastError = error.localizedDescription
         }
     }
 
@@ -162,6 +258,8 @@ final class CaffeinateController {
     func refresh() async {
         do {
             snapshot = try await service.status()
+            presets = try await service.presets()
+            recentSessions = try await service.recentSessions(limit: 5)
             currentTime = .now
             await syncNotificationSettings()
             await syncLaunchAtLoginSettings()
@@ -265,6 +363,31 @@ final class CaffeinateController {
         launchAtLoginEnabled = settings.isEnabled
         launchAtLoginStatus = settings.statusMessage
         launchAtLoginStatusIsError = settings.statusIsError
+    }
+
+    private func savePresetList(
+        id: UUID?,
+        name: String,
+        minutes: Int,
+        powerMode: PowerMode,
+        isPinned: Bool
+    ) async throws -> [CaffeinatePreset] {
+        if let id {
+            return try await service.updatePreset(
+                id: id,
+                name: name,
+                minutes: minutes,
+                powerMode: powerMode,
+                isPinned: isPinned
+            )
+        }
+
+        return try await service.createPreset(
+            name: name,
+            minutes: minutes,
+            powerMode: powerMode,
+            isPinned: isPinned
+        )
     }
 
     private nonisolated static func showMenuBarTimePreference(defaults: UserDefaults) -> Bool {

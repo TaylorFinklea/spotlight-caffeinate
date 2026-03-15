@@ -9,7 +9,11 @@ struct CaffeinateStatusFormatterTests {
             pid: 777,
             startedAt: Date(timeIntervalSinceReferenceDate: 0),
             endsAt: Date(timeIntervalSinceReferenceDate: 1_800),
-            minutesRequested: 30
+            minutesRequested: 30,
+            powerMode: .system,
+            presetID: UUID(uuidString: "00000000-0000-0000-0000-000000000777"),
+            presetName: "Deep Work",
+            source: .cli
         )
 
         let rendered = CaffeinateStatusFormatter.renderStatus(
@@ -26,6 +30,9 @@ struct CaffeinateStatusFormatterTests {
                 Remaining: 15m
                 Started: T+0
                 Ending: T+1800
+                Mode: system
+                Preset: Deep Work
+                Source: cli
                 PID: 777
                 """
         )
@@ -47,6 +54,9 @@ struct CaffeinateStatusFormatterTests {
                 Remaining: 0s
                 Started: -
                 Ending: -
+                Mode: -
+                Preset: -
+                Source: -
                 PID: -
                 """
         )
@@ -59,7 +69,11 @@ struct CaffeinateStatusFormatterTests {
             pid: 777,
             startedAt: Date(timeIntervalSinceReferenceDate: 0),
             endsAt: Date(timeIntervalSinceReferenceDate: 1_800),
-            minutesRequested: 30
+            minutesRequested: 30,
+            powerMode: .full,
+            presetID: nil,
+            presetName: nil,
+            source: .app
         )
 
         let rendered = CaffeinateStatusFormatter.renderWatchScreen(
@@ -72,6 +86,7 @@ struct CaffeinateStatusFormatterTests {
         #expect(rendered.contains("Spotlight Caffeinate CLI"))
         #expect(rendered.contains("State: running"))
         #expect(rendered.contains("Ending: T+1800"))
+        #expect(rendered.contains("Mode: full"))
         #expect(rendered.contains("Press Ctrl-C to stop watching."))
         #expect(!rendered.contains("\u{001B}[2J"))
     }

@@ -22,6 +22,12 @@ struct CaffeinateStatusSnippetView: View {
                 .foregroundStyle(.secondary)
 
             if isRunning {
+                if let presetName = snapshot.presetName {
+                    detailRow(label: "Preset", value: presetName)
+                }
+
+                detailRow(label: "Mode", value: snapshot.effectivePowerMode.title)
+
                 if let startedAt = snapshot.startedAt {
                     detailRow(label: "Started", value: timeFormatter.string(from: startedAt))
                 }
@@ -32,6 +38,10 @@ struct CaffeinateStatusSnippetView: View {
 
                 if let minutesRequested = snapshot.minutesRequested {
                     detailRow(label: "Duration", value: "\(minutesRequested) minute\(minutesRequested == 1 ? "" : "s")")
+                }
+
+                if let source = snapshot.source {
+                    detailRow(label: "Source", value: source.title)
                 }
             }
         }

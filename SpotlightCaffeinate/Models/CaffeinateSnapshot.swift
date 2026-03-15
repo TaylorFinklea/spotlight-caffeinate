@@ -11,14 +11,38 @@ struct CaffeinateSnapshot: Codable, Equatable, Sendable {
     var startedAt: Date?
     var endsAt: Date?
     var minutesRequested: Int?
+    var powerMode: PowerMode?
+    var presetID: UUID?
+    var presetName: String?
+    var source: CaffeinateSessionSource?
 
     static let inactive = CaffeinateSnapshot(
         state: .inactive,
         pid: nil,
         startedAt: nil,
         endsAt: nil,
-        minutesRequested: nil
+        minutesRequested: nil,
+        powerMode: nil,
+        presetID: nil,
+        presetName: nil,
+        source: nil
     )
+
+    var effectivePowerMode: PowerMode {
+        powerMode ?? .full
+    }
+
+    var displayName: String {
+        if let presetName, !presetName.isEmpty {
+            return presetName
+        }
+
+        if let minutesRequested {
+            return "\(minutesRequested)m Session"
+        }
+
+        return "Caffeinate"
+    }
 
     func isRunning(at now: Date) -> Bool {
         state == .active && remainingSeconds(at: now) > 0
@@ -113,7 +137,15 @@ struct CaffeinateSnapshot: Codable, Equatable, Sendable {
 
     func spokenStatus(at now: Date) -> String {
         if isRunning(at: now) {
-            return "Caffeinate is running with \(remainingText(at: now)) remaining."
+            var parts = ["Caffeinate is running with \(remainingText(at: now)) remaining"]
+
+            if let presetName {
+                parts.append("for \(presetName)")
+            }
+
+            parts.append("in \(effectivePowerMode.intentDescription) mode")
+
+            return parts.joined(separator: " ") + "."
         }
 
         return "Caffeinate is not running."

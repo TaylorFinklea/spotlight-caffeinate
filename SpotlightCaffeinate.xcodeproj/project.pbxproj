@@ -7,51 +7,96 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		05C0967F097C762DD337ACC0 /* CaffeinatePreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0D92D3C68734EE4D3847DF /* CaffeinatePreset.swift */; };
+		0A9A4EC0E034BAB80008C62E /* CaffeinateIntentMessageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D361674B647B0C8C35994A18 /* CaffeinateIntentMessageFormatter.swift */; };
+		0C446E9ECDE69B11DB8AB46A /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44B3064CCC9C71AB532C285C /* LaunchAtLoginService.swift */; };
 		116E578725C1681BF4F2007F /* CaffeinateStatusFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5B0BCBCDC5CF187E9CF774 /* CaffeinateStatusFormatter.swift */; };
+		14707AEE2E967252A258D46E /* CaffeinateIntentMessageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D361674B647B0C8C35994A18 /* CaffeinateIntentMessageFormatter.swift */; };
+		17570309A31A2C1FE6EFD61A /* CaffeinateProcessController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0EEEBCF64C1E45B00212D42 /* CaffeinateProcessController.swift */; };
+		1EC3F09D168A7DDEAE48920D /* CaffeinatePreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0D92D3C68734EE4D3847DF /* CaffeinatePreset.swift */; };
+		24F2273315EFB4DB180C4D94 /* RecentSessionEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6AD915BE0F27B859E742AD4 /* RecentSessionEntry.swift */; };
 		304C747FF34E9391A3909795 /* CaffeinateSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5140115420CD7C5CA54132A2 /* CaffeinateSnapshot.swift */; };
+		32F74BB34D7D216D81E1CDE7 /* RecentSessionEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6AD915BE0F27B859E742AD4 /* RecentSessionEntry.swift */; };
 		331D4DA53D745387B06AEB49 /* CaffeinateNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934B068A4F0818E26BB81619 /* CaffeinateNotificationService.swift */; };
 		34E7C8E475F605514AC23446 /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44B3064CCC9C71AB532C285C /* LaunchAtLoginService.swift */; };
 		3B9972A249CAB40C40D5241C /* CaffeinateStatusFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5B0BCBCDC5CF187E9CF774 /* CaffeinateStatusFormatter.swift */; };
+		4C6A015EBF4B6DA1AEBA6B12 /* CaffeinateProcessController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0EEEBCF64C1E45B00212D42 /* CaffeinateProcessController.swift */; };
+		4EB5E932A26CD15A29B71E16 /* CaffeinateSessionSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3281D8A1F055106E3354D4C7 /* CaffeinateSessionSource.swift */; };
 		5893992BA959E1FF4B5BC059 /* SpotlightCaffeinateCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BADBC26D038A002B754F0B5 /* SpotlightCaffeinateCLI.swift */; };
 		5C86BC47FC80D921F7816F9E /* CaffeinateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC3857F8AD00A17FF0BAAC9B /* CaffeinateService.swift */; };
+		5EE89421C8C496BE734F1227 /* SpotlightCaffeinateCLICommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 124A35F82C89F349E1A8E6B1 /* SpotlightCaffeinateCLICommand.swift */; };
+		6260AC0061EFD90A5A0F0BE3 /* PresetManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC6A8D184C1C4D1F3184ACE5 /* PresetManagerView.swift */; };
+		690929CD936834629E60AD75 /* PowerMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41D44EBDA55529752BC2755 /* PowerMode.swift */; };
 		6E53D02E71C208FADD6D375A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3D6A7C14BF00564D09FBD99 /* Assets.xcassets */; };
 		6F439079E0A0CCEA81AFC6B0 /* StatusMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E2430731258FFD7AF398CC7 /* StatusMenuView.swift */; };
 		751A01C223D9DD4BFB7042FE /* CaffeinateSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C635F912327D623B2ADE48FD /* CaffeinateSnapshotTests.swift */; };
+		783AF268E497093756CBE7E1 /* RecentSessionEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6AD915BE0F27B859E742AD4 /* RecentSessionEntry.swift */; };
 		791E5F9CA4A5EAADC39A903D /* BoltIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 087A7E8706BE5A4951BE384A /* BoltIconView.swift */; };
+		7A692C8180A36781EA1BC0E1 /* CaffeinateCLIJSONFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF15351B2CA39139F508D1E9 /* CaffeinateCLIJSONFormatter.swift */; };
+		8C435407344ED66222D1A03F /* PowerMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41D44EBDA55529752BC2755 /* PowerMode.swift */; };
 		92B3FB872383CED4FD154334 /* CaffeinateStatusFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5B0BCBCDC5CF187E9CF774 /* CaffeinateStatusFormatter.swift */; };
 		999AA9ABEEAC6D0E431D4D29 /* NotificationCenterDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA156B79414F9C48608179E /* NotificationCenterDelegate.swift */; };
+		9D8679585ED4AC2C3F72CA31 /* SpotlightCaffeinateCLICommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 124A35F82C89F349E1A8E6B1 /* SpotlightCaffeinateCLICommand.swift */; };
+		9E5A456EC9E00561B8B433C1 /* CaffeinateSessionSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3281D8A1F055106E3354D4C7 /* CaffeinateSessionSource.swift */; };
+		A0610CF00EEEB8D7CC485D09 /* CaffeinateIntentMessageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D361674B647B0C8C35994A18 /* CaffeinateIntentMessageFormatter.swift */; };
+		A6DCB1C2AAE754BFDCC2C2EA /* CaffeinatePreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0D92D3C68734EE4D3847DF /* CaffeinatePreset.swift */; };
 		A966E115A917CA7E04608EAC /* CaffeinateStatusFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96164FBDAACFA011FBA6958E /* CaffeinateStatusFormatterTests.swift */; };
 		B4046FBA7CFA77BD71A80518 /* CaffeinateNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934B068A4F0818E26BB81619 /* CaffeinateNotificationService.swift */; };
 		B82BB33FEF6AACB10D296ACB /* CaffeinateIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12B4E366227AFA92A38B89DB /* CaffeinateIntents.swift */; };
+		C568D63893A07D34395D605B /* CaffeinateSessionSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3281D8A1F055106E3354D4C7 /* CaffeinateSessionSource.swift */; };
 		C8105E2A253EAE53E6FEFCAE /* CaffeinateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC3857F8AD00A17FF0BAAC9B /* CaffeinateService.swift */; };
 		C849AA7B81D2138ACECE87E8 /* CaffeinateController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36E7F2962E86312CA442468E /* CaffeinateController.swift */; };
 		D4C4ED5313D501D27A5D8F99 /* CaffeinateStatusSnippetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56A580FFCED111065519575C /* CaffeinateStatusSnippetView.swift */; };
+		D9D1574C10BC328D7A4D658E /* CaffeinateCLIJSONFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92951193FA16D0A46FF8CF15 /* CaffeinateCLIJSONFormatterTests.swift */; };
 		DABF2C657164A8F4609DA2C5 /* CaffeinateSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5140115420CD7C5CA54132A2 /* CaffeinateSnapshot.swift */; };
+		DD65E6A0CBBD4CCCDC70E8FA /* CaffeinateProcessController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0EEEBCF64C1E45B00212D42 /* CaffeinateProcessController.swift */; };
+		DF066F818EE4B9384202CC95 /* CaffeinateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC3857F8AD00A17FF0BAAC9B /* CaffeinateService.swift */; };
+		E18A9E1DDB29A41C351674B2 /* CaffeinateNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934B068A4F0818E26BB81619 /* CaffeinateNotificationService.swift */; };
 		E1D01DC49F01DC3BBC9028E6 /* SpotlightCaffeinateApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023F546C09192BEB6AF4065B /* SpotlightCaffeinateApp.swift */; };
 		E4AEC4518C65DFCEB5C1CB6C /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44B3064CCC9C71AB532C285C /* LaunchAtLoginService.swift */; };
+		EC0C41AAD981924B87F892D0 /* CaffeinateServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 205DB6963ADE1B964CDF99FE /* CaffeinateServiceTests.swift */; };
+		EDC210277B56F06EA1EBEC30 /* SpotlightCaffeinateCLICommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76E675238CEA486E99B64548 /* SpotlightCaffeinateCLICommandTests.swift */; };
+		F0195EF52D793A67D5CB2DC0 /* CaffeinateIntentMessageFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57112614347A7B9E56E9CB52 /* CaffeinateIntentMessageFormatterTests.swift */; };
 		F04967BFFA7F4A4350D75D42 /* CaffeinateSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5140115420CD7C5CA54132A2 /* CaffeinateSnapshot.swift */; };
+		F37111F7B15E938F86F3CFBA /* CaffeinateCLIJSONFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF15351B2CA39139F508D1E9 /* CaffeinateCLIJSONFormatter.swift */; };
+		F77E69378F017DFCBEFE35C4 /* CaffeinateCLIJSONFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF15351B2CA39139F508D1E9 /* CaffeinateCLIJSONFormatter.swift */; };
+		FC0DA325C245099925389365 /* PowerMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41D44EBDA55529752BC2755 /* PowerMode.swift */; };
+		FCCD9583F469DD96125046B8 /* SpotlightCaffeinateCLICommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 124A35F82C89F349E1A8E6B1 /* SpotlightCaffeinateCLICommand.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		023F546C09192BEB6AF4065B /* SpotlightCaffeinateApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightCaffeinateApp.swift; sourceTree = "<group>"; };
 		087A7E8706BE5A4951BE384A /* BoltIconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoltIconView.swift; sourceTree = "<group>"; };
+		124A35F82C89F349E1A8E6B1 /* SpotlightCaffeinateCLICommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightCaffeinateCLICommand.swift; sourceTree = "<group>"; };
 		12B4E366227AFA92A38B89DB /* CaffeinateIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateIntents.swift; sourceTree = "<group>"; };
+		205DB6963ADE1B964CDF99FE /* CaffeinateServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateServiceTests.swift; sourceTree = "<group>"; };
 		2E2430731258FFD7AF398CC7 /* StatusMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMenuView.swift; sourceTree = "<group>"; };
 		2EFFC075C927ADD116D7A801 /* SpotlightCaffeinateTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpotlightCaffeinateTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3281D8A1F055106E3354D4C7 /* CaffeinateSessionSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateSessionSource.swift; sourceTree = "<group>"; };
 		36E7F2962E86312CA442468E /* CaffeinateController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateController.swift; sourceTree = "<group>"; };
 		3B5B0BCBCDC5CF187E9CF774 /* CaffeinateStatusFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateStatusFormatter.swift; sourceTree = "<group>"; };
 		3E86A2FF81B718DE23ED2D7D /* SpotlightCaffeinate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpotlightCaffeinate.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		44B3064CCC9C71AB532C285C /* LaunchAtLoginService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginService.swift; sourceTree = "<group>"; };
 		5140115420CD7C5CA54132A2 /* CaffeinateSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateSnapshot.swift; sourceTree = "<group>"; };
 		56A580FFCED111065519575C /* CaffeinateStatusSnippetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateStatusSnippetView.swift; sourceTree = "<group>"; };
+		57112614347A7B9E56E9CB52 /* CaffeinateIntentMessageFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateIntentMessageFormatterTests.swift; sourceTree = "<group>"; };
 		703E5325FF1425977F518A1B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		76E675238CEA486E99B64548 /* SpotlightCaffeinateCLICommandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightCaffeinateCLICommandTests.swift; sourceTree = "<group>"; };
 		7BADBC26D038A002B754F0B5 /* SpotlightCaffeinateCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightCaffeinateCLI.swift; sourceTree = "<group>"; };
+		92951193FA16D0A46FF8CF15 /* CaffeinateCLIJSONFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateCLIJSONFormatterTests.swift; sourceTree = "<group>"; };
 		934B068A4F0818E26BB81619 /* CaffeinateNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateNotificationService.swift; sourceTree = "<group>"; };
 		96164FBDAACFA011FBA6958E /* CaffeinateStatusFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateStatusFormatterTests.swift; sourceTree = "<group>"; };
+		A0EEEBCF64C1E45B00212D42 /* CaffeinateProcessController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateProcessController.swift; sourceTree = "<group>"; };
 		ABA156B79414F9C48608179E /* NotificationCenterDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCenterDelegate.swift; sourceTree = "<group>"; };
 		B3D6A7C14BF00564D09FBD99 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C635F912327D623B2ADE48FD /* CaffeinateSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateSnapshotTests.swift; sourceTree = "<group>"; };
+		CD0D92D3C68734EE4D3847DF /* CaffeinatePreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinatePreset.swift; sourceTree = "<group>"; };
+		CF15351B2CA39139F508D1E9 /* CaffeinateCLIJSONFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateCLIJSONFormatter.swift; sourceTree = "<group>"; };
+		D361674B647B0C8C35994A18 /* CaffeinateIntentMessageFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateIntentMessageFormatter.swift; sourceTree = "<group>"; };
+		D41D44EBDA55529752BC2755 /* PowerMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerMode.swift; sourceTree = "<group>"; };
+		DC6A8D184C1C4D1F3184ACE5 /* PresetManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetManagerView.swift; sourceTree = "<group>"; };
 		E03E61DE9F34D4C809F28C15 /* SpotlightCaffeinateCLI */ = {isa = PBXFileReference; includeInIndex = 0; path = SpotlightCaffeinateCLI; sourceTree = BUILT_PRODUCTS_DIR; };
+		E6AD915BE0F27B859E742AD4 /* RecentSessionEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentSessionEntry.swift; sourceTree = "<group>"; };
 		FC3857F8AD00A17FF0BAAC9B /* CaffeinateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -96,6 +141,7 @@
 				087A7E8706BE5A4951BE384A /* BoltIconView.swift */,
 				36E7F2962E86312CA442468E /* CaffeinateController.swift */,
 				ABA156B79414F9C48608179E /* NotificationCenterDelegate.swift */,
+				DC6A8D184C1C4D1F3184ACE5 /* PresetManagerView.swift */,
 				023F546C09192BEB6AF4065B /* SpotlightCaffeinateApp.swift */,
 				2E2430731258FFD7AF398CC7 /* StatusMenuView.swift */,
 			);
@@ -105,7 +151,11 @@
 		445AB61545523B1A27C7382D /* Support */ = {
 			isa = PBXGroup;
 			children = (
+				CF15351B2CA39139F508D1E9 /* CaffeinateCLIJSONFormatter.swift */,
+				D361674B647B0C8C35994A18 /* CaffeinateIntentMessageFormatter.swift */,
+				A0EEEBCF64C1E45B00212D42 /* CaffeinateProcessController.swift */,
 				3B5B0BCBCDC5CF187E9CF774 /* CaffeinateStatusFormatter.swift */,
+				124A35F82C89F349E1A8E6B1 /* SpotlightCaffeinateCLICommand.swift */,
 			);
 			path = Support;
 			sourceTree = "<group>";
@@ -131,7 +181,11 @@
 		6C5DEEB06E0ED304B85F2F9A /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				CD0D92D3C68734EE4D3847DF /* CaffeinatePreset.swift */,
+				3281D8A1F055106E3354D4C7 /* CaffeinateSessionSource.swift */,
 				5140115420CD7C5CA54132A2 /* CaffeinateSnapshot.swift */,
+				D41D44EBDA55529752BC2755 /* PowerMode.swift */,
+				E6AD915BE0F27B859E742AD4 /* RecentSessionEntry.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -139,8 +193,12 @@
 		96E14322C8651BBA694A487D /* SpotlightCaffeinateTests */ = {
 			isa = PBXGroup;
 			children = (
+				92951193FA16D0A46FF8CF15 /* CaffeinateCLIJSONFormatterTests.swift */,
+				57112614347A7B9E56E9CB52 /* CaffeinateIntentMessageFormatterTests.swift */,
+				205DB6963ADE1B964CDF99FE /* CaffeinateServiceTests.swift */,
 				C635F912327D623B2ADE48FD /* CaffeinateSnapshotTests.swift */,
 				96164FBDAACFA011FBA6958E /* CaffeinateStatusFormatterTests.swift */,
+				76E675238CEA486E99B64548 /* SpotlightCaffeinateCLICommandTests.swift */,
 			);
 			path = SpotlightCaffeinateTests;
 			sourceTree = "<group>";
@@ -261,10 +319,25 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F37111F7B15E938F86F3CFBA /* CaffeinateCLIJSONFormatter.swift in Sources */,
+				D9D1574C10BC328D7A4D658E /* CaffeinateCLIJSONFormatterTests.swift in Sources */,
+				14707AEE2E967252A258D46E /* CaffeinateIntentMessageFormatter.swift in Sources */,
+				F0195EF52D793A67D5CB2DC0 /* CaffeinateIntentMessageFormatterTests.swift in Sources */,
+				E18A9E1DDB29A41C351674B2 /* CaffeinateNotificationService.swift in Sources */,
+				1EC3F09D168A7DDEAE48920D /* CaffeinatePreset.swift in Sources */,
+				4C6A015EBF4B6DA1AEBA6B12 /* CaffeinateProcessController.swift in Sources */,
+				DF066F818EE4B9384202CC95 /* CaffeinateService.swift in Sources */,
+				EC0C41AAD981924B87F892D0 /* CaffeinateServiceTests.swift in Sources */,
+				4EB5E932A26CD15A29B71E16 /* CaffeinateSessionSource.swift in Sources */,
 				DABF2C657164A8F4609DA2C5 /* CaffeinateSnapshot.swift in Sources */,
 				751A01C223D9DD4BFB7042FE /* CaffeinateSnapshotTests.swift in Sources */,
 				92B3FB872383CED4FD154334 /* CaffeinateStatusFormatter.swift in Sources */,
 				A966E115A917CA7E04608EAC /* CaffeinateStatusFormatterTests.swift in Sources */,
+				0C446E9ECDE69B11DB8AB46A /* LaunchAtLoginService.swift in Sources */,
+				FC0DA325C245099925389365 /* PowerMode.swift in Sources */,
+				32F74BB34D7D216D81E1CDE7 /* RecentSessionEntry.swift in Sources */,
+				9D8679585ED4AC2C3F72CA31 /* SpotlightCaffeinateCLICommand.swift in Sources */,
+				EDC210277B56F06EA1EBEC30 /* SpotlightCaffeinateCLICommandTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -272,12 +345,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7A692C8180A36781EA1BC0E1 /* CaffeinateCLIJSONFormatter.swift in Sources */,
+				0A9A4EC0E034BAB80008C62E /* CaffeinateIntentMessageFormatter.swift in Sources */,
 				B4046FBA7CFA77BD71A80518 /* CaffeinateNotificationService.swift in Sources */,
+				A6DCB1C2AAE754BFDCC2C2EA /* CaffeinatePreset.swift in Sources */,
+				17570309A31A2C1FE6EFD61A /* CaffeinateProcessController.swift in Sources */,
 				5C86BC47FC80D921F7816F9E /* CaffeinateService.swift in Sources */,
+				C568D63893A07D34395D605B /* CaffeinateSessionSource.swift in Sources */,
 				304C747FF34E9391A3909795 /* CaffeinateSnapshot.swift in Sources */,
 				3B9972A249CAB40C40D5241C /* CaffeinateStatusFormatter.swift in Sources */,
 				34E7C8E475F605514AC23446 /* LaunchAtLoginService.swift in Sources */,
+				690929CD936834629E60AD75 /* PowerMode.swift in Sources */,
+				783AF268E497093756CBE7E1 /* RecentSessionEntry.swift in Sources */,
 				5893992BA959E1FF4B5BC059 /* SpotlightCaffeinateCLI.swift in Sources */,
+				FCCD9583F469DD96125046B8 /* SpotlightCaffeinateCLICommand.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -286,16 +367,25 @@
 			buildActionMask = 2147483647;
 			files = (
 				791E5F9CA4A5EAADC39A903D /* BoltIconView.swift in Sources */,
+				F77E69378F017DFCBEFE35C4 /* CaffeinateCLIJSONFormatter.swift in Sources */,
 				C849AA7B81D2138ACECE87E8 /* CaffeinateController.swift in Sources */,
+				A0610CF00EEEB8D7CC485D09 /* CaffeinateIntentMessageFormatter.swift in Sources */,
 				B82BB33FEF6AACB10D296ACB /* CaffeinateIntents.swift in Sources */,
 				331D4DA53D745387B06AEB49 /* CaffeinateNotificationService.swift in Sources */,
+				05C0967F097C762DD337ACC0 /* CaffeinatePreset.swift in Sources */,
+				DD65E6A0CBBD4CCCDC70E8FA /* CaffeinateProcessController.swift in Sources */,
 				C8105E2A253EAE53E6FEFCAE /* CaffeinateService.swift in Sources */,
+				9E5A456EC9E00561B8B433C1 /* CaffeinateSessionSource.swift in Sources */,
 				F04967BFFA7F4A4350D75D42 /* CaffeinateSnapshot.swift in Sources */,
 				116E578725C1681BF4F2007F /* CaffeinateStatusFormatter.swift in Sources */,
 				D4C4ED5313D501D27A5D8F99 /* CaffeinateStatusSnippetView.swift in Sources */,
 				E4AEC4518C65DFCEB5C1CB6C /* LaunchAtLoginService.swift in Sources */,
 				999AA9ABEEAC6D0E431D4D29 /* NotificationCenterDelegate.swift in Sources */,
+				8C435407344ED66222D1A03F /* PowerMode.swift in Sources */,
+				6260AC0061EFD90A5A0F0BE3 /* PresetManagerView.swift in Sources */,
+				24F2273315EFB4DB180C4D94 /* RecentSessionEntry.swift in Sources */,
 				E1D01DC49F01DC3BBC9028E6 /* SpotlightCaffeinateApp.swift in Sources */,
+				5EE89421C8C496BE734F1227 /* SpotlightCaffeinateCLICommand.swift in Sources */,
 				6F439079E0A0CCEA81AFC6B0 /* StatusMenuView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -337,7 +427,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -355,7 +445,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MARKETING_VERSION = 0.2.0;
+				MARKETING_VERSION = 0.3.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -421,7 +511,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -433,7 +523,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MARKETING_VERSION = 0.2.0;
+				MARKETING_VERSION = 0.3.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

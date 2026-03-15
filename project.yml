@@ -5,8 +5,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: 6.0
-    MARKETING_VERSION: 0.2.0
-    CURRENT_PROJECT_VERSION: 2
+    MARKETING_VERSION: 0.3.0
+    CURRENT_PROJECT_VERSION: 3
 targets:
   SpotlightCaffeinate:
     type: application
@@ -30,8 +30,8 @@ targets:
       path: SpotlightCaffeinate/Info.plist
       properties:
         CFBundleDisplayName: Spotlight Caffeinate
-        CFBundleShortVersionString: "0.2.0"
-        CFBundleVersion: "2"
+        CFBundleShortVersionString: "0.3.0"
+        CFBundleVersion: "3"
         LSUIElement: true
         NSSupportsAutomaticGraphicsSwitching: true
     scheme:
@@ -61,6 +61,7 @@ targets:
       - path: SpotlightCaffeinateTests
       - path: SpotlightCaffeinate/Models
       - path: SpotlightCaffeinate/Support
+      - path: SpotlightCaffeinate/Services
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

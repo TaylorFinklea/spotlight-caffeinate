@@ -1,26 +1,6 @@
 import Darwin
 import Foundation
 
-private enum CLIError: LocalizedError {
-    case missingCommand
-    case invalidCommand(String)
-    case missingMinutes
-    case invalidMinutes(String)
-
-    var errorDescription: String? {
-        switch self {
-        case .missingCommand:
-            return nil
-        case .invalidCommand(let command):
-            return "Unknown command '\(command)'."
-        case .missingMinutes:
-            return "Missing minutes value. Usage: spotlight-caffeinate-cli start <minutes>"
-        case .invalidMinutes(let value):
-            return "Invalid minutes value '\(value)'. Use a whole number between 1 and 1440."
-        }
-    }
-}
-
 @main
 struct SpotlightCaffeinateCLI {
     static func main() async {
@@ -30,10 +10,10 @@ struct SpotlightCaffeinateCLI {
 
     private static func run(arguments: [String]) async -> Int32 {
         do {
-            let command = try parseCommand(arguments)
+            let command = try SpotlightCaffeinateCLIParser.parse(arguments: arguments)
             return try await execute(command)
         } catch {
-            if case CLIError.missingCommand = error {
+            if case CLIParseError.missingCommand = error {
                 printUsage()
                 return 0
             }
@@ -48,42 +28,22 @@ struct SpotlightCaffeinateCLI {
         }
     }
 
-    private static func parseCommand(_ arguments: [String]) throws -> Command {
-        guard let command = arguments.first else {
-            throw CLIError.missingCommand
-        }
-
-        switch command {
-        case "help", "--help", "-h":
-            throw CLIError.missingCommand
-        case "start":
-            guard let value = arguments.dropFirst().first else {
-                throw CLIError.missingMinutes
-            }
-
-            guard let minutes = Int(value) else {
-                throw CLIError.invalidMinutes(value)
-            }
-
-            return .start(minutes)
-        case "stop":
-            return .stop
-        case "status":
-            return .status
-        case "watch":
-            return .watch
-        default:
-            throw CLIError.invalidCommand(command)
-        }
-    }
-
-    private static func execute(_ command: Command) async throws -> Int32 {
+    private static func execute(_ command: SpotlightCaffeinateCLICommand) async throws -> Int32 {
         let service = CaffeinateService.shared
 
         switch command {
-        case .start(let minutes):
-            let snapshot = try await service.start(minutes: minutes)
-            print("Started caffeinate for \(minutes) minute\(minutes == 1 ? "" : "s").")
+        case .start(let minutes, let powerMode, let presetName):
+            let snapshot: CaffeinateSnapshot
+            if let presetName {
+                snapshot = try await service.startPreset(named: presetName, source: .cli)
+                print("Started preset '\(presetName)'.")
+            } else if let minutes {
+                let selectedMode = powerMode ?? .full
+                snapshot = try await service.start(minutes: minutes, powerMode: selectedMode, source: .cli)
+                print("Started caffeinate for \(minutes) minute\(minutes == 1 ? "" : "s") in \(selectedMode.rawValue) mode.")
+            } else {
+                throw CLIParseError.missingValue("minutes")
+            }
             print(renderStatus(snapshot, now: .now))
             return 0
 
@@ -98,9 +58,13 @@ struct SpotlightCaffeinateCLI {
             print(renderStatus(snapshot, now: .now))
             return 0
 
-        case .status:
+        case .status(let json):
             let snapshot = try await service.status()
-            print(renderStatus(snapshot, now: .now))
+            if json {
+                print(try CaffeinateCLIJSONFormatter.renderStatus(snapshot, now: .now))
+            } else {
+                print(renderStatus(snapshot, now: .now))
+            }
             return 0
 
         case .watch:
@@ -111,6 +75,38 @@ struct SpotlightCaffeinateCLI {
                 fflush(stdout)
                 try await Task.sleep(for: .seconds(1))
             }
+
+        case .extend(let minutes, let presetName):
+            let snapshot: CaffeinateSnapshot
+            if let presetName {
+                snapshot = try await service.extendPreset(named: presetName, source: .cli)
+                print("Extended caffeinate with preset '\(presetName)'.")
+            } else if let minutes {
+                snapshot = try await service.extend(minutes: minutes, source: .cli)
+                print("Extended caffeinate by \(minutes) minute\(minutes == 1 ? "" : "s").")
+            } else {
+                throw CLIParseError.missingValue("minutes")
+            }
+            print(renderStatus(snapshot, now: .now))
+            return 0
+
+        case .history(let limit, let json):
+            let history = try await service.recentSessions(limit: limit)
+            if json {
+                print(try CaffeinateCLIJSONFormatter.renderHistory(history))
+            } else {
+                print(renderHistory(history))
+            }
+            return 0
+
+        case .presetsList(let json):
+            let presets = try await service.presets()
+            if json {
+                print(try CaffeinateCLIJSONFormatter.renderPresets(presets))
+            } else {
+                print(renderPresets(presets))
+            }
+            return 0
         }
     }
 
@@ -135,10 +131,15 @@ struct SpotlightCaffeinateCLI {
             spotlight-caffeinate-cli
 
             Usage:
-              spotlight-caffeinate-cli start <minutes>
+              spotlight-caffeinate-cli start <minutes> [--mode <display|system|full>]
+              spotlight-caffeinate-cli start --preset <name>
               spotlight-caffeinate-cli stop
-              spotlight-caffeinate-cli status
+              spotlight-caffeinate-cli status [--json]
               spotlight-caffeinate-cli watch
+              spotlight-caffeinate-cli extend <minutes>
+              spotlight-caffeinate-cli extend --preset <name>
+              spotlight-caffeinate-cli history [--limit N] [--json]
+              spotlight-caffeinate-cli presets list [--json]
             """
         )
     }
@@ -150,10 +151,27 @@ struct SpotlightCaffeinateCLI {
         return formatter
     }()
 
-    private enum Command {
-        case start(Int)
-        case stop
-        case status
-        case watch
+    private static func renderHistory(_ history: [RecentSessionEntry]) -> String {
+        guard !history.isEmpty else {
+            return "No recent sessions."
+        }
+
+        return history.enumerated().map { index, entry in
+            let ending = timestampFormatter.string(from: entry.endedAt)
+            return "\(index + 1). \(entry.displayName) • \(entry.minutesRequested)m • \(entry.powerMode.rawValue) • ended \(ending)"
+        }
+        .joined(separator: "\n")
+    }
+
+    private static func renderPresets(_ presets: [CaffeinatePreset]) -> String {
+        guard !presets.isEmpty else {
+            return "No presets."
+        }
+
+        return presets.map { preset in
+            let pinned = preset.isPinned ? "pinned" : "unpinned"
+            return "\(preset.name) • \(preset.minutes)m • \(preset.powerMode.rawValue) • \(pinned)"
+        }
+        .joined(separator: "\n")
     }
 }

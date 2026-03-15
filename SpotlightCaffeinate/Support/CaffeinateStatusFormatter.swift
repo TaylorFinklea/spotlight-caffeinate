@@ -9,12 +9,18 @@ struct CaffeinateStatusFormatter {
         let startedText = snapshot.startedAt.map(formatTimestamp) ?? "-"
         let endingText = snapshot.endsAt.map(formatTimestamp) ?? "-"
         let pidText = snapshot.pid.map(String.init) ?? "-"
+        let modeText = snapshot.isRunning(at: now) ? snapshot.effectivePowerMode.rawValue : "-"
+        let presetText = snapshot.presetName ?? "-"
+        let sourceText = snapshot.source?.rawValue ?? "-"
 
         return """
         State: \(snapshot.isRunning(at: now) ? "running" : "idle")
         Remaining: \(snapshot.remainingText(at: now))
         Started: \(startedText)
         Ending: \(endingText)
+        Mode: \(modeText)
+        Preset: \(presetText)
+        Source: \(sourceText)
         PID: \(pidText)
         """
     }
