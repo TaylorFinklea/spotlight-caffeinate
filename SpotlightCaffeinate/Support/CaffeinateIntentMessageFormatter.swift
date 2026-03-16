@@ -9,6 +9,10 @@ struct CaffeinateIntentMessageFormatter {
             parts.append("using \(presetName)")
         }
 
+        if let automationRuleName = snapshot.automationRuleName {
+            parts.append("from automation \(automationRuleName)")
+        }
+
         parts.append("in \(snapshot.effectivePowerMode.intentDescription) mode")
 
         if let endingText = snapshot.endsAt?.formatted(date: .omitted, time: .shortened) {
@@ -27,6 +31,10 @@ struct CaffeinateIntentMessageFormatter {
 
         if let presetName = snapshot.presetName {
             parts.append("for \(presetName)")
+        }
+
+        if let automationRuleName = snapshot.automationRuleName {
+            parts.append("from automation \(automationRuleName)")
         }
 
         parts.append("in \(snapshot.effectivePowerMode.intentDescription) mode")

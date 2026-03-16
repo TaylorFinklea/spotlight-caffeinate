@@ -13,7 +13,9 @@ struct CaffeinateStatusFormatterTests {
             powerMode: .system,
             presetID: UUID(uuidString: "00000000-0000-0000-0000-000000000777"),
             presetName: "Deep Work",
-            source: .cli
+            source: .cli,
+            automationRuleID: UUID(uuidString: "00000000-0000-0000-0000-000000000999"),
+            automationRuleName: "Morning Start"
         )
 
         let rendered = CaffeinateStatusFormatter.renderStatus(
@@ -33,6 +35,7 @@ struct CaffeinateStatusFormatterTests {
                 Mode: system
                 Preset: Deep Work
                 Source: cli
+                Automation: Morning Start
                 PID: 777
                 """
         )
@@ -57,6 +60,7 @@ struct CaffeinateStatusFormatterTests {
                 Mode: -
                 Preset: -
                 Source: -
+                Automation: -
                 PID: -
                 """
         )
@@ -73,7 +77,9 @@ struct CaffeinateStatusFormatterTests {
             powerMode: .full,
             presetID: nil,
             presetName: nil,
-            source: .app
+            source: .app,
+            automationRuleID: nil,
+            automationRuleName: nil
         )
 
         let rendered = CaffeinateStatusFormatter.renderWatchScreen(

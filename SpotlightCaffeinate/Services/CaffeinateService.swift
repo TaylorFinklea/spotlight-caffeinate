@@ -44,6 +44,8 @@ private struct CaffeinateRecord: Codable, Sendable {
     let presetID: UUID?
     let presetName: String?
     let source: CaffeinateSessionSource?
+    let automationRuleID: UUID?
+    let automationRuleName: String?
 }
 
 protocol CaffeinateNotificationScheduling: Sendable {
@@ -107,7 +109,9 @@ actor CaffeinateService {
         powerMode: PowerMode = .full,
         presetID: UUID? = nil,
         presetName: String? = nil,
-        source: CaffeinateSessionSource = .app
+        source: CaffeinateSessionSource = .app,
+        automationRuleID: UUID? = nil,
+        automationRuleName: String? = nil
     ) async throws -> CaffeinateSnapshot {
         try validate(minutes: minutes)
 
@@ -123,7 +127,9 @@ actor CaffeinateService {
             powerMode: powerMode,
             presetID: presetID,
             presetName: presetName,
-            source: source
+            source: source,
+            automationRuleID: automationRuleID,
+            automationRuleName: automationRuleName
         )
     }
 
@@ -192,7 +198,9 @@ actor CaffeinateService {
             powerMode: selectedPowerMode,
             presetID: presetID ?? record.presetID,
             presetName: presetName ?? record.presetName,
-            source: source
+            source: source,
+            automationRuleID: record.automationRuleID,
+            automationRuleName: record.automationRuleName
         )
     }
 
@@ -206,7 +214,9 @@ actor CaffeinateService {
             powerMode: entry.powerMode,
             presetID: entry.presetID,
             presetName: entry.presetName,
-            source: source
+            source: source,
+            automationRuleID: entry.automationRuleID,
+            automationRuleName: entry.automationRuleName
         )
     }
 
@@ -352,7 +362,9 @@ actor CaffeinateService {
             powerMode: record.powerMode ?? .full,
             presetID: record.presetID,
             presetName: record.presetName,
-            source: record.source
+            source: record.source,
+            automationRuleID: record.automationRuleID,
+            automationRuleName: record.automationRuleName
         )
     }
 
@@ -399,7 +411,9 @@ actor CaffeinateService {
         powerMode: PowerMode,
         presetID: UUID?,
         presetName: String?,
-        source: CaffeinateSessionSource
+        source: CaffeinateSessionSource,
+        automationRuleID: UUID?,
+        automationRuleName: String?
     ) async throws -> CaffeinateSnapshot {
         let remainingSeconds = max(1, Int(endsAt.timeIntervalSince(launchedAt).rounded(.down)))
         let arguments = Self.arguments(for: powerMode, seconds: remainingSeconds)
@@ -419,7 +433,9 @@ actor CaffeinateService {
             powerMode: powerMode,
             presetID: presetID,
             presetName: presetName,
-            source: source
+            source: source,
+            automationRuleID: automationRuleID,
+            automationRuleName: automationRuleName
         )
 
         try persist(record)
@@ -470,7 +486,9 @@ actor CaffeinateService {
             powerMode: record.powerMode ?? .full,
             presetID: record.presetID,
             presetName: record.presetName,
-            source: record.source ?? .app
+            source: record.source ?? .app,
+            automationRuleID: record.automationRuleID,
+            automationRuleName: record.automationRuleName
         )
 
         history.insert(entry, at: 0)
@@ -570,7 +588,9 @@ actor CaffeinateService {
             powerMode: preset.powerMode,
             presetID: preset.id,
             presetName: preset.name,
-            source: source
+            source: source,
+            automationRuleID: nil,
+            automationRuleName: nil
         )
     }
 

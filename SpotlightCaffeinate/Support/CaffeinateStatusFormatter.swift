@@ -12,6 +12,7 @@ struct CaffeinateStatusFormatter {
         let modeText = snapshot.isRunning(at: now) ? snapshot.effectivePowerMode.rawValue : "-"
         let presetText = snapshot.presetName ?? "-"
         let sourceText = snapshot.source?.rawValue ?? "-"
+        let automationText = snapshot.automationRuleName ?? "-"
 
         return """
         State: \(snapshot.isRunning(at: now) ? "running" : "idle")
@@ -21,6 +22,7 @@ struct CaffeinateStatusFormatter {
         Mode: \(modeText)
         Preset: \(presetText)
         Source: \(sourceText)
+        Automation: \(automationText)
         PID: \(pidText)
         """
     }

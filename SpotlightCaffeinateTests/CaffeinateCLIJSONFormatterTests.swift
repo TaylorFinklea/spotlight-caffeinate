@@ -13,7 +13,9 @@ struct CaffeinateCLIJSONFormatterTests {
             powerMode: .system,
             presetID: UUID(uuidString: "00000000-0000-0000-0000-000000000321"),
             presetName: "Deep Work",
-            source: .cli
+            source: .cli,
+            automationRuleID: UUID(uuidString: "00000000-0000-0000-0000-000000000654"),
+            automationRuleName: "Morning Start"
         )
 
         let json = try CaffeinateCLIJSONFormatter.renderStatus(
@@ -26,6 +28,7 @@ struct CaffeinateCLIJSONFormatterTests {
         #expect(json.contains("\"powerMode\" : \"system\""))
         #expect(json.contains("\"presetName\" : \"Deep Work\""))
         #expect(json.contains("\"source\" : \"cli\""))
+        #expect(json.contains("\"automationRuleName\" : \"Morning Start\""))
     }
 
     @Test
@@ -39,7 +42,9 @@ struct CaffeinateCLIJSONFormatterTests {
                 powerMode: .full,
                 presetID: nil,
                 presetName: "Focus",
-                source: .app
+                source: .app,
+                automationRuleID: nil,
+                automationRuleName: nil
             )
         ]
 
@@ -48,5 +53,27 @@ struct CaffeinateCLIJSONFormatterTests {
         #expect(json.contains("\"presetName\" : \"Focus\""))
         #expect(json.contains("\"powerMode\" : \"full\""))
         #expect(json.contains("\"source\" : \"app\""))
+    }
+
+    @Test
+    func renderAutomationsOutputsPresetNames() throws {
+        let summaries = [
+            AutomationRuleSummary(
+                id: UUID(uuidString: "00000000-0000-0000-0000-000000000456")!,
+                name: "Morning Work",
+                enabled: true,
+                presetID: UUID(uuidString: "00000000-0000-0000-0000-000000000789")!,
+                presetName: "Deep Work",
+                trigger: .power(.connected),
+                createdAt: Date(timeIntervalSinceReferenceDate: 0),
+                updatedAt: Date(timeIntervalSinceReferenceDate: 0),
+                lastRunAt: nil
+            )
+        ]
+
+        let json = try CaffeinateCLIJSONFormatter.renderAutomations(summaries)
+
+        #expect(json.contains("\"name\" : \"Morning Work\""))
+        #expect(json.contains("\"presetName\" : \"Deep Work\""))
     }
 }

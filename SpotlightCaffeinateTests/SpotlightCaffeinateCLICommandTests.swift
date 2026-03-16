@@ -48,6 +48,42 @@ let startCases: [CLIParseCase] = [
     CLIParseCase(
         arguments: ["presets", "list"],
         expected: .presetsList(json: false)
+    ),
+    CLIParseCase(
+        arguments: ["automations", "list", "--json"],
+        expected: .automationsList(json: true)
+    ),
+    CLIParseCase(
+        arguments: ["automations", "history", "--limit", "5"],
+        expected: .automationsHistory(limit: 5, json: false)
+    ),
+    CLIParseCase(
+        arguments: ["automations", "enable", "Morning Work"],
+        expected: .automationEnable("Morning Work")
+    ),
+    CLIParseCase(
+        arguments: ["automations", "add", "schedule", "--name", "Morning Work", "--preset", "Deep Work", "--days", "Mon,Tue", "--time", "09:00"],
+        expected: .automationAddSchedule(
+            name: "Morning Work",
+            presetName: "Deep Work",
+            weekdays: [.monday, .tuesday],
+            hour: 9,
+            minute: 0
+        )
+    ),
+    CLIParseCase(
+        arguments: ["automations", "add", "power", "--name", "Desk Dock", "--preset", "Deep Work", "--when", "connected"],
+        expected: .automationAddPower(name: "Desk Dock", presetName: "Deep Work", event: .connected)
+    ),
+    CLIParseCase(
+        arguments: ["automations", "add", "calendar", "--name", "Standup", "--preset", "Focus", "--calendar", "Work", "--starts-before", "5", "--title-contains", "Standup"],
+        expected: .automationAddCalendar(
+            name: "Standup",
+            presetName: "Focus",
+            calendarNames: ["Work"],
+            startsBeforeMinutes: 5,
+            titleContains: "Standup"
+        )
     )
 ]
 
@@ -56,5 +92,9 @@ let invalidCases: [CLIInvalidCase] = [
     CLIInvalidCase(arguments: ["start", "15", "--mode", "turbo"]),
     CLIInvalidCase(arguments: ["extend"]),
     CLIInvalidCase(arguments: ["history", "--limit", "0"]),
-    CLIInvalidCase(arguments: ["presets"])
+    CLIInvalidCase(arguments: ["presets"]),
+    CLIInvalidCase(arguments: ["automations"]),
+    CLIInvalidCase(arguments: ["automations", "add", "schedule", "--name", "Morning", "--preset", "Focus", "--days", "Mon", "--time", "9am"]),
+    CLIInvalidCase(arguments: ["automations", "add", "power", "--name", "Desk Dock", "--preset", "Focus", "--when", "plugged"]),
+    CLIInvalidCase(arguments: ["automations", "add", "calendar", "--name", "Standup", "--preset", "Focus"])
 ]

@@ -15,6 +15,8 @@ struct CaffeinateCLIJSONFormatter {
                 presetID: snapshot.presetID,
                 presetName: snapshot.presetName,
                 source: snapshot.source,
+                automationRuleID: snapshot.automationRuleID,
+                automationRuleName: snapshot.automationRuleName,
                 pid: snapshot.pid
             )
         )
@@ -26,6 +28,14 @@ struct CaffeinateCLIJSONFormatter {
 
     static func renderPresets(_ presets: [CaffeinatePreset]) throws -> String {
         try encode(presets)
+    }
+
+    static func renderAutomations(_ rules: [AutomationRuleSummary]) throws -> String {
+        try encode(rules)
+    }
+
+    static func renderAutomationHistory(_ records: [AutomationRunRecord]) throws -> String {
+        try encode(records)
     }
 
     private static func encode<T: Encodable>(_ value: T) throws -> String {
@@ -57,5 +67,19 @@ private struct StatusPayload: Encodable {
     let presetID: UUID?
     let presetName: String?
     let source: CaffeinateSessionSource?
+    let automationRuleID: UUID?
+    let automationRuleName: String?
     let pid: Int32?
+}
+
+struct AutomationRuleSummary: Encodable {
+    let id: UUID
+    let name: String
+    let enabled: Bool
+    let presetID: UUID
+    let presetName: String?
+    let trigger: AutomationTrigger
+    let createdAt: Date
+    let updatedAt: Date
+    let lastRunAt: Date?
 }

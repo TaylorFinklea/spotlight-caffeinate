@@ -8,6 +8,9 @@ final class CaffeinateController {
     var snapshot: CaffeinateSnapshot = .inactive
     var presets: [CaffeinatePreset] = []
     var recentSessions: [RecentSessionEntry] = []
+    var automationRules: [AutomationRule] = []
+    var automationRunHistory: [AutomationRunRecord] = []
+    var availableCalendars: [AutomationCalendarOption] = []
     var currentTime = Date()
     var suggestedMinutes = 5
     var suggestedPowerMode: PowerMode = .full
@@ -19,16 +22,25 @@ final class CaffeinateController {
     var notificationAuthorizationState: NotificationAuthorizationState
     var notificationStatus: String?
     var notificationStatusIsError: Bool
+    var calendarAuthorizationState: AutomationCalendarAuthorizationState
+    var calendarStatus: String?
+    var calendarStatusIsError: Bool
     var lastError: String?
 
     @ObservationIgnored
     private let service: CaffeinateService
 
     @ObservationIgnored
+    private let automationService: AutomationService
+
+    @ObservationIgnored
     private let notificationService: CaffeinateNotificationService
 
     @ObservationIgnored
     private let launchAtLoginService: LaunchAtLoginService
+
+    @ObservationIgnored
+    private let automationEngine: AutomationEngine
 
     @ObservationIgnored
     private let defaults: UserDefaults
@@ -46,13 +58,17 @@ final class CaffeinateController {
 
     init(
         service: CaffeinateService = .shared,
+        automationService: AutomationService = .shared,
         notificationService: CaffeinateNotificationService = .shared,
         launchAtLoginService: LaunchAtLoginService = .shared,
+        automationEngine: AutomationEngine = AutomationEngine(),
         defaults: UserDefaults = .standard
     ) {
         self.service = service
+        self.automationService = automationService
         self.notificationService = notificationService
         self.launchAtLoginService = launchAtLoginService
+        self.automationEngine = automationEngine
         self.defaults = defaults
         showMenuBarTime = Self.showMenuBarTimePreference(defaults: defaults)
         launchAtLoginEnabled = false
@@ -61,11 +77,15 @@ final class CaffeinateController {
         notificationsEnabled = false
         notificationAuthorizationState = .notDetermined
         notificationStatusIsError = false
+        calendarAuthorizationState = .notDetermined
+        calendarStatus = "Calendar access is only needed for calendar-based automations."
+        calendarStatusIsError = false
 
         Task { [weak self] in
             await self?.refresh()
             await self?.syncNotificationSettings()
             await self?.syncLaunchAtLoginSettings()
+            await self?.syncCalendarSettings()
         }
 
         pollingTask = Task { [weak self] in
@@ -75,6 +95,7 @@ final class CaffeinateController {
 
             while !Task.isCancelled {
                 currentTime = .now
+                await automationEngine.processTick(now: currentTime)
                 await refresh()
                 try? await Task.sleep(for: .seconds(1))
             }
@@ -194,6 +215,84 @@ final class CaffeinateController {
         }
     }
 
+    func saveAutomationRule(
+        id: UUID?,
+        name: String,
+        presetID: UUID,
+        trigger: AutomationTrigger,
+        enabled: Bool
+    ) async -> UUID? {
+        do {
+            if case .calendar = trigger, enabled, calendarAuthorizationState != .granted {
+                let granted = await ensureCalendarAccessIfNeeded()
+                guard granted else {
+                    return nil
+                }
+            }
+
+            if let id {
+                automationRules = try await automationService.updateRule(
+                    id: id,
+                    name: name,
+                    presetID: presetID,
+                    trigger: trigger,
+                    enabled: enabled
+                )
+                lastError = nil
+                return id
+            }
+
+            automationRules = try await automationService.createRule(
+                name: name,
+                presetID: presetID,
+                trigger: trigger,
+                enabled: enabled
+            )
+            lastError = nil
+            return automationRules.last?.id
+        } catch {
+            lastError = error.localizedDescription
+            return nil
+        }
+    }
+
+    func deleteAutomationRule(id: UUID) async {
+        do {
+            automationRules = try await automationService.deleteRule(id: id)
+            automationRunHistory = try await automationService.runHistory(limit: 10)
+            lastError = nil
+        } catch {
+            lastError = error.localizedDescription
+        }
+    }
+
+    func setAutomationRuleEnabled(id: UUID, enabled: Bool) async {
+        do {
+            if enabled {
+                let hasCalendarAccess = await ensureCalendarAccessIfNeeded(for: id)
+                guard hasCalendarAccess else {
+                    return
+                }
+            }
+
+            automationRules = try await automationService.setRuleEnabled(id: id, enabled: enabled)
+            lastError = nil
+        } catch {
+            lastError = error.localizedDescription
+        }
+    }
+
+    func refreshAutomationCalendars() async {
+        availableCalendars = await automationService.availableCalendars()
+        await syncCalendarSettings()
+    }
+
+    func requestCalendarAccess() {
+        Task {
+            _ = await ensureCalendarAccessIfNeeded(forcePrompt: true)
+        }
+    }
+
     func deletePreset(id: UUID) async {
         do {
             presets = try await service.deletePreset(id: id)
@@ -260,9 +359,12 @@ final class CaffeinateController {
             snapshot = try await service.status()
             presets = try await service.presets()
             recentSessions = try await service.recentSessions(limit: 5)
+            automationRules = try await automationService.rules()
+            automationRunHistory = try await automationService.runHistory(limit: 10)
             currentTime = .now
             await syncNotificationSettings()
             await syncLaunchAtLoginSettings()
+            await syncCalendarSettings()
             if !snapshot.isRunning {
                 lastError = nil
             }
@@ -297,6 +399,22 @@ final class CaffeinateController {
         case .denied:
             notificationStatus = "Allow notifications for Spotlight Caffeinate in System Settings to enable completion alerts."
             notificationStatusIsError = true
+        }
+    }
+
+    private func syncCalendarSettings() async {
+        calendarAuthorizationState = await automationService.calendarAuthorizationState()
+
+        switch calendarAuthorizationState {
+        case .granted:
+            calendarStatus = "Calendar automations can monitor selected calendars."
+            calendarStatusIsError = false
+        case .notDetermined:
+            calendarStatus = "Calendar access is only needed for calendar-based automations."
+            calendarStatusIsError = false
+        case .denied:
+            calendarStatus = "Allow Calendar access to create or run calendar automations."
+            calendarStatusIsError = true
         }
     }
 
@@ -388,6 +506,41 @@ final class CaffeinateController {
             powerMode: powerMode,
             isPinned: isPinned
         )
+    }
+
+    private func ensureCalendarAccessIfNeeded(for automationRuleID: UUID? = nil, forcePrompt: Bool = false) async -> Bool {
+        if let automationRuleID,
+           let rule = automationRules.first(where: { $0.id == automationRuleID }),
+           case .calendar = rule.trigger {
+            return await ensureCalendarAccessIfNeeded(forcePrompt: forcePrompt)
+        }
+
+        if !forcePrompt, calendarAuthorizationState == .granted {
+            return true
+        }
+
+        if !forcePrompt, calendarAuthorizationState == .denied {
+            lastError = "Calendar access is required for calendar automations."
+            return false
+        }
+
+        do {
+            let state = try await automationService.requestCalendarAccess()
+            await syncCalendarSettings()
+            availableCalendars = await automationService.availableCalendars()
+
+            if state == .granted {
+                lastError = nil
+                return true
+            }
+
+            lastError = "Calendar access is required for calendar automations."
+            return false
+        } catch {
+            lastError = error.localizedDescription
+            await syncCalendarSettings()
+            return false
+        }
     }
 
     private nonisolated static func showMenuBarTimePreference(defaults: UserDefaults) -> Bool {

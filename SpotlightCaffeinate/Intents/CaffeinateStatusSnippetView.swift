@@ -28,6 +28,10 @@ struct CaffeinateStatusSnippetView: View {
 
                 detailRow(label: "Mode", value: snapshot.effectivePowerMode.title)
 
+                if let automationRuleName = snapshot.automationRuleName {
+                    detailRow(label: "Automation", value: automationRuleName)
+                }
+
                 if let startedAt = snapshot.startedAt {
                     detailRow(label: "Started", value: timeFormatter.string(from: startedAt))
                 }

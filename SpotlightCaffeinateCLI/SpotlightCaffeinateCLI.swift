@@ -30,6 +30,7 @@ struct SpotlightCaffeinateCLI {
 
     private static func execute(_ command: SpotlightCaffeinateCLICommand) async throws -> Int32 {
         let service = CaffeinateService.shared
+        let automationService = AutomationService.shared
 
         switch command {
         case .start(let minutes, let powerMode, let presetName):
@@ -107,6 +108,146 @@ struct SpotlightCaffeinateCLI {
                 print(renderPresets(presets))
             }
             return 0
+
+        case .automationsList(let json):
+            let rules = try await automationService.rules()
+            let presets = try await service.presets()
+            let summaries = automationSummaries(rules: rules, presets: presets)
+            if json {
+                print(try CaffeinateCLIJSONFormatter.renderAutomations(summaries))
+            } else {
+                print(renderAutomations(summaries))
+            }
+            return 0
+
+        case .automationsHistory(let limit, let json):
+            let history = try await automationService.runHistory(limit: limit)
+            if json {
+                print(try CaffeinateCLIJSONFormatter.renderAutomationHistory(history))
+            } else {
+                print(renderAutomationHistory(history))
+            }
+            return 0
+
+        case .automationEnable(let value):
+            let rule = try await automationService.rule(matching: value)
+            _ = try await automationService.setRuleEnabled(id: rule.id, enabled: true)
+            print("Enabled automation '\(rule.name)'.")
+            return 0
+
+        case .automationDisable(let value):
+            let rule = try await automationService.rule(matching: value)
+            _ = try await automationService.setRuleEnabled(id: rule.id, enabled: false)
+            print("Disabled automation '\(rule.name)'.")
+            return 0
+
+        case .automationDelete(let value):
+            let rule = try await automationService.rule(matching: value)
+            _ = try await automationService.deleteRule(id: rule.id)
+            print("Deleted automation '\(rule.name)'.")
+            return 0
+
+        case .automationAddSchedule(let name, let presetName, let weekdays, let hour, let minute):
+            let preset = try await resolvePreset(named: presetName, service: service)
+            _ = try await automationService.createRule(
+                name: name,
+                presetID: preset.id,
+                trigger: .weekly(
+                    WeeklyAutomationTrigger(
+                        weekdays: weekdays,
+                        hour: hour,
+                        minute: minute
+                    )
+                ),
+                enabled: true
+            )
+            print("Created scheduled automation '\(name)'.")
+            return 0
+
+        case .automationAddPower(let name, let presetName, let event):
+            let preset = try await resolvePreset(named: presetName, service: service)
+            _ = try await automationService.createRule(
+                name: name,
+                presetID: preset.id,
+                trigger: .power(event),
+                enabled: true
+            )
+            print("Created power automation '\(name)'.")
+            return 0
+
+        case .automationAddCalendar(let name, let presetName, let calendarNames, let startsBeforeMinutes, let titleContains):
+            let preset = try await resolvePreset(named: presetName, service: service)
+            let identifiers = try await resolveCalendarIdentifiers(named: calendarNames, automationService: automationService)
+            _ = try await automationService.createRule(
+                name: name,
+                presetID: preset.id,
+                trigger: .calendar(
+                    CalendarAutomationTrigger(
+                        calendarIdentifiers: identifiers,
+                        startsBeforeMinutes: startsBeforeMinutes,
+                        titleContains: titleContains
+                    )
+                ),
+                enabled: true
+            )
+            print("Created calendar automation '\(name)'.")
+            return 0
+        }
+    }
+
+    private static func resolvePreset(named presetName: String, service: CaffeinateService) async throws -> CaffeinatePreset {
+        let normalized = presetName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let preset = try await service.presets().first(where: { $0.name.caseInsensitiveCompare(normalized) == .orderedSame }) else {
+            throw CaffeinateServiceError.presetNotFound(normalized)
+        }
+        return preset
+    }
+
+    private static func resolveCalendarIdentifiers(
+        named calendarNames: [String],
+        automationService: AutomationService
+    ) async throws -> [String] {
+        let currentState = await automationService.calendarAuthorizationState()
+        let state: AutomationCalendarAuthorizationState
+        switch currentState {
+        case .granted:
+            state = .granted
+        case .notDetermined:
+            state = try await automationService.requestCalendarAccess()
+        case .denied:
+            throw AutomationServiceError.calendarAccessDenied
+        }
+
+        guard state == .granted else {
+            throw AutomationServiceError.calendarAccessDenied
+        }
+
+        let options = await automationService.availableCalendars()
+        return try calendarNames.map { name in
+            let normalized = name.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard let option = options.first(where: { $0.title.caseInsensitiveCompare(normalized) == .orderedSame }) else {
+                throw AutomationServiceError.calendarNotFound(normalized)
+            }
+            return option.id
+        }
+    }
+
+    private static func automationSummaries(
+        rules: [AutomationRule],
+        presets: [CaffeinatePreset]
+    ) -> [AutomationRuleSummary] {
+        rules.map { rule in
+            AutomationRuleSummary(
+                id: rule.id,
+                name: rule.name,
+                enabled: rule.enabled,
+                presetID: rule.presetID,
+                presetName: presets.first(where: { $0.id == rule.presetID })?.name,
+                trigger: rule.trigger,
+                createdAt: rule.createdAt,
+                updatedAt: rule.updatedAt,
+                lastRunAt: rule.lastRunAt
+            )
         }
     }
 
@@ -140,6 +281,14 @@ struct SpotlightCaffeinateCLI {
               spotlight-caffeinate-cli extend --preset <name>
               spotlight-caffeinate-cli history [--limit N] [--json]
               spotlight-caffeinate-cli presets list [--json]
+              spotlight-caffeinate-cli automations list [--json]
+              spotlight-caffeinate-cli automations history [--limit N] [--json]
+              spotlight-caffeinate-cli automations enable <id-or-name>
+              spotlight-caffeinate-cli automations disable <id-or-name>
+              spotlight-caffeinate-cli automations delete <id-or-name>
+              spotlight-caffeinate-cli automations add schedule --name <name> --preset <preset> --days Mon,Tue --time 09:00
+              spotlight-caffeinate-cli automations add power --name <name> --preset <preset> --when connected|disconnected
+              spotlight-caffeinate-cli automations add calendar --name <name> --preset <preset> --calendar <name> [--calendar <name> ...] [--starts-before <minutes>] [--title-contains <text>]
             """
         )
     }
@@ -173,5 +322,46 @@ struct SpotlightCaffeinateCLI {
             return "\(preset.name) • \(preset.minutes)m • \(preset.powerMode.rawValue) • \(pinned)"
         }
         .joined(separator: "\n")
+    }
+
+    private static func renderAutomations(_ summaries: [AutomationRuleSummary]) -> String {
+        guard !summaries.isEmpty else {
+            return "No automations."
+        }
+
+        return summaries.map { summary in
+            let enabled = summary.enabled ? "enabled" : "disabled"
+            let preset = summary.presetName ?? summary.presetID.uuidString
+            return "\(summary.name) • \(preset) • \(renderTrigger(summary.trigger)) • \(enabled)"
+        }
+        .joined(separator: "\n")
+    }
+
+    private static func renderAutomationHistory(_ records: [AutomationRunRecord]) -> String {
+        guard !records.isEmpty else {
+            return "No automation runs."
+        }
+
+        return records.enumerated().map { index, record in
+            let firedAt = timestampFormatter.string(from: record.firedAt)
+            return "\(index + 1). \(record.ruleName) • \(record.outcome.title) • \(firedAt)\n   \(record.message)"
+        }
+        .joined(separator: "\n")
+    }
+
+    private static func renderTrigger(_ trigger: AutomationTrigger) -> String {
+        switch trigger {
+        case .weekly(let trigger):
+            let formatter = DateFormatter()
+            formatter.timeStyle = .short
+            let date = Calendar.current.date(from: DateComponents(hour: trigger.hour, minute: trigger.minute)) ?? .now
+            let dayText = trigger.normalizedWeekdays.map(\.shortLabel).joined(separator: ",")
+            return "\(dayText) @ \(formatter.string(from: date))"
+        case .power(let event):
+            return event.title
+        case .calendar(let trigger):
+            let filter = trigger.normalizedTitleContains.map { " • '\($0)'" } ?? ""
+            return "\(trigger.calendarIdentifiers.count) calendars • \(trigger.startsBeforeMinutes)m before\(filter)"
+        }
     }
 }

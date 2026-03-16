@@ -15,6 +15,8 @@ struct CaffeinateSnapshot: Codable, Equatable, Sendable {
     var presetID: UUID?
     var presetName: String?
     var source: CaffeinateSessionSource?
+    var automationRuleID: UUID?
+    var automationRuleName: String?
 
     static let inactive = CaffeinateSnapshot(
         state: .inactive,
@@ -25,7 +27,9 @@ struct CaffeinateSnapshot: Codable, Equatable, Sendable {
         powerMode: nil,
         presetID: nil,
         presetName: nil,
-        source: nil
+        source: nil,
+        automationRuleID: nil,
+        automationRuleName: nil
     )
 
     var effectivePowerMode: PowerMode {
@@ -141,6 +145,10 @@ struct CaffeinateSnapshot: Codable, Equatable, Sendable {
 
             if let presetName {
                 parts.append("for \(presetName)")
+            }
+
+            if let automationRuleName {
+                parts.append("from automation \(automationRuleName)")
             }
 
             parts.append("in \(effectivePowerMode.intentDescription) mode")

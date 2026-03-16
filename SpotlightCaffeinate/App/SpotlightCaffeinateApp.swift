@@ -34,5 +34,10 @@ struct SpotlightCaffeinateApp: App {
             PresetManagerView(controller: controller)
         }
         .defaultSize(width: 720, height: 430)
+
+        Window("Automation Manager", id: "automation-manager") {
+            AutomationManagerView(controller: controller)
+        }
+        .defaultSize(width: 860, height: 560)
     }
 }

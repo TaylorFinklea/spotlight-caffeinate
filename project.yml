@@ -5,8 +5,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: 6.0
-    MARKETING_VERSION: 0.3.0
-    CURRENT_PROJECT_VERSION: 3
+    MARKETING_VERSION: 0.4.0
+    CURRENT_PROJECT_VERSION: 4
 targets:
   SpotlightCaffeinate:
     type: application
@@ -30,9 +30,10 @@ targets:
       path: SpotlightCaffeinate/Info.plist
       properties:
         CFBundleDisplayName: Spotlight Caffeinate
-        CFBundleShortVersionString: "0.3.0"
-        CFBundleVersion: "3"
+        CFBundleShortVersionString: "0.4.0"
+        CFBundleVersion: "4"
         LSUIElement: true
+        NSCalendarsFullAccessUsageDescription: Spotlight Caffeinate uses Calendar access only for optional calendar-based automations.
         NSSupportsAutomaticGraphicsSwitching: true
     scheme:
       gatherCoverageData: false

@@ -186,6 +186,10 @@ struct StatusMenuView: View {
                     openPresetManager()
                 }
 
+                Button("Automations") {
+                    openAutomationManager()
+                }
+
                 settingsDisclosure
 
                 Button("Refresh") {
@@ -260,7 +264,23 @@ struct StatusMenuView: View {
                         openPresetManager()
                     }
                     .buttonStyle(.link)
+
+                    Button("Open Automation Manager") {
+                        openAutomationManager()
+                    }
+                    .buttonStyle(.link)
                 }
+            }
+
+            settingsGroup(
+                title: "Calendar",
+                status: controller.calendarStatus,
+                statusIsError: controller.calendarStatusIsError
+            ) {
+                Button("Open Automation Manager") {
+                    openAutomationManager()
+                }
+                .buttonStyle(.link)
             }
 
             settingsGroup(
@@ -335,5 +355,9 @@ struct StatusMenuView: View {
 
     private func openPresetManager() {
         openWindow(id: "preset-manager")
+    }
+
+    private func openAutomationManager() {
+        openWindow(id: "automation-manager")
     }
 }

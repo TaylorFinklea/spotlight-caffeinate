@@ -15,7 +15,9 @@ struct CaffeinateSnapshotTests {
             powerMode: .full,
             presetID: nil,
             presetName: nil,
-            source: .app
+            source: .app,
+            automationRuleID: nil,
+            automationRuleName: nil
         )
 
         #expect(snapshot.totalDuration == 1_800)
@@ -32,7 +34,9 @@ struct CaffeinateSnapshotTests {
             powerMode: .full,
             presetID: nil,
             presetName: nil,
-            source: .app
+            source: .app,
+            automationRuleID: nil,
+            automationRuleName: nil
         )
 
         #expect(snapshot.remainingFraction(at: testCase.now) == testCase.expectedFraction)
@@ -51,7 +55,9 @@ struct CaffeinateSnapshotTests {
             powerMode: .full,
             presetID: nil,
             presetName: nil,
-            source: .app
+            source: .app,
+            automationRuleID: nil,
+            automationRuleName: nil
         )
 
         #expect(snapshot.remainingText(at: Date(timeIntervalSinceReferenceDate: 0)) == "2m 5s")

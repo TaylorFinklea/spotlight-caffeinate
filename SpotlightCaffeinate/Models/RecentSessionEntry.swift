@@ -9,6 +9,8 @@ struct RecentSessionEntry: Codable, Equatable, Identifiable, Sendable {
     var presetID: UUID?
     var presetName: String?
     var source: CaffeinateSessionSource
+    var automationRuleID: UUID?
+    var automationRuleName: String?
 
     var displayName: String {
         if let presetName, !presetName.isEmpty {
