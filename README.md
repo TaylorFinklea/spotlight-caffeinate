@@ -54,7 +54,9 @@ This app adds that missing layer.
 
 ## Install
 
-The app is distributed as a Homebrew cask:
+### Menu Bar App
+
+The macOS app is distributed as a Homebrew cask:
 
 ```bash
 brew install --cask TaylorFinklea/tap/spotlight-caffeinate
@@ -75,6 +77,16 @@ After launch, use `Cmd-Space` and search for:
 For the start action, tab into the `Minutes` field, type a duration such as `5`, then press `Return`.
 
 If you turn notifications on from the menu bar UI, macOS will ask for notification permission at that moment. You can turn the setting back off at any time.
+
+### CLI Only
+
+For a terminal-only install on a machine where you do not want the app bundle, use the CLI formula:
+
+```bash
+brew install TaylorFinklea/tap/spotlight-caffeinate-cli
+```
+
+This is the preferred non-admin path when Homebrew already lives in a user-writable prefix.
 
 ## Signed Releases
 
@@ -98,6 +110,12 @@ Build a signed and notarized release:
 ./scripts/package_signed_release.sh --team-id YOURTEAMID --notary-profile spotlight-caffeinate-notary
 ```
 
+Build the CLI release tarball for the Homebrew formula:
+
+```bash
+./scripts/package_cli_release.sh
+```
+
 Full setup notes live in [docs/developer-id-notarization.md](docs/developer-id-notarization.md).
 The signed-build validation checklist lives in [docs/release-checklist.md](docs/release-checklist.md).
 
@@ -110,6 +128,12 @@ spotlight-caffeinate-cli start 15
 spotlight-caffeinate-cli status
 spotlight-caffeinate-cli watch
 spotlight-caffeinate-cli stop
+```
+
+If Homebrew is available in a user-owned prefix, prefer:
+
+```bash
+brew install TaylorFinklea/tap/spotlight-caffeinate-cli
 ```
 
 Build and install it into `~/.local/bin`:
@@ -127,6 +151,7 @@ Install it somewhere else by passing a destination directory:
 ```
 
 The CLI uses the same shared state file as the menu bar app, so both surfaces report the same active run.
+If Homebrew is not available, the install script remains the fallback non-admin path.
 
 ## Development
 

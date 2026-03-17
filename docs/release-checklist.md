@@ -28,7 +28,18 @@ These checks must be performed from a signed app copied into `/Applications`.
 
 1. Build the signed release:
    - `./scripts/package_signed_release.sh --team-id <TEAM_ID> --notary-profile <PROFILE>`
-2. Confirm the exported app is notarized and stapled.
-3. Create the GitHub release with `build/SpotlightCaffeinate.zip`.
-4. Update the Homebrew tap cask version and `sha256`.
-5. Verify a fresh Homebrew install of the released cask.
+2. Build the CLI release tarball:
+   - `./scripts/package_cli_release.sh`
+3. Confirm the exported app is notarized and stapled.
+4. Create the GitHub release with both:
+   - `build/SpotlightCaffeinate.zip`
+   - `build/spotlight-caffeinate-cli.tar.gz`
+5. Update the Homebrew tap:
+   - `Casks/spotlight-caffeinate.rb`
+   - `Formula/spotlight-caffeinate-cli.rb`
+   - set the new `version`
+   - set the new SHA256 values
+6. Verify a fresh Homebrew install of the released cask.
+7. Verify a fresh Homebrew install of the released formula:
+   - `brew install TaylorFinklea/tap/spotlight-caffeinate-cli`
+   - `spotlight-caffeinate-cli status`
