@@ -137,6 +137,8 @@ spotlight-caffeinate-cli watch
 spotlight-caffeinate-cli stop
 ```
 
+The installer also creates a short alias, so the same commands can be run as `caf start 15`, `caf status`, and so on.
+
 If Homebrew is available in a user-owned prefix, prefer:
 
 ```bash
@@ -156,7 +158,7 @@ Build and install it into `~/.local/bin`:
 ./scripts/install_cli.sh
 ```
 
-If `~/.local/bin` is not already on your `PATH`, add it in your shell profile before invoking `spotlight-caffeinate-cli` directly.
+If `~/.local/bin` is not already on your `PATH`, add it in your shell profile before invoking `spotlight-caffeinate-cli` or `caf` directly.
 
 Install it somewhere else by passing a destination directory:
 

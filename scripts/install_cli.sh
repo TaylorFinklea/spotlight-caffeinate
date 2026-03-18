@@ -6,6 +6,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 derived_data_path="${DERIVED_DATA_PATH:-$repo_root/build/DerivedData}"
 destination_dir="${1:-$HOME/.local/bin}"
 binary_name="spotlight-caffeinate-cli"
+alias_name="caf"
 binary_path="$derived_data_path/Build/Products/Release/$binary_name"
 
 cd "$repo_root"
@@ -24,5 +25,7 @@ xcodebuild \
 mkdir -p "$destination_dir"
 cp "$binary_path" "$destination_dir/$binary_name"
 chmod +x "$destination_dir/$binary_name"
+ln -sf "$binary_name" "$destination_dir/$alias_name"
 
 echo "Installed $binary_name to $destination_dir/$binary_name"
+echo "Installed alias $alias_name to $destination_dir/$alias_name"

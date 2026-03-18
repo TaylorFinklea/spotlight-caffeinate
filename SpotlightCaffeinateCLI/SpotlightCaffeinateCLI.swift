@@ -4,17 +4,21 @@ import Foundation
 @main
 struct SpotlightCaffeinateCLI {
     static func main() async {
-        let exitCode = await run(arguments: Array(CommandLine.arguments.dropFirst()))
+        let executableName = URL(fileURLWithPath: CommandLine.arguments.first ?? "spotlight-caffeinate-cli").lastPathComponent
+        let exitCode = await run(
+            arguments: Array(CommandLine.arguments.dropFirst()),
+            executableName: executableName
+        )
         Darwin.exit(exitCode)
     }
 
-    private static func run(arguments: [String]) async -> Int32 {
+    private static func run(arguments: [String], executableName: String) async -> Int32 {
         do {
             let command = try SpotlightCaffeinateCLIParser.parse(arguments: arguments)
             return try await execute(command)
         } catch {
             if case CLIParseError.missingCommand = error {
-                printUsage()
+                printUsage(executableName: executableName)
                 return 0
             }
 
@@ -23,7 +27,7 @@ struct SpotlightCaffeinateCLI {
                 fputs("Error: \(message)\n", stderr)
             }
 
-            printUsage()
+            printUsage(executableName: executableName)
             return 1
         }
     }
@@ -266,31 +270,33 @@ struct SpotlightCaffeinateCLI {
         )
     }
 
-    private static func printUsage() {
-        print(
-            """
-            spotlight-caffeinate-cli
+    static func usageText(executableName: String) -> String {
+        """
+        \(executableName)
 
-            Usage:
-              spotlight-caffeinate-cli start <minutes> [--mode <display|system|full>]
-              spotlight-caffeinate-cli start --preset <name>
-              spotlight-caffeinate-cli stop
-              spotlight-caffeinate-cli status [--json]
-              spotlight-caffeinate-cli watch
-              spotlight-caffeinate-cli extend <minutes>
-              spotlight-caffeinate-cli extend --preset <name>
-              spotlight-caffeinate-cli history [--limit N] [--json]
-              spotlight-caffeinate-cli presets list [--json]
-              spotlight-caffeinate-cli automations list [--json]
-              spotlight-caffeinate-cli automations history [--limit N] [--json]
-              spotlight-caffeinate-cli automations enable <id-or-name>
-              spotlight-caffeinate-cli automations disable <id-or-name>
-              spotlight-caffeinate-cli automations delete <id-or-name>
-              spotlight-caffeinate-cli automations add schedule --name <name> --preset <preset> --days Mon,Tue --time 09:00
-              spotlight-caffeinate-cli automations add power --name <name> --preset <preset> --when connected|disconnected
-              spotlight-caffeinate-cli automations add calendar --name <name> --preset <preset> --calendar <name> [--calendar <name> ...] [--starts-before <minutes>] [--title-contains <text>]
-            """
-        )
+        Usage:
+          \(executableName) start <minutes> [--mode <display|system|full>]
+          \(executableName) start --preset <name>
+          \(executableName) stop
+          \(executableName) status [--json]
+          \(executableName) watch
+          \(executableName) extend <minutes>
+          \(executableName) extend --preset <name>
+          \(executableName) history [--limit N] [--json]
+          \(executableName) presets list [--json]
+          \(executableName) automations list [--json]
+          \(executableName) automations history [--limit N] [--json]
+          \(executableName) automations enable <id-or-name>
+          \(executableName) automations disable <id-or-name>
+          \(executableName) automations delete <id-or-name>
+          \(executableName) automations add schedule --name <name> --preset <preset> --days Mon,Tue --time 09:00
+          \(executableName) automations add power --name <name> --preset <preset> --when connected|disconnected
+          \(executableName) automations add calendar --name <name> --preset <preset> --calendar <name> [--calendar <name> ...] [--starts-before <minutes>] [--title-contains <text>]
+        """
+    }
+
+    private static func printUsage(executableName: String) {
+        print(usageText(executableName: executableName))
     }
 
     private static let timestampFormatter: DateFormatter = {
