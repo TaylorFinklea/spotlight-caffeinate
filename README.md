@@ -83,6 +83,13 @@ If you turn notifications on from the menu bar UI, macOS will ask for notificati
 For a terminal-only install on a machine where you do not want the app bundle, use the CLI formula:
 
 ```bash
+brew tap TaylorFinklea/tap
+brew install spotlight-caffeinate-cli
+```
+
+Or install it directly without tapping first:
+
+```bash
 brew install TaylorFinklea/tap/spotlight-caffeinate-cli
 ```
 
@@ -110,7 +117,7 @@ Build a signed and notarized release:
 ./scripts/package_signed_release.sh --team-id YOURTEAMID --notary-profile spotlight-caffeinate-notary
 ```
 
-Build the CLI release tarball for the Homebrew formula:
+Build the CLI release tarball for direct CLI distribution:
 
 ```bash
 ./scripts/package_cli_release.sh
@@ -131,6 +138,13 @@ spotlight-caffeinate-cli stop
 ```
 
 If Homebrew is available in a user-owned prefix, prefer:
+
+```bash
+brew tap TaylorFinklea/tap
+brew install spotlight-caffeinate-cli
+```
+
+Or:
 
 ```bash
 brew install TaylorFinklea/tap/spotlight-caffeinate-cli

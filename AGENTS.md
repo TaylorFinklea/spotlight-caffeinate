@@ -62,7 +62,7 @@
 - `scripts/package_cli_release.sh`
   - Builds the CLI target in `Release`.
   - Packages `spotlight-caffeinate-cli` as `build/spotlight-caffeinate-cli.tar.gz`.
-  - Prints the tarball SHA256 for the Homebrew formula.
+  - Prints the tarball SHA256 for optional direct CLI distribution.
 
 - `scripts/package_signed_release.sh`
   - Archives and exports a Developer ID signed release build.
@@ -97,14 +97,15 @@ When a source change should ship to users:
    - `./scripts/package_signed_release.sh --team-id <TEAM_ID> --notary-profile <PROFILE>`
 5. Build the CLI release artifact:
    - `./scripts/package_cli_release.sh`
-6. Create a GitHub release tag like `v0.4.0` with both:
+6. Create a GitHub release tag like `v0.4.0` with:
    - `build/SpotlightCaffeinate.zip`
-   - `build/spotlight-caffeinate-cli.tar.gz`
+   - optionally `build/spotlight-caffeinate-cli.tar.gz`
 7. Update the Homebrew tap repo `TaylorFinklea/homebrew-tap`:
    - `Casks/spotlight-caffeinate.rb`
    - `Formula/spotlight-caffeinate-cli.rb`
    - set the new `version`
-   - set the new `sha256`
+   - set the cask `sha256` from `SpotlightCaffeinate.zip`
+   - set the formula `sha256` from `https://github.com/TaylorFinklea/spotlight-caffeinate/archive/refs/tags/v<TAG>.tar.gz`
 8. Use `docs/release-checklist.md` for the signed `/Applications` validation pass before announcing the release.
 
 ## Distribution Notes
@@ -114,6 +115,6 @@ When a source change should ship to users:
   - `brew install TaylorFinklea/tap/spotlight-caffeinate-cli`
 - `scripts/package_release.sh` is still the unsigned packaging path for local/dev builds.
 - Release builds intended for end users should prefer `scripts/package_signed_release.sh`.
-- CLI-only Homebrew installs should prefer the prebuilt tarball produced by `scripts/package_cli_release.sh`.
+- CLI-only Homebrew installs use the `spotlight-caffeinate-cli` formula in `TaylorFinklea/homebrew-tap`.
 - Unsigned artifacts may still need quarantine removal after install:
   - `xattr -dr com.apple.quarantine "/Applications/Spotlight Caffeinate.app"`
