@@ -64,6 +64,30 @@ struct CaffeinateSnapshotTests {
         #expect(snapshot.remainingText(at: Date(timeIntervalSinceReferenceDate: 65)) == "1m")
         #expect(snapshot.remainingText(at: Date(timeIntervalSinceReferenceDate: 125)) == "0s")
     }
+
+    @Test
+    func menuSubtitleReflectsRunningMode() {
+        let snapshot = CaffeinateSnapshot(
+            state: .active,
+            pid: 42,
+            startedAt: Date(timeIntervalSinceReferenceDate: 0),
+            endsAt: Date(timeIntervalSinceReferenceDate: 600),
+            minutesRequested: 10,
+            powerMode: .system,
+            presetID: nil,
+            presetName: "Deep Work",
+            source: .app,
+            automationRuleID: nil,
+            automationRuleName: nil
+        )
+
+        #expect(snapshot.menuSubtitle(at: Date(timeIntervalSinceReferenceDate: 60)) == "System mode")
+    }
+
+    @Test
+    func menuSubtitleUsesIdleHintWhenInactive() {
+        #expect(CaffeinateSnapshot.inactive.menuSubtitle(at: .now) == "Keep your Mac awake from the menu bar")
+    }
 }
 
 struct RemainingFractionCase: Sendable {

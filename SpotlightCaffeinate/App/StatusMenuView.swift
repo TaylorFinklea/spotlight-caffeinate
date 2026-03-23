@@ -4,7 +4,6 @@ import SwiftUI
 struct StatusMenuView: View {
     @Bindable var controller: CaffeinateController
     @Environment(\.openWindow) private var openWindow
-    @State private var settingsExpanded = false
 
     private static let timeFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -14,158 +13,198 @@ struct StatusMenuView: View {
     }()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            statusHeader
-            presetsSection
+        VStack(alignment: .leading, spacing: 14) {
+            statusCard
+
             if controller.isRunning {
-                activeSessionSection
+                activeControlsSection
             }
-            customDurationSection
-            if !controller.recentSessions.isEmpty {
-                recentSessionsSection
+
+            presetsSection
+            startComposerSection
+
+            if let latestSession = controller.recentSessions.first {
+                recentSessionSection(latestSession)
             }
+
             footerSection
         }
-        .padding(16)
-        .frame(width: 360)
+        .padding(14)
+        .frame(width: 372)
     }
 
-    private var statusHeader: some View {
+    private var statusCard: some View {
         let now = controller.currentTime
         let remainingFraction = CGFloat(controller.snapshot.remainingFraction(at: now))
 
-        return VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top, spacing: 12) {
-                BoltIconView(fillFraction: remainingFraction, size: 28)
+        return sectionCard(padding: 14) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .top, spacing: 12) {
+                    BoltIconView(fillFraction: remainingFraction, size: 28)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(controller.isRunning ? "Caffeinate Active" : "Caffeinate Idle")
-                        .font(.headline)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(controller.isRunning ? controller.snapshot.displayName : "Caffeinate")
+                            .font(.headline)
 
-                    Text(controller.snapshot.statusLine(at: now))
-                        .font(.subheadline)
-                        .monospacedDigit()
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-            }
-
-            if controller.isRunning, controller.snapshot.startedAt != nil || controller.snapshot.endsAt != nil {
-                HStack(spacing: 14) {
-                    if let startedAt = controller.snapshot.startedAt {
-                        Label("Started at \(startedAt, formatter: Self.timeFormatter)", systemImage: "clock")
+                        Text(controller.snapshot.menuSubtitle(at: now))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
 
-                    if let endsAt = controller.snapshot.endsAt {
-                        Label("Ending at \(endsAt, formatter: Self.timeFormatter)", systemImage: "alarm")
+                    Spacer(minLength: 8)
+
+                    if controller.isRunning {
+                        Text(controller.snapshot.remainingText(at: now))
+                            .font(.title3.weight(.semibold))
+                            .monospacedDigit()
+                            .foregroundStyle(.primary)
                     }
                 }
-                .font(.caption)
-                .foregroundStyle(.secondary)
+
+                if controller.isRunning {
+                    statusMetadataRow
+                }
+
+                if let message = menuBannerMessage {
+                    Text(message.text)
+                        .font(.caption)
+                        .foregroundStyle(message.isError ? .red : .secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+    }
+
+    private var statusMetadataRow: some View {
+        HStack(spacing: 12) {
+            if let startedAt = controller.snapshot.startedAt {
+                Label("Started \(startedAt, formatter: Self.timeFormatter)", systemImage: "clock")
             }
 
-            if let lastError = controller.lastError {
-                Text(lastError)
+            if let endsAt = controller.snapshot.endsAt {
+                Label("Ends \(endsAt, formatter: Self.timeFormatter)", systemImage: "alarm")
+            }
+        }
+        .font(.caption)
+        .foregroundStyle(.secondary)
+    }
+
+    private var activeControlsSection: some View {
+        sectionCard {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Adjust Current Session")
                     .font(.caption)
-                    .foregroundStyle(.red)
+                    .foregroundStyle(.secondary)
+
+                HStack(spacing: 8) {
+                    extendButton(5)
+                    extendButton(15)
+                    extendButton(30)
+                }
+
+                Button("Stop Session", role: .destructive, action: stopSession)
+                    .buttonStyle(.borderedProminent)
+                    .tint(.red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
     }
 
     private var presetsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Quick Start")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+        sectionCard {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Text("Quick Start")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
 
-                Spacer()
+                    Spacer()
 
-                Button("Manage") {
-                    openPresetManager()
+                    Button("Manage", action: openPresetManager)
+                        .buttonStyle(.link)
+                        .font(.caption)
                 }
-                .buttonStyle(.link)
-                .font(.caption)
-            }
 
-            if controller.pinnedPresets.isEmpty {
-                Text("No pinned presets yet. Use Preset Manager to create or pin them.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            } else {
-                HStack(spacing: 8) {
-                    ForEach(Array(controller.pinnedPresets.prefix(4))) { preset in
-                        presetButton(preset)
+                if controller.pinnedPresets.isEmpty {
+                    HStack(spacing: 10) {
+                        Text("No pinned presets yet.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                        Spacer()
+
+                        Button("Open Presets", action: openPresetManager)
+                            .buttonStyle(.bordered)
+                    }
+                } else {
+                    HStack(spacing: 8) {
+                        ForEach(Array(controller.pinnedPresets.prefix(4))) { preset in
+                            presetButton(preset)
+                        }
                     }
                 }
             }
         }
     }
 
-    private var activeSessionSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Active Session")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+    private var startComposerSection: some View {
+        sectionCard {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(controller.isRunning ? "Start New Session" : "Custom Start")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
 
-            HStack(spacing: 8) {
-                extendButton(5)
-                extendButton(15)
-                extendButton(30)
-            }
-
-            Button("Restart Last") {
-                controller.restartLast()
-            }
-            .buttonStyle(.bordered)
-            .disabled(controller.recentSessions.isEmpty)
-        }
-    }
-
-    private var customDurationSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Custom Duration")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
-            Stepper(value: $controller.suggestedMinutes, in: 1...480) {
-                Text("\(controller.suggestedMinutes) minutes")
-            }
-
-            Picker("Power Mode", selection: $controller.suggestedPowerMode) {
-                ForEach(PowerMode.allCases) { mode in
-                    Text(mode.title).tag(mode)
+                Stepper(value: $controller.suggestedMinutes, in: 1...480) {
+                    Text("\(controller.suggestedMinutes) minutes")
+                        .font(.body.weight(.medium))
                 }
-            }
-            .pickerStyle(.segmented)
 
-            Button(controller.isRunning ? "Restart for \(controller.suggestedMinutes) Minutes" : "Start for \(controller.suggestedMinutes) Minutes") {
-                controller.start()
+                Picker("Power Mode", selection: $controller.suggestedPowerMode) {
+                    ForEach(PowerMode.allCases) { mode in
+                        Text(mode.title).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                Text(controller.suggestedPowerMode.detailText)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Button(startButtonTitle, action: startSession)
+                    .buttonStyle(.borderedProminent)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .buttonStyle(.borderedProminent)
         }
     }
 
-    private var recentSessionsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Recent Sessions")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+    private func recentSessionSection(_ entry: RecentSessionEntry) -> some View {
+        sectionCard {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Text("Latest Session")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
 
-            ForEach(controller.recentSessions) { entry in
+                    Spacer()
+
+                    Button("Restart Last", action: restartLastSession)
+                        .buttonStyle(.bordered)
+                }
+
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(entry.displayName)
-                        Text("\(entry.minutesRequested)m • \(entry.powerMode.title) • \(entry.source.title)")
+                            .font(.body.weight(.medium))
+
+                        Text(entry.summaryLine)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
 
                     Spacer()
 
-                    Text("\(entry.endedAt, formatter: Self.timeFormatter)")
+                    Text(entry.endedAt, formatter: Self.timeFormatter)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -177,38 +216,21 @@ struct StatusMenuView: View {
         VStack(alignment: .leading, spacing: 10) {
             Divider()
 
-            if settingsExpanded {
-                settingsSection
+            HStack(spacing: 8) {
+                Button("Presets", action: openPresetManager)
+                Button("Automations", action: openAutomationManager)
+                Button("Settings", action: openSettings)
             }
+            .controlSize(.small)
 
             HStack {
-                Button("Presets") {
-                    openPresetManager()
-                }
-
-                Button("Automations") {
-                    openAutomationManager()
-                }
-
-                settingsDisclosure
-
-                Button("Refresh") {
-                    Task {
-                        await controller.refresh()
-                    }
-                }
-
-                if controller.isRunning {
-                    Button("Stop") {
-                        controller.stop()
-                    }
-                }
+                Button("Refresh", action: refresh)
+                    .controlSize(.small)
 
                 Spacer()
 
-                Button("Quit") {
-                    NSApplication.shared.terminate(nil)
-                }
+                Button("Quit", action: quitApp)
+                    .controlSize(.small)
             }
 
             Text("Spotlight actions: Start, Stop, Check Status")
@@ -217,124 +239,35 @@ struct StatusMenuView: View {
         }
     }
 
-    private var settingsDisclosure: some View {
-        Button {
-            settingsExpanded.toggle()
-        } label: {
-            HStack(spacing: 6) {
-                Label("Settings", systemImage: "gearshape")
-
-                Image(systemName: settingsExpanded ? "chevron.up" : "chevron.down")
-                    .font(.caption.weight(.semibold))
-            }
-        }
+    private var startButtonTitle: String {
+        controller.isRunning
+            ? "Restart for \(controller.suggestedMinutes) Minutes"
+            : "Start for \(controller.suggestedMinutes) Minutes"
     }
 
-    private var settingsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            settingsGroup(
-                title: "Menu Bar",
-                status: "Turn this off to show only the icon. The icon drains as the session counts down.",
-                statusIsError: false
-            ) {
-                Toggle(
-                    "Show Remaining Time in Menu Bar",
-                    isOn: Binding(
-                        get: { controller.showMenuBarTime },
-                        set: { controller.setShowMenuBarTime($0) }
-                    )
-                )
-            }
-
-            settingsGroup(
-                title: "App",
-                status: controller.launchAtLoginStatus,
-                statusIsError: controller.launchAtLoginStatusIsError
-            ) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Toggle(
-                        "Open Spotlight Caffeinate at Login",
-                        isOn: Binding(
-                            get: { controller.launchAtLoginEnabled },
-                            set: { controller.setLaunchAtLoginEnabled($0) }
-                        )
-                    )
-
-                    Button("Open Preset Manager") {
-                        openPresetManager()
-                    }
-                    .buttonStyle(.link)
-
-                    Button("Open Automation Manager") {
-                        openAutomationManager()
-                    }
-                    .buttonStyle(.link)
-                }
-            }
-
-            settingsGroup(
-                title: "Calendar",
-                status: controller.calendarStatus,
-                statusIsError: controller.calendarStatusIsError
-            ) {
-                Button("Open Automation Manager") {
-                    openAutomationManager()
-                }
-                .buttonStyle(.link)
-            }
-
-            settingsGroup(
-                title: "Notifications",
-                status: controller.notificationStatus,
-                statusIsError: controller.notificationStatusIsError
-            ) {
-                VStack(alignment: .leading, spacing: 8) {
-                    if controller.notificationAuthorizationState == .granted {
-                        Toggle(
-                            "Notify When Caffeinate Ends",
-                            isOn: Binding(
-                                get: { controller.notificationsEnabled },
-                                set: { controller.setNotificationsEnabled($0) }
-                            )
-                        )
-                    } else {
-                        Button("Enable Notifications") {
-                            controller.requestNotificationAuthorization()
-                        }
-                        .buttonStyle(.borderedProminent)
-
-                        Button("Open Notification Settings") {
-                            controller.openNotificationSettings()
-                        }
-                        .buttonStyle(.link)
-                    }
-                }
-            }
+    private var menuBannerMessage: (text: String, isError: Bool)? {
+        if let lastError = controller.lastError {
+            return (lastError, true)
         }
-        .padding(12)
-        .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+        if controller.isRunning, controller.notificationAuthorizationState == .denied {
+            return ("Completion alerts are off. Open Settings to restore notifications.", false)
+        }
+
+        return nil
     }
 
-    private func settingsGroup<Content: View>(
-        title: String,
-        status: String?,
-        statusIsError: Bool,
+    private func sectionCard<Content: View>(
+        padding: CGFloat = 12,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
-            content()
-
-            if let status {
-                Text(status)
-                    .font(.caption)
-                    .foregroundStyle(statusIsError ? .red : .secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
+        content()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(padding)
+            .background(
+                .quaternary.opacity(0.3),
+                in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+            )
     }
 
     private func presetButton(_ preset: CaffeinatePreset) -> some View {
@@ -353,11 +286,37 @@ struct StatusMenuView: View {
         .frame(maxWidth: .infinity)
     }
 
+    private func startSession() {
+        controller.start()
+    }
+
+    private func stopSession() {
+        controller.stop()
+    }
+
+    private func restartLastSession() {
+        controller.restartLast()
+    }
+
+    private func refresh() {
+        Task {
+            await controller.refresh()
+        }
+    }
+
     private func openPresetManager() {
         openWindow(id: "preset-manager")
     }
 
     private func openAutomationManager() {
         openWindow(id: "automation-manager")
+    }
+
+    private func openSettings() {
+        openWindow(id: "settings")
+    }
+
+    private func quitApp() {
+        NSApplication.shared.terminate(nil)
     }
 }

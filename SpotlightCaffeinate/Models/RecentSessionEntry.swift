@@ -19,4 +19,8 @@ struct RecentSessionEntry: Codable, Equatable, Identifiable, Sendable {
 
         return "\(minutesRequested)m Session"
     }
+
+    var summaryLine: String {
+        "\(minutesRequested)m • \(powerMode.title) • \(source.title)"
+    }
 }

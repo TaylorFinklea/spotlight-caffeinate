@@ -39,5 +39,10 @@ struct SpotlightCaffeinateApp: App {
             AutomationManagerView(controller: controller)
         }
         .defaultSize(width: 860, height: 560)
+
+        Window("Settings", id: "settings") {
+            SettingsView(controller: controller)
+        }
+        .defaultSize(width: 420, height: 320)
     }
 }

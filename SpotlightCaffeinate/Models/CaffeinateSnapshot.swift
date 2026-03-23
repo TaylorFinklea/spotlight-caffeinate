@@ -163,6 +163,18 @@ struct CaffeinateSnapshot: Codable, Equatable, Sendable {
         spokenStatus(at: .now)
     }
 
+    func menuSubtitle(at now: Date) -> String {
+        if isRunning(at: now) {
+            return "\(effectivePowerMode.title) mode"
+        }
+
+        return "Keep your Mac awake from the menu bar"
+    }
+
+    var menuSubtitle: String {
+        menuSubtitle(at: .now)
+    }
+
     func menuBarTitle(at now: Date) -> String {
         isRunning(at: now) ? remainingText(at: now) : "Idle"
     }
