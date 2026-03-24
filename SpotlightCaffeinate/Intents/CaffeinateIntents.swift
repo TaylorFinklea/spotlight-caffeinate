@@ -1,59 +1,6 @@
 import AppIntents
 import SwiftUI
 
-struct CaffeinatePresetEntity: AppEntity, Identifiable, Sendable {
-    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Caffeinate Preset")
-    static let defaultQuery = CaffeinatePresetQuery()
-
-    let id: UUID
-    let name: String
-    let minutes: Int
-    let powerMode: PowerMode
-
-    var displayRepresentation: DisplayRepresentation {
-        DisplayRepresentation(
-            title: LocalizedStringResource(stringLiteral: name),
-            subtitle: LocalizedStringResource(stringLiteral: "\(minutes)m • \(powerMode.title)")
-        )
-    }
-
-    init(_ preset: CaffeinatePreset) {
-        id = preset.id
-        name = preset.name
-        minutes = preset.minutes
-        powerMode = preset.powerMode
-    }
-}
-
-struct CaffeinatePresetQuery: EntityStringQuery {
-    func entities(for identifiers: [UUID]) async throws -> [CaffeinatePresetEntity] {
-        let presets = try await CaffeinateService.shared.presets()
-        let lookup = Set(identifiers)
-        return presets
-            .filter { lookup.contains($0.id) }
-            .map(CaffeinatePresetEntity.init)
-    }
-
-    func suggestedEntities() async throws -> [CaffeinatePresetEntity] {
-        try await CaffeinateService.shared.presets().map(CaffeinatePresetEntity.init)
-    }
-
-    func entities(matching string: String) async throws -> [CaffeinatePresetEntity] {
-        let search = string.trimmingCharacters(in: .whitespacesAndNewlines)
-        let presets = try await CaffeinateService.shared.presets()
-
-        guard !search.isEmpty else {
-            return presets.map(CaffeinatePresetEntity.init)
-        }
-
-        return presets
-            .filter { preset in
-                preset.name.localizedCaseInsensitiveContains(search)
-            }
-            .map(CaffeinatePresetEntity.init)
-    }
-}
-
 struct StartCaffeinateIntent: AppIntent {
     static let title: LocalizedStringResource = "Start Caffeinate"
     static let description = IntentDescription("Start caffeinate for a custom number of minutes.")
@@ -86,33 +33,20 @@ struct StartCaffeinateIntent: AppIntent {
 
 struct StartPresetIntent: AppIntent {
     static let title: LocalizedStringResource = "Start Preset"
-    static let description = IntentDescription("Start caffeinate using one of your saved presets.")
-    static let supportedModes: IntentModes = .background
-
-    @Parameter(
-        title: "Preset",
-        requestValueDialog: IntentDialog("Which preset should run?")
-    )
-    var preset: CaffeinatePresetEntity
+    static let description = IntentDescription("Open Spotlight Caffeinate so you can choose one of your saved presets.")
+    static let openAppWhenRun = true
+    static let supportedModes: IntentModes = .foreground
 
     static var parameterSummary: some ParameterSummary {
-        Summary("Start \(\.$preset)")
+        Summary("Start a saved preset")
     }
 
-    func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView {
-        let snapshot = try await CaffeinateService.shared.startPreset(id: preset.id, source: .spotlight)
-        let now = Date()
-
+    func perform() async throws -> some IntentResult & ProvidesDialog {
+        await MainActor.run {
+            PresetRunnerWindowController.shared.show()
+        }
         return .result(
-            dialog: IntentDialog(stringLiteral: CaffeinateIntentMessageFormatter.startDialog(
-                for: snapshot,
-                fallbackMinutes: preset.minutes
-            )),
-            view: CaffeinateStatusSnippetView(
-                snapshot: snapshot,
-                title: "Caffeinate Active",
-                now: now
-            )
+            dialog: IntentDialog("Choose a preset in Spotlight Caffeinate.")
         )
     }
 }
@@ -258,7 +192,6 @@ struct SpotlightCaffeinateShortcuts: AppShortcutsProvider {
         AppShortcut(
             intent: StartPresetIntent(),
             phrases: [
-                "Start \(\.$preset) with \(.applicationName)",
                 "Start preset with \(.applicationName)",
                 "Run a caffeinate preset with \(.applicationName)"
             ],

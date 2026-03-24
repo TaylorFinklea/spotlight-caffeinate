@@ -27,6 +27,7 @@
 		3B9972A249CAB40C40D5241C /* CaffeinateStatusFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5B0BCBCDC5CF187E9CF774 /* CaffeinateStatusFormatter.swift */; };
 		4715E4C24FB93A1D1485E202 /* AutomationRunRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 687DBBEA32D01D58B34AD925 /* AutomationRunRecord.swift */; };
 		4960D904E92DC65648507B6D /* AutomationRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A83D8663F315BF9E58BC485 /* AutomationRule.swift */; };
+		4C4EB75503E2E3EE2138B795 /* PresetRunnerWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1E460CEB38D8F95438D05B /* PresetRunnerWindowController.swift */; };
 		4C6A015EBF4B6DA1AEBA6B12 /* CaffeinateProcessController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0EEEBCF64C1E45B00212D42 /* CaffeinateProcessController.swift */; };
 		4EB5E932A26CD15A29B71E16 /* CaffeinateSessionSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3281D8A1F055106E3354D4C7 /* CaffeinateSessionSource.swift */; };
 		50601E177E7D558CA29589C4 /* AutomationRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A83D8663F315BF9E58BC485 /* AutomationRule.swift */; };
@@ -122,6 +123,7 @@
 		96164FBDAACFA011FBA6958E /* CaffeinateStatusFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateStatusFormatterTests.swift; sourceTree = "<group>"; };
 		9993ED89DFF747B0A5FCB4D2 /* AutomationPowerSourceProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomationPowerSourceProvider.swift; sourceTree = "<group>"; };
 		9A83D8663F315BF9E58BC485 /* AutomationRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomationRule.swift; sourceTree = "<group>"; };
+		9C1E460CEB38D8F95438D05B /* PresetRunnerWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetRunnerWindowController.swift; sourceTree = "<group>"; };
 		A0EEEBCF64C1E45B00212D42 /* CaffeinateProcessController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateProcessController.swift; sourceTree = "<group>"; };
 		ABA156B79414F9C48608179E /* NotificationCenterDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCenterDelegate.swift; sourceTree = "<group>"; };
 		B3D6A7C14BF00564D09FBD99 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -184,6 +186,7 @@
 				36E7F2962E86312CA442468E /* CaffeinateController.swift */,
 				ABA156B79414F9C48608179E /* NotificationCenterDelegate.swift */,
 				DC6A8D184C1C4D1F3184ACE5 /* PresetManagerView.swift */,
+				9C1E460CEB38D8F95438D05B /* PresetRunnerWindowController.swift */,
 				B5EC6707C3D1892D5CF71F28 /* SettingsView.swift */,
 				023F546C09192BEB6AF4065B /* SpotlightCaffeinateApp.swift */,
 				2E2430731258FFD7AF398CC7 /* StatusMenuView.swift */,
@@ -459,6 +462,7 @@
 				999AA9ABEEAC6D0E431D4D29 /* NotificationCenterDelegate.swift in Sources */,
 				8C435407344ED66222D1A03F /* PowerMode.swift in Sources */,
 				6260AC0061EFD90A5A0F0BE3 /* PresetManagerView.swift in Sources */,
+				4C4EB75503E2E3EE2138B795 /* PresetRunnerWindowController.swift in Sources */,
 				24F2273315EFB4DB180C4D94 /* RecentSessionEntry.swift in Sources */,
 				337BFAE7B2821E7B602FB0DC /* SettingsView.swift in Sources */,
 				E1D01DC49F01DC3BBC9028E6 /* SpotlightCaffeinateApp.swift in Sources */,
