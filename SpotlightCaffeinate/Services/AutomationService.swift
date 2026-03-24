@@ -49,13 +49,11 @@ actor AutomationService {
         sessionService: CaffeinateService = .shared,
         calendarStore: any AutomationCalendarStoreControlling = SystemAutomationCalendarStore()
     ) {
-        let baseDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-            ?? URL(fileURLWithPath: NSHomeDirectory()).appending(path: "Library/Application Support", directoryHint: .isDirectory)
         self.sessionService = sessionService
         self.calendarStore = calendarStore
         now = Date.init
 
-        let appDirectory = baseDirectory.appending(path: "SpotlightCaffeinate", directoryHint: .isDirectory)
+        let appDirectory = SpotlightCaffeinatePaths.applicationSupportDirectory()
         automationsURL = appDirectory.appending(path: "automations.json")
         historyURL = appDirectory.appending(path: "automation-history.json")
 

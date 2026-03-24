@@ -18,7 +18,7 @@ enum CaffeinateServiceError: LocalizedError {
         case .invalidPresetName:
             return "Preset names cannot be empty."
         case .failedToLaunch(let reason):
-            return "Unable to launch caffeinate: \(reason)"
+            return "Unable to start the keep-awake session: \(reason)"
         case .failedToPersist(let reason):
             return "Unable to save app state: \(reason)"
         case .failedToReadState(let reason):
@@ -68,13 +68,11 @@ actor CaffeinateService {
     private static let historyLimit = 20
 
     init(notificationService: CaffeinateNotificationService = .shared) {
-        let baseDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-            ?? URL(fileURLWithPath: NSHomeDirectory()).appending(path: "Library/Application Support", directoryHint: .isDirectory)
         self.notificationService = notificationService
         processController = SystemCaffeinateProcessController()
         now = Date.init
 
-        let appDirectory = baseDirectory.appending(path: "SpotlightCaffeinate", directoryHint: .isDirectory)
+        let appDirectory = SpotlightCaffeinatePaths.applicationSupportDirectory()
         stateURL = appDirectory.appending(path: "state.json")
         presetsURL = appDirectory.appending(path: "presets.json")
         historyURL = appDirectory.appending(path: "history.json")

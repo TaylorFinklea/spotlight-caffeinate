@@ -30,6 +30,7 @@
 		4C6A015EBF4B6DA1AEBA6B12 /* CaffeinateProcessController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0EEEBCF64C1E45B00212D42 /* CaffeinateProcessController.swift */; };
 		4EB5E932A26CD15A29B71E16 /* CaffeinateSessionSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3281D8A1F055106E3354D4C7 /* CaffeinateSessionSource.swift */; };
 		50601E177E7D558CA29589C4 /* AutomationRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A83D8663F315BF9E58BC485 /* AutomationRule.swift */; };
+		53431A480759D63A478494E2 /* SpotlightCaffeinatePaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41DBBE19AFB966736F439D33 /* SpotlightCaffeinatePaths.swift */; };
 		5893992BA959E1FF4B5BC059 /* SpotlightCaffeinateCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BADBC26D038A002B754F0B5 /* SpotlightCaffeinateCLI.swift */; };
 		5C86BC47FC80D921F7816F9E /* CaffeinateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC3857F8AD00A17FF0BAAC9B /* CaffeinateService.swift */; };
 		5EE89421C8C496BE734F1227 /* SpotlightCaffeinateCLICommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 124A35F82C89F349E1A8E6B1 /* SpotlightCaffeinateCLICommand.swift */; };
@@ -51,12 +52,14 @@
 		9D8679585ED4AC2C3F72CA31 /* SpotlightCaffeinateCLICommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 124A35F82C89F349E1A8E6B1 /* SpotlightCaffeinateCLICommand.swift */; };
 		9E5A456EC9E00561B8B433C1 /* CaffeinateSessionSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3281D8A1F055106E3354D4C7 /* CaffeinateSessionSource.swift */; };
 		A0610CF00EEEB8D7CC485D09 /* CaffeinateIntentMessageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D361674B647B0C8C35994A18 /* CaffeinateIntentMessageFormatter.swift */; };
+		A1DC53F054EC170AAEB5ADA3 /* SpotlightCaffeinatePaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41DBBE19AFB966736F439D33 /* SpotlightCaffeinatePaths.swift */; };
 		A6DCB1C2AAE754BFDCC2C2EA /* CaffeinatePreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0D92D3C68734EE4D3847DF /* CaffeinatePreset.swift */; };
 		A966E115A917CA7E04608EAC /* CaffeinateStatusFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96164FBDAACFA011FBA6958E /* CaffeinateStatusFormatterTests.swift */; };
 		B4046FBA7CFA77BD71A80518 /* CaffeinateNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934B068A4F0818E26BB81619 /* CaffeinateNotificationService.swift */; };
 		B6B15CCFF43ECC4F28CD9A0A /* AutomationCalendarStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B56CB1AA8833324FA6222CF8 /* AutomationCalendarStore.swift */; };
 		B79F29D757420DB3BC14D146 /* AutomationRunRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 687DBBEA32D01D58B34AD925 /* AutomationRunRecord.swift */; };
 		B82BB33FEF6AACB10D296ACB /* CaffeinateIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12B4E366227AFA92A38B89DB /* CaffeinateIntents.swift */; };
+		BFB382D6E4D8ED28AE168A9E /* SpotlightCaffeinatePaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41DBBE19AFB966736F439D33 /* SpotlightCaffeinatePaths.swift */; };
 		C568D63893A07D34395D605B /* CaffeinateSessionSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3281D8A1F055106E3354D4C7 /* CaffeinateSessionSource.swift */; };
 		C8105E2A253EAE53E6FEFCAE /* CaffeinateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC3857F8AD00A17FF0BAAC9B /* CaffeinateService.swift */; };
 		C849AA7B81D2138ACECE87E8 /* CaffeinateController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36E7F2962E86312CA442468E /* CaffeinateController.swift */; };
@@ -101,6 +104,7 @@
 		36E7F2962E86312CA442468E /* CaffeinateController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateController.swift; sourceTree = "<group>"; };
 		3B5B0BCBCDC5CF187E9CF774 /* CaffeinateStatusFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateStatusFormatter.swift; sourceTree = "<group>"; };
 		3E86A2FF81B718DE23ED2D7D /* SpotlightCaffeinate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpotlightCaffeinate.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		41DBBE19AFB966736F439D33 /* SpotlightCaffeinatePaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightCaffeinatePaths.swift; sourceTree = "<group>"; };
 		44B3064CCC9C71AB532C285C /* LaunchAtLoginService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginService.swift; sourceTree = "<group>"; };
 		5140115420CD7C5CA54132A2 /* CaffeinateSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateSnapshot.swift; sourceTree = "<group>"; };
 		5373A7EF9069C25E4C0E7222 /* RecentSessionEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentSessionEntryTests.swift; sourceTree = "<group>"; };
@@ -109,6 +113,7 @@
 		687DBBEA32D01D58B34AD925 /* AutomationRunRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomationRunRecord.swift; sourceTree = "<group>"; };
 		68D212A75533BCC51905A63F /* AutomationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomationServiceTests.swift; sourceTree = "<group>"; };
 		703E5325FF1425977F518A1B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		713375CC942615BE2DA8C494 /* SpotlightCaffeinate.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SpotlightCaffeinate.entitlements; sourceTree = "<group>"; };
 		76E675238CEA486E99B64548 /* SpotlightCaffeinateCLICommandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightCaffeinateCLICommandTests.swift; sourceTree = "<group>"; };
 		79DD29BA8ACF0F14EA30FA55 /* AutomationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomationService.swift; sourceTree = "<group>"; };
 		7BADBC26D038A002B754F0B5 /* SpotlightCaffeinateCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightCaffeinateCLI.swift; sourceTree = "<group>"; };
@@ -160,6 +165,7 @@
 			children = (
 				B3D6A7C14BF00564D09FBD99 /* Assets.xcassets */,
 				703E5325FF1425977F518A1B /* Info.plist */,
+				713375CC942615BE2DA8C494 /* SpotlightCaffeinate.entitlements */,
 				217023042EB9E70E8FA11B24 /* App */,
 				C50D78762444B8C2B110292B /* Intents */,
 				6C5DEEB06E0ED304B85F2F9A /* Models */,
@@ -195,6 +201,7 @@
 				A0EEEBCF64C1E45B00212D42 /* CaffeinateProcessController.swift */,
 				3B5B0BCBCDC5CF187E9CF774 /* CaffeinateStatusFormatter.swift */,
 				124A35F82C89F349E1A8E6B1 /* SpotlightCaffeinateCLICommand.swift */,
+				41DBBE19AFB966736F439D33 /* SpotlightCaffeinatePaths.swift */,
 			);
 			path = Support;
 			sourceTree = "<group>";
@@ -391,6 +398,7 @@
 				08C2E04531335DD9063CB6E9 /* RecentSessionEntryTests.swift in Sources */,
 				9D8679585ED4AC2C3F72CA31 /* SpotlightCaffeinateCLICommand.swift in Sources */,
 				EDC210277B56F06EA1EBEC30 /* SpotlightCaffeinateCLICommandTests.swift in Sources */,
+				53431A480759D63A478494E2 /* SpotlightCaffeinatePaths.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -418,6 +426,7 @@
 				783AF268E497093756CBE7E1 /* RecentSessionEntry.swift in Sources */,
 				5893992BA959E1FF4B5BC059 /* SpotlightCaffeinateCLI.swift in Sources */,
 				FCCD9583F469DD96125046B8 /* SpotlightCaffeinateCLICommand.swift in Sources */,
+				BFB382D6E4D8ED28AE168A9E /* SpotlightCaffeinatePaths.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -454,6 +463,7 @@
 				337BFAE7B2821E7B602FB0DC /* SettingsView.swift in Sources */,
 				E1D01DC49F01DC3BBC9028E6 /* SpotlightCaffeinateApp.swift in Sources */,
 				5EE89421C8C496BE734F1227 /* SpotlightCaffeinateCLICommand.swift in Sources */,
+				A1DC53F054EC170AAEB5ADA3 /* SpotlightCaffeinatePaths.swift in Sources */,
 				6F439079E0A0CCEA81AFC6B0 /* StatusMenuView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -529,6 +539,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = SpotlightCaffeinate/SpotlightCaffeinate.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = "";
@@ -638,6 +649,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = SpotlightCaffeinate/SpotlightCaffeinate.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = "";
