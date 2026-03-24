@@ -1,27 +1,56 @@
 import AppIntents
 import SwiftUI
 
-struct PresetNameOptionsProvider: DynamicOptionsProvider {
-    typealias Result = ItemCollection<String>
+struct CaffeinatePresetEntity: AppEntity, Identifiable, Sendable {
+    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Caffeinate Preset")
+    static let defaultQuery = CaffeinatePresetQuery()
 
-    func results() async throws -> ItemCollection<String> {
+    let id: UUID
+    let name: String
+    let minutes: Int
+    let powerMode: PowerMode
+
+    var displayRepresentation: DisplayRepresentation {
+        DisplayRepresentation(
+            title: LocalizedStringResource(stringLiteral: name),
+            subtitle: LocalizedStringResource(stringLiteral: "\(minutes)m • \(powerMode.title)")
+        )
+    }
+
+    init(_ preset: CaffeinatePreset) {
+        id = preset.id
+        name = preset.name
+        minutes = preset.minutes
+        powerMode = preset.powerMode
+    }
+}
+
+struct CaffeinatePresetQuery: EntityStringQuery {
+    func entities(for identifiers: [UUID]) async throws -> [CaffeinatePresetEntity] {
+        let presets = try await CaffeinateService.shared.presets()
+        let lookup = Set(identifiers)
+        return presets
+            .filter { lookup.contains($0.id) }
+            .map(CaffeinatePresetEntity.init)
+    }
+
+    func suggestedEntities() async throws -> [CaffeinatePresetEntity] {
+        try await CaffeinateService.shared.presets().map(CaffeinatePresetEntity.init)
+    }
+
+    func entities(matching string: String) async throws -> [CaffeinatePresetEntity] {
+        let search = string.trimmingCharacters(in: .whitespacesAndNewlines)
         let presets = try await CaffeinateService.shared.presets()
 
-        guard !presets.isEmpty else {
-            return .empty
+        guard !search.isEmpty else {
+            return presets.map(CaffeinatePresetEntity.init)
         }
 
-        let items = presets.map { preset in
-            Item(
-                preset.name,
-                title: LocalizedStringResource(stringLiteral: preset.name),
-                subtitle: LocalizedStringResource(stringLiteral: "\(preset.minutes)m • \(preset.powerMode.title)")
-            )
-        }
-
-        return ItemCollection(sections: [
-            ItemSection(items: items)
-        ])
+        return presets
+            .filter { preset in
+                preset.name.localizedCaseInsensitiveContains(search)
+            }
+            .map(CaffeinatePresetEntity.init)
     }
 }
 
@@ -62,23 +91,22 @@ struct StartPresetIntent: AppIntent {
 
     @Parameter(
         title: "Preset",
-        requestValueDialog: IntentDialog("Which preset should run?"),
-        optionsProvider: PresetNameOptionsProvider()
+        requestValueDialog: IntentDialog("Which preset should run?")
     )
-    var presetName: String
+    var preset: CaffeinatePresetEntity
 
     static var parameterSummary: some ParameterSummary {
-        Summary("Start preset \(\.$presetName)")
+        Summary("Start \(\.$preset)")
     }
 
     func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView {
-        let snapshot = try await CaffeinateService.shared.startPreset(named: presetName, source: .spotlight)
+        let snapshot = try await CaffeinateService.shared.startPreset(id: preset.id, source: .spotlight)
         let now = Date()
 
         return .result(
             dialog: IntentDialog(stringLiteral: CaffeinateIntentMessageFormatter.startDialog(
                 for: snapshot,
-                fallbackMinutes: snapshot.minutesRequested ?? 0
+                fallbackMinutes: preset.minutes
             )),
             view: CaffeinateStatusSnippetView(
                 snapshot: snapshot,
@@ -230,6 +258,7 @@ struct SpotlightCaffeinateShortcuts: AppShortcutsProvider {
         AppShortcut(
             intent: StartPresetIntent(),
             phrases: [
+                "Start \(\.$preset) with \(.applicationName)",
                 "Start preset with \(.applicationName)",
                 "Run a caffeinate preset with \(.applicationName)"
             ],
