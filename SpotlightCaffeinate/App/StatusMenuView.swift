@@ -305,18 +305,26 @@ struct StatusMenuView: View {
     }
 
     private func openPresetManager() {
-        openWindow(id: "preset-manager")
+        openAuxiliaryWindow(id: "preset-manager")
     }
 
     private func openAutomationManager() {
-        openWindow(id: "automation-manager")
+        openAuxiliaryWindow(id: "automation-manager")
     }
 
     private func openSettings() {
-        openWindow(id: "settings")
+        openAuxiliaryWindow(id: "settings")
     }
 
     private func quitApp() {
         NSApplication.shared.terminate(nil)
+    }
+
+    private func openAuxiliaryWindow(id: String) {
+        NSApplication.shared.activate(ignoringOtherApps: true)
+
+        Task { @MainActor in
+            openWindow(id: id)
+        }
     }
 }
