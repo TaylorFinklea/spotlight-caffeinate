@@ -1,60 +1,10 @@
 import AppIntents
 import SwiftUI
 
-struct CaffeinatePresetEntity: AppEntity, Identifiable, Sendable {
-    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Caffeinate Preset")
-    static let defaultQuery = CaffeinatePresetQuery()
-
-    let id: String
-    let name: String
-    let minutes: Int
-    let powerMode: PowerMode
-
-    var displayRepresentation: DisplayRepresentation {
-        DisplayRepresentation(
-            title: "\(name)",
-            subtitle: "\(minutes)m • \(powerMode.title)"
-        )
-    }
-
-    fileprivate var uuid: UUID? {
-        UUID(uuidString: id)
-    }
-
-    init(_ preset: CaffeinatePreset) {
-        id = preset.id.uuidString
-        name = preset.name
-        minutes = preset.minutes
-        powerMode = preset.powerMode
-    }
-}
-
-struct CaffeinatePresetQuery: EntityStringQuery {
-    func entities(for identifiers: [String]) async throws -> [CaffeinatePresetEntity] {
+struct PresetNameOptionsProvider: DynamicOptionsProvider {
+    func results() async throws -> [String] {
         let presets = try await CaffeinateService.shared.presets()
-        let lookup = Set(identifiers)
-        return presets
-            .filter { lookup.contains($0.id.uuidString) }
-            .map(CaffeinatePresetEntity.init)
-    }
-
-    func suggestedEntities() async throws -> [CaffeinatePresetEntity] {
-        try await CaffeinateService.shared.presets().map(CaffeinatePresetEntity.init)
-    }
-
-    func entities(matching string: String) async throws -> [CaffeinatePresetEntity] {
-        let search = string.trimmingCharacters(in: .whitespacesAndNewlines)
-        let presets = try await CaffeinateService.shared.presets()
-
-        guard !search.isEmpty else {
-            return presets.map(CaffeinatePresetEntity.init)
-        }
-
-        return presets
-            .filter { preset in
-                preset.name.localizedCaseInsensitiveContains(search)
-            }
-            .map(CaffeinatePresetEntity.init)
+        return presets.map(\.name)
     }
 }
 
@@ -93,23 +43,26 @@ struct StartPresetIntent: AppIntent {
     static let description = IntentDescription("Start caffeinate using one of your saved presets.")
     static let supportedModes: IntentModes = .background
 
-    @Parameter(title: "Preset")
-    var preset: CaffeinatePresetEntity
+    @Parameter(
+        title: "Preset",
+        requestValueDialog: IntentDialog("Which preset should run?"),
+        optionsProvider: PresetNameOptionsProvider()
+    )
+    var presetName: String
 
     static var parameterSummary: some ParameterSummary {
-        Summary("Start \(\.$preset)")
+        Summary("Start preset \(\.$presetName)")
     }
 
     func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView {
-        guard let presetID = preset.uuid else {
-            throw CaffeinateServiceError.presetNotFound(preset.name)
-        }
-
-        let snapshot = try await CaffeinateService.shared.startPreset(id: presetID, source: .spotlight)
+        let snapshot = try await CaffeinateService.shared.startPreset(named: presetName, source: .spotlight)
         let now = Date()
 
         return .result(
-            dialog: IntentDialog(stringLiteral: CaffeinateIntentMessageFormatter.startDialog(for: snapshot, fallbackMinutes: preset.minutes)),
+            dialog: IntentDialog(stringLiteral: CaffeinateIntentMessageFormatter.startDialog(
+                for: snapshot,
+                fallbackMinutes: snapshot.minutesRequested ?? 0
+            )),
             view: CaffeinateStatusSnippetView(
                 snapshot: snapshot,
                 title: "Caffeinate Active",
