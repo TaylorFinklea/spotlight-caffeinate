@@ -2,9 +2,26 @@ import AppIntents
 import SwiftUI
 
 struct PresetNameOptionsProvider: DynamicOptionsProvider {
-    func results() async throws -> [String] {
+    typealias Result = ItemCollection<String>
+
+    func results() async throws -> ItemCollection<String> {
         let presets = try await CaffeinateService.shared.presets()
-        return presets.map(\.name)
+
+        guard !presets.isEmpty else {
+            return .empty
+        }
+
+        let items = presets.map { preset in
+            Item(
+                preset.name,
+                title: LocalizedStringResource(stringLiteral: preset.name),
+                subtitle: LocalizedStringResource(stringLiteral: "\(preset.minutes)m • \(preset.powerMode.title)")
+            )
+        }
+
+        return ItemCollection(sections: [
+            ItemSection(items: items)
+        ])
     }
 }
 
