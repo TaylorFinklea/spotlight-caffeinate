@@ -45,7 +45,7 @@ Utilities
 
 ## Support URL
 
-Use your product support page or GitHub repository support page.
+<https://taylorfinklea.github.io/spotlight-caffeinate/support/>
 
 ## Marketing URL
 
@@ -53,7 +53,7 @@ Optional. Use your product homepage if you have one.
 
 ## Privacy Policy URL
 
-Required for App Store submission.
+<https://taylorfinklea.github.io/spotlight-caffeinate/privacy/>
 
 ## Privacy Answers
 

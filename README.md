@@ -126,6 +126,11 @@ Build the CLI release tarball for direct CLI distribution:
 Full setup notes live in [docs/developer-id-notarization.md](docs/developer-id-notarization.md).
 The signed-build validation checklist lives in [docs/release-checklist.md](docs/release-checklist.md).
 
+## Support And Privacy
+
+- Support: <https://taylorfinklea.github.io/spotlight-caffeinate/support/>
+- Privacy Policy: <https://taylorfinklea.github.io/spotlight-caffeinate/privacy/>
+
 ## CLI
 
 The repo also ships a companion CLI for machines where installing the app into `/Applications` is not practical.

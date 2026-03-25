@@ -37,8 +37,8 @@ Before your first App Store release, make sure these are done:
 1. Your Apple Developer Program membership is active.
 2. App Store Connect agreements, banking, and tax information are complete.
 3. The app record exists in App Store Connect for `io.taylorfinklea.spotlightcaffeinate`.
-4. You have a real Support URL.
-5. You have a real Privacy Policy URL.
+4. Your Support URL is live at `https://taylorfinklea.github.io/spotlight-caffeinate/support/`.
+5. Your Privacy Policy URL is live at `https://taylorfinklea.github.io/spotlight-caffeinate/privacy/`.
 6. You have macOS screenshots ready.
 
 ## Every Release: Local Preparation
