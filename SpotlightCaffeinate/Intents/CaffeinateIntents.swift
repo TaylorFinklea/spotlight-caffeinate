@@ -34,6 +34,7 @@ struct StartCaffeinateIntent: AppIntent {
 struct StartPresetIntent: AppIntent {
     static let title: LocalizedStringResource = "Start Preset"
     static let description = IntentDescription("Open Spotlight Caffeinate so you can choose one of your saved presets.")
+    static let isDiscoverable = false
     static let openAppWhenRun = true
     static let supportedModes: IntentModes = .foreground
 
@@ -188,15 +189,6 @@ struct SpotlightCaffeinateShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "Start",
             systemImageName: "play.circle"
-        )
-        AppShortcut(
-            intent: StartPresetIntent(),
-            phrases: [
-                "Start preset with \(.applicationName)",
-                "Run a caffeinate preset with \(.applicationName)"
-            ],
-            shortTitle: "Preset",
-            systemImageName: "bookmark.circle"
         )
         AppShortcut(
             intent: StopCaffeinateIntent(),
