@@ -118,7 +118,7 @@ Start a keep-awake session from the menu bar or Spotlight in seconds, with prese
 
 Spotlight Caffeinate is a focused menu bar utility for keeping your Mac awake without opening Terminal.
 
-Start a session for a custom duration, launch a saved preset, or restart your most recent session with one click. Spotlight Caffeinate is built for quick access: the menu bar shows the current countdown, and Spotlight actions let you start, stop, extend, or check status from anywhere.
+Start a session for a custom duration, launch a saved preset from the menu bar, or restart your most recent session with one click. Spotlight Caffeinate is built for quick access: the menu bar shows the current countdown, and Spotlight actions let you start, stop, extend, restart, or check status from anywhere.
 
 Features:
 
@@ -127,6 +127,7 @@ Features:
 - Save and pin presets for common durations
 - Extend or stop the current session instantly
 - Restart your most recent completed session
+- Check current status from Spotlight
 - Choose display, system, or full keep-awake modes
 - Optional completion notifications
 - Optional launch at login
@@ -269,7 +270,7 @@ Validate:
 2. the menu opens and the main controls work
 3. starting a session works
 4. extending and stopping a session work
-5. Spotlight actions work
+5. Spotlight actions work for start, stop, extend, restart last session, and status
 6. notifications can be enabled and a completion alert is shown
 7. launch at login can be enabled
 8. optional calendar automation permission flow works if you are shipping that feature

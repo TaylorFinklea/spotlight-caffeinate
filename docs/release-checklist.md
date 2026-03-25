@@ -20,6 +20,8 @@ These checks must be performed from a signed app copied into `/Applications`.
 - Install the signed build into `/Applications/Spotlight Caffeinate.app`.
 - Launch it once from `/Applications`.
 - Confirm the menu bar icon appears and the menu opens correctly.
+- Confirm presets can be started from the menu bar UI.
+- Confirm Spotlight actions work for start, stop, extend, restart, and status.
 - Confirm `Enable Notifications` triggers the native macOS permission prompt when the authorization state is clean.
 - Confirm a short run posts the completion notification.
 - Confirm `Open Spotlight Caffeinate at Login` registers successfully.
