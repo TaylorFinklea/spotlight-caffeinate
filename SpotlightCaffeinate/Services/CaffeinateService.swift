@@ -53,8 +53,14 @@ protocol CaffeinateNotificationScheduling: Sendable {
     func cancelPendingCompletionNotification() async
 }
 
+private struct NoOpCaffeinateNotificationService: CaffeinateNotificationScheduling {
+    func scheduleCompletionNotificationIfNeeded(for snapshot: CaffeinateSnapshot) async {}
+    func cancelPendingCompletionNotification() async {}
+}
+
 actor CaffeinateService {
-    static let shared = CaffeinateService()
+    static let shared = CaffeinateService(notificationService: CaffeinateNotificationService.shared)
+    static let cliShared = CaffeinateService(notificationService: NoOpCaffeinateNotificationService())
 
     private let stateURL: URL
     private let presetsURL: URL
@@ -67,7 +73,7 @@ actor CaffeinateService {
 
     private static let historyLimit = 20
 
-    init(notificationService: CaffeinateNotificationService = .shared) {
+    init(notificationService: any CaffeinateNotificationScheduling) {
         self.notificationService = notificationService
         processController = SystemCaffeinateProcessController()
         now = Date.init

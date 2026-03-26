@@ -33,8 +33,8 @@ struct SpotlightCaffeinateCLI {
     }
 
     private static func execute(_ command: SpotlightCaffeinateCLICommand) async throws -> Int32 {
-        let service = CaffeinateService.shared
-        let automationService = AutomationService.shared
+        let service = CaffeinateService.cliShared
+        let automationService = AutomationService.cliShared
 
         switch command {
         case .start(let minutes, let powerMode, let presetName):

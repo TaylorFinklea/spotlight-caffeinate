@@ -34,6 +34,7 @@ enum AutomationServiceError: LocalizedError {
 
 actor AutomationService {
     static let shared = AutomationService()
+    static let cliShared = AutomationService(sessionService: .cliShared)
 
     private let automationsURL: URL
     private let historyURL: URL
