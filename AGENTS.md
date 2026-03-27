@@ -1,5 +1,19 @@
 # Repository Notes
 
+## AI Handoff Workflow
+
+- Treat `docs/ai/` as the shared source of truth across assistants. Do not rely on chat memory for project continuity.
+- Start every session by reading:
+  - `docs/ai/roadmap.md`
+  - `docs/ai/current-state.md`
+  - `docs/ai/next-steps.md`
+- End every work session by updating:
+  - `docs/ai/current-state.md`
+  - `docs/ai/next-steps.md`
+  - `docs/ai/decisions.md` when a durable decision, tradeoff, or policy changed
+- Use `docs/ai/handoff-template.md` as the default shape for session-end handoff notes.
+- If shared AI docs conflict with stale chat context, follow the docs and bring them up to date.
+
 ## Purpose
 
 `Spotlight Caffeinate` is a focused macOS menu bar app for running `/usr/bin/caffeinate` through App Intents and Spotlight. Keep it dedicated to `caffeinate` unless the user explicitly asks to generalize it. Do not turn it into a generic terminal-command launcher by default.
