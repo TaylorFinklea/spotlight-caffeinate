@@ -63,6 +63,15 @@ enum SpotlightCaffeinateCLICommand: Equatable {
     case automationAddSchedule(name: String, presetName: String, weekdays: [AutomationWeekday], hour: Int, minute: Int)
     case automationAddPower(name: String, presetName: String, event: AutomationPowerEvent)
     case automationAddCalendar(name: String, presetName: String, calendarNames: [String], startsBeforeMinutes: Int, titleContains: String?)
+
+    var mutatesPersistentState: Bool {
+        switch self {
+        case .status, .watch, .history, .presetsList, .automationsList, .automationsHistory:
+            return false
+        case .start, .stop, .extend, .automationEnable, .automationDisable, .automationDelete, .automationAddSchedule, .automationAddPower, .automationAddCalendar:
+            return true
+        }
+    }
 }
 
 struct SpotlightCaffeinateCLIParser {

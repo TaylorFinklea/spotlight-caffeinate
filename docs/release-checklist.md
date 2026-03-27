@@ -25,6 +25,7 @@ These checks must be performed from a signed app copied into `/Applications`.
 - Confirm `Enable Notifications` triggers the native macOS permission prompt when the authorization state is clean.
 - Confirm a short run posts the completion notification.
 - Confirm `Open Spotlight Caffeinate at Login` registers successfully.
+- Confirm the CLI installed from the app bundle stays in sync with the running app for start, status, extend, and stop.
 
 ## Distribution
 
@@ -49,8 +50,11 @@ These checks must be performed from a signed app copied into `/Applications`.
 8. Verify the bundled installer from the app:
    - `/Applications/Spotlight Caffeinate.app/Contents/Resources/cli/install-cli.sh`
    - `spotlight-caffeinate-cli status`
+   - `spotlight-caffeinate-cli start 5`
+   - verify the menu bar app shows the same running session
 9. Verify a fresh Homebrew install of the released formula:
    - `brew tap TaylorFinklea/tap`
    - `brew install spotlight-caffeinate-cli`
    - or `brew install TaylorFinklea/tap/spotlight-caffeinate-cli`
    - `spotlight-caffeinate-cli status`
+   - confirm the CLI warns that it uses independent local state when the app is also installed

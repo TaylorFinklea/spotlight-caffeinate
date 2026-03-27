@@ -54,7 +54,7 @@ actor AutomationService {
         self.calendarStore = calendarStore
         now = Date.init
 
-        let appDirectory = SpotlightCaffeinatePaths.applicationSupportDirectory()
+        let appDirectory = SpotlightCaffeinatePaths.storageContext().directory
         automationsURL = appDirectory.appending(path: "automations.json")
         historyURL = appDirectory.appending(path: "automation-history.json")
 

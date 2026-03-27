@@ -35,6 +35,13 @@ targets:
           install -m 755 "$cli_source" "$cli_directory/spotlight-caffeinate-cli"
           ln -sf "spotlight-caffeinate-cli" "$cli_directory/caf"
           install -m 755 "$SRCROOT/scripts/install_cli_from_app_bundle.sh" "$cli_directory/install-cli.sh"
+
+          if [[ "${CODE_SIGNING_ALLOWED:-YES}" != "NO" && -n "${EXPANDED_CODE_SIGN_IDENTITY:-}" ]]; then
+            codesign --force --sign "$EXPANDED_CODE_SIGN_IDENTITY" \
+              --entitlements "$SRCROOT/SpotlightCaffeinateCLI/SpotlightCaffeinateCLI.entitlements" \
+              --timestamp=none \
+              "$cli_directory/spotlight-caffeinate-cli"
+          fi
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.taylorfinklea.spotlightcaffeinate
@@ -74,7 +81,10 @@ targets:
     settings:
       base:
         PRODUCT_NAME: spotlight-caffeinate-cli
-        CODE_SIGNING_ALLOWED: NO
+        PRODUCT_BUNDLE_IDENTIFIER: io.taylorfinklea.spotlightcaffeinate.cli
+        CODE_SIGN_ENTITLEMENTS: SpotlightCaffeinateCLI/SpotlightCaffeinateCLI.entitlements
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
     scheme:
       gatherCoverageData: false
   SpotlightCaffeinateTests:

@@ -52,6 +52,7 @@
 		94DD6E60E7812A26A7A2AAD2 /* AutomationManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC14FB90FDEFBCC0EB00A078 /* AutomationManagerView.swift */; };
 		999AA9ABEEAC6D0E431D4D29 /* NotificationCenterDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA156B79414F9C48608179E /* NotificationCenterDelegate.swift */; };
 		9D8679585ED4AC2C3F72CA31 /* SpotlightCaffeinateCLICommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 124A35F82C89F349E1A8E6B1 /* SpotlightCaffeinateCLICommand.swift */; };
+		9E05F567EA13DEDD089C966B /* SpotlightCaffeinatePathsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F064DF7EF3759854553BD5A8 /* SpotlightCaffeinatePathsTests.swift */; };
 		9E5A456EC9E00561B8B433C1 /* CaffeinateSessionSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3281D8A1F055106E3354D4C7 /* CaffeinateSessionSource.swift */; };
 		A0610CF00EEEB8D7CC485D09 /* CaffeinateIntentMessageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D361674B647B0C8C35994A18 /* CaffeinateIntentMessageFormatter.swift */; };
 		A1DC53F054EC170AAEB5ADA3 /* SpotlightCaffeinatePaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41DBBE19AFB966736F439D33 /* SpotlightCaffeinatePaths.swift */; };
@@ -149,6 +150,8 @@
 		DC6A8D184C1C4D1F3184ACE5 /* PresetManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetManagerView.swift; sourceTree = "<group>"; };
 		E03E61DE9F34D4C809F28C15 /* SpotlightCaffeinateCLI */ = {isa = PBXFileReference; includeInIndex = 0; path = SpotlightCaffeinateCLI; sourceTree = BUILT_PRODUCTS_DIR; };
 		E6AD915BE0F27B859E742AD4 /* RecentSessionEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentSessionEntry.swift; sourceTree = "<group>"; };
+		E9253A9D1E066485943E6EED /* SpotlightCaffeinateCLI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SpotlightCaffeinateCLI.entitlements; sourceTree = "<group>"; };
+		F064DF7EF3759854553BD5A8 /* SpotlightCaffeinatePathsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightCaffeinatePathsTests.swift; sourceTree = "<group>"; };
 		FC3857F8AD00A17FF0BAAC9B /* CaffeinateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -234,6 +237,7 @@
 		6A072CEE8AF76E32E4AE3A41 /* SpotlightCaffeinateCLI */ = {
 			isa = PBXGroup;
 			children = (
+				E9253A9D1E066485943E6EED /* SpotlightCaffeinateCLI.entitlements */,
 				7BADBC26D038A002B754F0B5 /* SpotlightCaffeinateCLI.swift */,
 			);
 			path = SpotlightCaffeinateCLI;
@@ -265,6 +269,7 @@
 				96164FBDAACFA011FBA6958E /* CaffeinateStatusFormatterTests.swift */,
 				5373A7EF9069C25E4C0E7222 /* RecentSessionEntryTests.swift */,
 				76E675238CEA486E99B64548 /* SpotlightCaffeinateCLICommandTests.swift */,
+				F064DF7EF3759854553BD5A8 /* SpotlightCaffeinatePathsTests.swift */,
 			);
 			path = SpotlightCaffeinateTests;
 			sourceTree = "<group>";
@@ -344,6 +349,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					3A4EBF3E4C0315676383D144 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
 					72B2B7669E2C4D2162BF66CB = {
 						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
@@ -401,7 +410,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -euo pipefail\ncli_source=\"${BUILT_PRODUCTS_DIR}/spotlight-caffeinate-cli\"\ncli_directory=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/cli\"\nduplicate_root_cli=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/spotlight-caffeinate-cli\"\n\nif [[ ! -x \"$cli_source\" ]]; then\n  echo \"Expected CLI binary at $cli_source\" >&2\n  exit 1\nfi\n\ninstall -d \"$cli_directory\"\nrm -f \"$duplicate_root_cli\"\ninstall -m 755 \"$cli_source\" \"$cli_directory/spotlight-caffeinate-cli\"\nln -sf \"spotlight-caffeinate-cli\" \"$cli_directory/caf\"\ninstall -m 755 \"$SRCROOT/scripts/install_cli_from_app_bundle.sh\" \"$cli_directory/install-cli.sh\"\n";
+			shellScript = "set -euo pipefail\ncli_source=\"${BUILT_PRODUCTS_DIR}/spotlight-caffeinate-cli\"\ncli_directory=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/cli\"\nduplicate_root_cli=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/spotlight-caffeinate-cli\"\n\nif [[ ! -x \"$cli_source\" ]]; then\n  echo \"Expected CLI binary at $cli_source\" >&2\n  exit 1\nfi\n\ninstall -d \"$cli_directory\"\nrm -f \"$duplicate_root_cli\"\ninstall -m 755 \"$cli_source\" \"$cli_directory/spotlight-caffeinate-cli\"\nln -sf \"spotlight-caffeinate-cli\" \"$cli_directory/caf\"\ninstall -m 755 \"$SRCROOT/scripts/install_cli_from_app_bundle.sh\" \"$cli_directory/install-cli.sh\"\n\nif [[ \"${CODE_SIGNING_ALLOWED:-YES}\" != \"NO\" && -n \"${EXPANDED_CODE_SIGN_IDENTITY:-}\" ]]; then\n  codesign --force --sign \"$EXPANDED_CODE_SIGN_IDENTITY\" \\\n    --entitlements \"$SRCROOT/SpotlightCaffeinateCLI/SpotlightCaffeinateCLI.entitlements\" \\\n    --timestamp=none \\\n    \"$cli_directory/spotlight-caffeinate-cli\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -438,6 +447,7 @@
 				9D8679585ED4AC2C3F72CA31 /* SpotlightCaffeinateCLICommand.swift in Sources */,
 				EDC210277B56F06EA1EBEC30 /* SpotlightCaffeinateCLICommandTests.swift in Sources */,
 				53431A480759D63A478494E2 /* SpotlightCaffeinatePaths.swift in Sources */,
+				9E05F567EA13DEDD089C966B /* SpotlightCaffeinatePathsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -718,13 +728,16 @@
 		C1C9A1D4D76CF4E983294ED7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_ENTITLEMENTS = SpotlightCaffeinateCLI/SpotlightCaffeinateCLI.entitlements;
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.taylorfinklea.spotlightcaffeinate.cli;
 				PRODUCT_NAME = "spotlight-caffeinate-cli";
 				SDKROOT = macosx;
 			};
@@ -733,13 +746,16 @@
 		DFA143BCCA80F944B318E977 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_ENTITLEMENTS = SpotlightCaffeinateCLI/SpotlightCaffeinateCLI.entitlements;
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.taylorfinklea.spotlightcaffeinate.cli;
 				PRODUCT_NAME = "spotlight-caffeinate-cli";
 				SDKROOT = macosx;
 			};

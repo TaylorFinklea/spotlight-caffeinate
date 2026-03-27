@@ -43,7 +43,7 @@ enum CaffeinateSessionBackend: String, Codable, Sendable {
     case subprocess
 }
 
-private struct CaffeinateRecord: Codable, Sendable {
+struct CaffeinateRecord: Codable, Sendable {
     let pid: Int32
     let startedAt: Date
     let endsAt: Date
@@ -79,6 +79,7 @@ actor CaffeinateService {
         sessionBackend: .subprocess
     )
 
+    nonisolated let storageContext: SpotlightCaffeinateStorageContext
     private let stateURL: URL
     private let presetsURL: URL
     private let historyURL: URL
@@ -97,12 +98,14 @@ actor CaffeinateService {
         processController: any CaffeinateProcessControlling,
         sessionBackend: CaffeinateSessionBackend
     ) {
+        let storageContext = SpotlightCaffeinatePaths.storageContext()
+        self.storageContext = storageContext
         self.notificationService = notificationService
         self.processController = processController
         self.sessionBackend = sessionBackend
         now = Date.init
 
-        let appDirectory = SpotlightCaffeinatePaths.applicationSupportDirectory()
+        let appDirectory = storageContext.directory
         stateURL = appDirectory.appending(path: "state.json")
         presetsURL = appDirectory.appending(path: "presets.json")
         historyURL = appDirectory.appending(path: "history.json")
@@ -119,12 +122,17 @@ actor CaffeinateService {
         sessionBackend: CaffeinateSessionBackend = .assertion,
         now: @escaping @Sendable () -> Date
     ) {
+        storageContext = SpotlightCaffeinateStorageContext(
+            directory: baseDirectory.appending(path: "SpotlightCaffeinate", directoryHint: .isDirectory),
+            usesSharedContainer: false,
+            shouldWarnStandaloneCLIAboutUnsyncedApp: false
+        )
         self.notificationService = notificationService
         self.processController = processController
         self.sessionBackend = sessionBackend
         self.now = now
 
-        let appDirectory = baseDirectory.appending(path: "SpotlightCaffeinate", directoryHint: .isDirectory)
+        let appDirectory = storageContext.directory
         stateURL = appDirectory.appending(path: "state.json")
         presetsURL = appDirectory.appending(path: "presets.json")
         historyURL = appDirectory.appending(path: "history.json")

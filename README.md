@@ -29,7 +29,7 @@ This app adds that missing layer.
 - Optional completion notifications with an in-app opt-in toggle
 - An immediate confirmation banner when notifications are enabled
 - A companion CLI for terminal-only environments
-- Shared state between the app, Spotlight, and the CLI
+- Shared state between the app, Spotlight, and the bundled signed CLI
 
 ## Screenshots
 
@@ -106,6 +106,7 @@ brew install TaylorFinklea/tap/spotlight-caffeinate-cli
 ```
 
 This is the preferred non-admin path when Homebrew already lives in a user-writable prefix.
+This standalone install keeps its own local state and does not sync with the sandboxed app.
 
 ## Signed Releases
 
@@ -138,6 +139,7 @@ Build the CLI release tarball for direct CLI distribution:
 Full setup notes live in [docs/developer-id-notarization.md](docs/developer-id-notarization.md).
 The signed-build validation checklist lives in [docs/release-checklist.md](docs/release-checklist.md).
 Signed app bundles produced by the release scripts also embed the CLI in `Contents/Resources/cli`.
+That bundled CLI shares the app's App Group storage after installation, so it stays in sync with the menu bar app.
 
 ## Support And Privacy
 
@@ -190,7 +192,8 @@ Install it somewhere else by passing a destination directory:
 ./scripts/install_cli.sh /usr/local/bin
 ```
 
-The CLI uses the same shared state file as the menu bar app, so both surfaces report the same active run.
+The CLI installed from the app bundle shares state with the menu bar app.
+Standalone CLI installs built from source or Homebrew keep their own local state instead.
 If Homebrew is not available, the install script remains the fallback non-admin path.
 
 ## Development
@@ -226,7 +229,8 @@ For Spotlight indexing, copy the built app into `/Applications`.
 
 - The app only tracks the `caffeinate` process it launches itself.
 - The current implementation runs `caffeinate -disu -t <seconds>`.
-- State is shared through a JSON file in `~/Library/Application Support/SpotlightCaffeinate/state.json`.
+- Signed app and bundled CLI installs share data through an App Group container.
+- Standalone CLI installs use `~/Library/Application Support/SpotlightCaffeinate/state.json`.
 - Release builds intended for direct distribution should use `scripts/package_signed_release.sh` so they are signed with Hardened Runtime enabled.
 
 ## License

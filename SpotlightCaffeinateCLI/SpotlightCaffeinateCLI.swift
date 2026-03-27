@@ -3,6 +3,10 @@ import Foundation
 
 @main
 struct SpotlightCaffeinateCLI {
+    private static let standaloneSyncWarning = """
+    Note: This standalone CLI uses its own local state and will not sync with Spotlight Caffeinate.app. Install the CLI from the app bundle for shared sync.
+    """
+
     static func main() async {
         let executableName = URL(fileURLWithPath: CommandLine.arguments.first ?? "spotlight-caffeinate-cli").lastPathComponent
         let exitCode = await run(
@@ -35,6 +39,10 @@ struct SpotlightCaffeinateCLI {
     private static func execute(_ command: SpotlightCaffeinateCLICommand) async throws -> Int32 {
         let service = CaffeinateService.cliShared
         let automationService = AutomationService.cliShared
+
+        if command.mutatesPersistentState, service.storageContext.shouldWarnStandaloneCLIAboutUnsyncedApp {
+            fputs("\(standaloneSyncWarning)\n", stderr)
+        }
 
         switch command {
         case .start(let minutes, let powerMode, let presetName):
