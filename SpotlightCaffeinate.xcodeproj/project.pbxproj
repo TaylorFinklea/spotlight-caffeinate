@@ -47,6 +47,7 @@
 		7A692C8180A36781EA1BC0E1 /* CaffeinateCLIJSONFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF15351B2CA39139F508D1E9 /* CaffeinateCLIJSONFormatter.swift */; };
 		8BD79532D87B179B6CCF86B1 /* AutomationCalendarOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DA36CAC1A4C9C2733397476 /* AutomationCalendarOption.swift */; };
 		8C435407344ED66222D1A03F /* PowerMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D41D44EBDA55529752BC2755 /* PowerMode.swift */; };
+		8FD0E737DDBBCD2CEC753A17 /* SpotlightCaffeinateCLI in Resources */ = {isa = PBXBuildFile; fileRef = E03E61DE9F34D4C809F28C15 /* SpotlightCaffeinateCLI */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		92B3FB872383CED4FD154334 /* CaffeinateStatusFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5B0BCBCDC5CF187E9CF774 /* CaffeinateStatusFormatter.swift */; };
 		94DD6E60E7812A26A7A2AAD2 /* AutomationManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC14FB90FDEFBCC0EB00A078 /* AutomationManagerView.swift */; };
 		999AA9ABEEAC6D0E431D4D29 /* NotificationCenterDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA156B79414F9C48608179E /* NotificationCenterDelegate.swift */; };
@@ -90,6 +91,16 @@
 		FCCD9583F469DD96125046B8 /* SpotlightCaffeinateCLICommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 124A35F82C89F349E1A8E6B1 /* SpotlightCaffeinateCLICommand.swift */; };
 		FF87096D3CF4AFC63E662234 /* AutomationPowerSourceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9993ED89DFF747B0A5FCB4D2 /* AutomationPowerSourceProvider.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3B34147BE3A229D1F97B351C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D6DB98A510E1F0C43AD9A743 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3A4EBF3E4C0315676383D144;
+			remoteInfo = SpotlightCaffeinateCLI;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		023F546C09192BEB6AF4065B /* SpotlightCaffeinateApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightCaffeinateApp.swift; sourceTree = "<group>"; };
@@ -310,10 +321,12 @@
 			buildPhases = (
 				CE7F8524044899D1787FDAC7 /* Sources */,
 				4D682FEF9A7116B294143B17 /* Resources */,
+				78C131F6EA1E5B616215D972 /* Embed Bundled CLI */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				9FF8AD10926471BDB70FD560 /* PBXTargetDependency */,
 			);
 			name = SpotlightCaffeinate;
 			packageProductDependencies = (
@@ -364,10 +377,33 @@
 			buildActionMask = 2147483647;
 			files = (
 				6E53D02E71C208FADD6D375A /* Assets.xcassets in Resources */,
+				8FD0E737DDBBCD2CEC753A17 /* SpotlightCaffeinateCLI in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		78C131F6EA1E5B616215D972 /* Embed Bundled CLI */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Bundled CLI";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -euo pipefail\ncli_source=\"${BUILT_PRODUCTS_DIR}/spotlight-caffeinate-cli\"\ncli_directory=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/cli\"\nduplicate_root_cli=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/spotlight-caffeinate-cli\"\n\nif [[ ! -x \"$cli_source\" ]]; then\n  echo \"Expected CLI binary at $cli_source\" >&2\n  exit 1\nfi\n\ninstall -d \"$cli_directory\"\nrm -f \"$duplicate_root_cli\"\ninstall -m 755 \"$cli_source\" \"$cli_directory/spotlight-caffeinate-cli\"\nln -sf \"spotlight-caffeinate-cli\" \"$cli_directory/caf\"\ninstall -m 755 \"$SRCROOT/scripts/install_cli_from_app_bundle.sh\" \"$cli_directory/install-cli.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		9985CCB6CF49D200711EEE28 /* Sources */ = {
@@ -473,6 +509,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9FF8AD10926471BDB70FD560 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3A4EBF3E4C0315676383D144 /* SpotlightCaffeinateCLI */;
+			targetProxy = 3B34147BE3A229D1F97B351C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		0D92CDEDEC80B3EE650DE46D /* Debug */ = {

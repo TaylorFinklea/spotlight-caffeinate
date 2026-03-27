@@ -78,6 +78,18 @@ For the start action, tab into the `Minutes` field, type a duration such as `5`,
 
 If you turn notifications on from the menu bar UI, macOS will ask for notification permission at that moment. You can turn the setting back off at any time.
 
+The app bundle also contains the companion CLI at:
+
+```bash
+/Applications/Spotlight\ Caffeinate.app/Contents/Resources/cli/spotlight-caffeinate-cli
+```
+
+To install that bundled CLI into `~/.local/bin` without downloading anything else:
+
+```bash
+/Applications/Spotlight\ Caffeinate.app/Contents/Resources/cli/install-cli.sh
+```
+
 ### CLI Only
 
 For a terminal-only install on a machine where you do not want the app bundle, use the CLI formula:
@@ -125,6 +137,7 @@ Build the CLI release tarball for direct CLI distribution:
 
 Full setup notes live in [docs/developer-id-notarization.md](docs/developer-id-notarization.md).
 The signed-build validation checklist lives in [docs/release-checklist.md](docs/release-checklist.md).
+Signed app bundles produced by the release scripts also embed the CLI in `Contents/Resources/cli`.
 
 ## Support And Privacy
 
@@ -143,6 +156,12 @@ spotlight-caffeinate-cli stop
 ```
 
 The installer also creates a short alias, so the same commands can be run as `caf start 15`, `caf status`, and so on.
+
+If you already installed the app, you can reuse the bundled installer instead of rebuilding the CLI:
+
+```bash
+/Applications/Spotlight\ Caffeinate.app/Contents/Resources/cli/install-cli.sh
+```
 
 If Homebrew is available in a user-owned prefix, prefer:
 

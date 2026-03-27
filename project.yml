@@ -12,8 +12,29 @@ targets:
     type: application
     platform: macOS
     deploymentTarget: "26.0"
+    dependencies:
+      - target: SpotlightCaffeinateCLI
     sources:
       - path: SpotlightCaffeinate
+    postBuildScripts:
+      - name: Embed Bundled CLI
+        basedOnDependencyAnalysis: false
+        script: |
+          set -euo pipefail
+          cli_source="${BUILT_PRODUCTS_DIR}/spotlight-caffeinate-cli"
+          cli_directory="${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/cli"
+          duplicate_root_cli="${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/spotlight-caffeinate-cli"
+
+          if [[ ! -x "$cli_source" ]]; then
+            echo "Expected CLI binary at $cli_source" >&2
+            exit 1
+          fi
+
+          install -d "$cli_directory"
+          rm -f "$duplicate_root_cli"
+          install -m 755 "$cli_source" "$cli_directory/spotlight-caffeinate-cli"
+          ln -sf "spotlight-caffeinate-cli" "$cli_directory/caf"
+          install -m 755 "$SRCROOT/scripts/install_cli_from_app_bundle.sh" "$cli_directory/install-cli.sh"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.taylorfinklea.spotlightcaffeinate
