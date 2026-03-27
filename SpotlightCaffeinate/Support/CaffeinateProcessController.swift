@@ -1,10 +1,84 @@
 import Foundation
 import IOKit.pwr_mgt
+import Darwin
 
 protocol CaffeinateProcessControlling: Sendable {
     func launch(arguments: [String]) throws -> Int32
     func terminate(pid: Int32) throws
     func isRunning(pid: Int32) -> Bool
+}
+
+final class SubprocessCaffeinateProcessController: CaffeinateProcessControlling {
+    private static let executableURL = URL(filePath: "/usr/bin/caffeinate")
+    private static let executableName = "caffeinate"
+    private static let processPathBufferSize = Int(MAXPATHLEN) * 4
+
+    func launch(arguments: [String]) throws -> Int32 {
+        let process = Process()
+        process.executableURL = Self.executableURL
+        process.arguments = arguments
+        process.standardInput = FileHandle.nullDevice
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+
+        do {
+            try process.run()
+        } catch {
+            throw NSError(
+                domain: NSPOSIXErrorDomain,
+                code: Int(EIO),
+                userInfo: [NSLocalizedDescriptionKey: "Failed to launch /usr/bin/caffeinate: \(error.localizedDescription)"]
+            )
+        }
+
+        return process.processIdentifier
+    }
+
+    func terminate(pid: Int32) throws {
+        guard isManagedCaffeinateProcess(pid: pid) else {
+            return
+        }
+
+        if kill(pid, SIGTERM) == 0 || errno == ESRCH {
+            return
+        }
+
+        let errorCode = errno
+        throw NSError(
+            domain: NSPOSIXErrorDomain,
+            code: Int(errorCode),
+            userInfo: [NSLocalizedDescriptionKey: String(cString: strerror(errorCode))]
+        )
+    }
+
+    func isRunning(pid: Int32) -> Bool {
+        guard isManagedCaffeinateProcess(pid: pid) else {
+            return false
+        }
+        return true
+    }
+
+    private func isManagedCaffeinateProcess(pid: Int32) -> Bool {
+        guard pid > 0 else {
+            return false
+        }
+
+        if kill(pid, 0) != 0, errno != EPERM {
+            return false
+        }
+
+        var buffer = [CChar](repeating: 0, count: Self.processPathBufferSize)
+        let resolvedLength = proc_pidpath(pid, &buffer, UInt32(buffer.count))
+        guard resolvedLength > 0 else {
+            return false
+        }
+
+        let bytes = buffer.prefix(Int(resolvedLength)).map(UInt8.init(bitPattern:))
+        guard let processPath = String(bytes: bytes, encoding: .utf8) else {
+            return false
+        }
+        return URL(fileURLWithPath: processPath).lastPathComponent == Self.executableName
+    }
 }
 
 final class SystemCaffeinateProcessController: @unchecked Sendable, CaffeinateProcessControlling {

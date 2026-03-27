@@ -87,6 +87,60 @@ struct CaffeinateServiceTests {
         #expect(snapshot.presetName == "Deep Work")
         #expect(snapshot.effectivePowerMode == .system)
     }
+
+    @Test
+    func separateServiceInstancesCanStatusAndExtendTheSameSession() async throws {
+        let harness = ServiceHarness()
+        harness.timeBox.now = Date(timeIntervalSinceReferenceDate: 1_000)
+        _ = try await harness.service.start(minutes: 30, powerMode: .full, source: .cli)
+
+        let secondHarness = ServiceHarness(
+            baseDirectory: harness.baseDirectory,
+            processController: harness.processController,
+            notificationCenter: harness.notificationCenter,
+            timeBox: harness.timeBox
+        )
+
+        harness.timeBox.now = Date(timeIntervalSinceReferenceDate: 1_300)
+        let status = try await secondHarness.service.status()
+        #expect(status.state == .active)
+        #expect(status.remainingSeconds(at: harness.timeBox.now) == 1_500)
+
+        let extended = try await secondHarness.service.extend(minutes: 10, source: .cli)
+        #expect(extended.state == .active)
+        #expect(extended.minutesRequested == 40)
+        #expect(harness.processController.terminatedPIDs == [100])
+        #expect(harness.processController.launchedArguments.count == 2)
+        #expect(harness.processController.runningPIDs.contains(101))
+    }
+
+    @Test
+    func cliCanRecoverFromLegacyCLIStateWithoutBackendMetadata() async throws {
+        let harness = ServiceHarness(sessionBackend: .subprocess)
+        try harness.writeLegacyState(
+            """
+            {
+              "pid" : 1,
+              "startedAt" : "2099-01-01T00:00:00Z",
+              "endsAt" : "2099-01-01T01:00:00Z",
+              "minutes" : 60,
+              "powerMode" : "full",
+              "source" : "cli"
+            }
+            """
+        )
+        harness.timeBox.now = ISO8601DateFormatter().date(from: "2099-01-01T00:10:00Z") ?? .now
+
+        let snapshot = try await harness.service.status()
+        #expect(snapshot.state == .inactive)
+
+        let restarted = try await harness.service.start(minutes: 15, powerMode: .system, source: .cli)
+        #expect(restarted.state == .active)
+        #expect(restarted.minutesRequested == 15)
+        #expect(restarted.effectivePowerMode == .system)
+        #expect(restarted.pid == 100)
+        #expect(harness.processController.launchedArguments.last == ["-i", "-s", "-u", "-t", "900"])
+    }
 }
 
 private final class FakeProcessController: @unchecked Sendable, CaffeinateProcessControlling {
@@ -138,11 +192,32 @@ private struct ServiceHarness {
     let service: CaffeinateService
 
     init() {
-        let baseDirectory = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString, directoryHint: .isDirectory)
-        let processController = FakeProcessController()
-        let notificationCenter = FakeNotificationCenter()
-        let timeBox = TimeBox()
+        self.init(
+            baseDirectory: FileManager.default.temporaryDirectory.appending(path: UUID().uuidString, directoryHint: .isDirectory),
+            processController: FakeProcessController(),
+            notificationCenter: FakeNotificationCenter(),
+            timeBox: TimeBox(),
+            sessionBackend: .assertion
+        )
+    }
 
+    init(sessionBackend: CaffeinateSessionBackend) {
+        self.init(
+            baseDirectory: FileManager.default.temporaryDirectory.appending(path: UUID().uuidString, directoryHint: .isDirectory),
+            processController: FakeProcessController(),
+            notificationCenter: FakeNotificationCenter(),
+            timeBox: TimeBox(),
+            sessionBackend: sessionBackend
+        )
+    }
+
+    init(
+        baseDirectory: URL,
+        processController: FakeProcessController,
+        notificationCenter: FakeNotificationCenter,
+        timeBox: TimeBox,
+        sessionBackend: CaffeinateSessionBackend = .assertion
+    ) {
         self.baseDirectory = baseDirectory
         self.processController = processController
         self.notificationCenter = notificationCenter
@@ -151,6 +226,7 @@ private struct ServiceHarness {
             baseDirectory: baseDirectory,
             notificationService: notificationCenter,
             processController: processController,
+            sessionBackend: sessionBackend,
             now: { timeBox.now }
         )
     }

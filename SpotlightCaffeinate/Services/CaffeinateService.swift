@@ -10,6 +10,7 @@ enum CaffeinateServiceError: LocalizedError {
     case noActiveSession
     case noRecentSession
     case presetNotFound(String)
+    case sessionManagedByApp
 
     var errorDescription: String? {
         switch self {
@@ -31,8 +32,15 @@ enum CaffeinateServiceError: LocalizedError {
             return "No recent session is available to restart."
         case .presetNotFound(let name):
             return "Could not find a preset named '\(name)'."
+        case .sessionManagedByApp:
+            return "The current session is managed by the menu bar app. Stop or change it from the app first."
         }
     }
+}
+
+enum CaffeinateSessionBackend: String, Codable, Sendable {
+    case assertion
+    case subprocess
 }
 
 private struct CaffeinateRecord: Codable, Sendable {
@@ -46,6 +54,7 @@ private struct CaffeinateRecord: Codable, Sendable {
     let source: CaffeinateSessionSource?
     let automationRuleID: UUID?
     let automationRuleName: String?
+    let backend: CaffeinateSessionBackend?
 }
 
 protocol CaffeinateNotificationScheduling: Sendable {
@@ -59,8 +68,16 @@ private struct NoOpCaffeinateNotificationService: CaffeinateNotificationScheduli
 }
 
 actor CaffeinateService {
-    static let shared = CaffeinateService(notificationService: CaffeinateNotificationService.shared)
-    static let cliShared = CaffeinateService(notificationService: NoOpCaffeinateNotificationService())
+    static let shared = CaffeinateService(
+        notificationService: CaffeinateNotificationService.shared,
+        processController: SystemCaffeinateProcessController(),
+        sessionBackend: .assertion
+    )
+    static let cliShared = CaffeinateService(
+        notificationService: NoOpCaffeinateNotificationService(),
+        processController: SubprocessCaffeinateProcessController(),
+        sessionBackend: .subprocess
+    )
 
     private let stateURL: URL
     private let presetsURL: URL
@@ -69,13 +86,20 @@ actor CaffeinateService {
     private let decoder = JSONDecoder()
     private let notificationService: any CaffeinateNotificationScheduling
     private let processController: any CaffeinateProcessControlling
+    private let subprocessController = SubprocessCaffeinateProcessController()
+    private let sessionBackend: CaffeinateSessionBackend
     private let now: @Sendable () -> Date
 
     private static let historyLimit = 20
 
-    init(notificationService: any CaffeinateNotificationScheduling) {
+    init(
+        notificationService: any CaffeinateNotificationScheduling,
+        processController: any CaffeinateProcessControlling,
+        sessionBackend: CaffeinateSessionBackend
+    ) {
         self.notificationService = notificationService
-        processController = SystemCaffeinateProcessController()
+        self.processController = processController
+        self.sessionBackend = sessionBackend
         now = Date.init
 
         let appDirectory = SpotlightCaffeinatePaths.applicationSupportDirectory()
@@ -92,10 +116,12 @@ actor CaffeinateService {
         baseDirectory: URL,
         notificationService: any CaffeinateNotificationScheduling,
         processController: any CaffeinateProcessControlling,
+        sessionBackend: CaffeinateSessionBackend = .assertion,
         now: @escaping @Sendable () -> Date
     ) {
         self.notificationService = notificationService
         self.processController = processController
+        self.sessionBackend = sessionBackend
         self.now = now
 
         let appDirectory = baseDirectory.appending(path: "SpotlightCaffeinate", directoryHint: .isDirectory)
@@ -143,8 +169,15 @@ actor CaffeinateService {
             return .inactive
         }
 
+        if shouldDiscardLegacyCLIRecord(record) {
+            try appendToHistory(record, endedAt: min(now(), record.endsAt))
+            try clearRecord()
+            await notificationService.cancelPendingCompletionNotification()
+            return .inactive
+        }
+
         do {
-            try processController.terminate(pid: record.pid)
+            try terminateSession(for: record)
         } catch {
             throw CaffeinateServiceError.failedToStop(error.localizedDescription)
         }
@@ -163,7 +196,14 @@ actor CaffeinateService {
 
         let currentDate = now()
 
-        guard processController.isRunning(pid: record.pid), record.endsAt > currentDate else {
+        if shouldDiscardLegacyCLIRecord(record) {
+            try appendToHistory(record, endedAt: min(currentDate, record.endsAt))
+            try clearRecord()
+            await notificationService.cancelPendingCompletionNotification()
+            return .inactive
+        }
+
+        guard isSessionRunning(record, at: currentDate) else {
             try appendToHistory(record, endedAt: min(currentDate, record.endsAt))
             try clearRecord()
             await notificationService.cancelPendingCompletionNotification()
@@ -189,7 +229,7 @@ actor CaffeinateService {
         let updatedMinutes = record.minutes + minutes
 
         do {
-            try processController.terminate(pid: record.pid)
+            try terminateSession(for: record)
         } catch {
             throw CaffeinateServiceError.failedToStop(error.localizedDescription)
         }
@@ -439,7 +479,8 @@ actor CaffeinateService {
             presetName: presetName,
             source: source,
             automationRuleID: automationRuleID,
-            automationRuleName: automationRuleName
+            automationRuleName: automationRuleName,
+            backend: sessionBackend
         )
 
         try persist(record)
@@ -453,7 +494,14 @@ actor CaffeinateService {
             throw CaffeinateServiceError.noActiveSession
         }
 
-        guard processController.isRunning(pid: record.pid), record.endsAt > now else {
+        if shouldDiscardLegacyCLIRecord(record) {
+            try appendToHistory(record, endedAt: min(now, record.endsAt))
+            try clearRecord()
+            await notificationService.cancelPendingCompletionNotification()
+            throw CaffeinateServiceError.noActiveSession
+        }
+
+        guard isSessionRunning(record, at: now) else {
             try appendToHistory(record, endedAt: min(now, record.endsAt))
             try clearRecord()
             await notificationService.cancelPendingCompletionNotification()
@@ -469,8 +517,15 @@ actor CaffeinateService {
             return
         }
 
+        if shouldDiscardLegacyCLIRecord(record) {
+            try appendToHistory(record, endedAt: min(endedAt, record.endsAt))
+            try clearRecord()
+            await notificationService.cancelPendingCompletionNotification()
+            return
+        }
+
         do {
-            try processController.terminate(pid: record.pid)
+            try terminateSession(for: record)
         } catch {
             throw CaffeinateServiceError.failedToStop(error.localizedDescription)
         }
@@ -501,6 +556,56 @@ actor CaffeinateService {
         }
 
         try persistHistory(history)
+    }
+
+    private func isSessionRunning(_ record: CaffeinateRecord, at currentDate: Date) -> Bool {
+        guard record.endsAt > currentDate else {
+            return false
+        }
+
+        switch backend(for: record) {
+        case .subprocess:
+            return subprocessController.isRunning(pid: record.pid)
+        case .assertion:
+            if sessionBackend == .assertion {
+                return processController.isRunning(pid: record.pid)
+            }
+
+            return true
+        }
+    }
+
+    private func terminateSession(for record: CaffeinateRecord) throws {
+        switch backend(for: record) {
+        case .subprocess:
+            try subprocessController.terminate(pid: record.pid)
+        case .assertion:
+            guard sessionBackend == .assertion else {
+                throw CaffeinateServiceError.sessionManagedByApp
+            }
+
+            try processController.terminate(pid: record.pid)
+        }
+    }
+
+    private func backend(for record: CaffeinateRecord) -> CaffeinateSessionBackend {
+        if let backend = record.backend {
+            return backend
+        }
+
+        if isLegacyCLIRecord(record), subprocessController.isRunning(pid: record.pid) {
+            return .subprocess
+        }
+
+        return .assertion
+    }
+
+    private func shouldDiscardLegacyCLIRecord(_ record: CaffeinateRecord) -> Bool {
+        isLegacyCLIRecord(record) && !subprocessController.isRunning(pid: record.pid)
+    }
+
+    private func isLegacyCLIRecord(_ record: CaffeinateRecord) -> Bool {
+        record.backend == nil && record.source == .cli && sessionBackend == .subprocess
     }
 
     private func loadPresets() throws -> [CaffeinatePreset] {
