@@ -9,7 +9,7 @@ The app is already prepared for Mac App Store distribution in the key areas that
 - the app is sandboxed
 - the app uses native IOKit power assertions instead of launching `/usr/bin/caffeinate`
 - the app declares the Utilities category
-- there is an App Store archive/export script
+- there is an App Store archive script
 - there is a metadata draft and App Review notes draft
 
 What still remains is the release execution work in App Store Connect and the final signed upload.
@@ -37,9 +37,10 @@ Before your first App Store release, make sure these are done:
 1. Your Apple Developer Program membership is active.
 2. App Store Connect agreements, banking, and tax information are complete.
 3. The app record exists in App Store Connect for `io.taylorfinklea.spotlightcaffeinate`.
-4. Your Support URL is live at `https://taylorfinklea.github.io/spotlight-caffeinate/support/`.
-5. Your Privacy Policy URL is live at `https://taylorfinklea.github.io/spotlight-caffeinate/privacy/`.
-6. You have macOS screenshots ready.
+4. The App Group `group.io.taylorfinklea.spotlightcaffeinate` exists in Apple Developer and is attached to the app ID.
+5. Your Support URL is live at `https://taylorfinklea.github.io/spotlight-caffeinate/support/`.
+6. Your Privacy Policy URL is live at `https://taylorfinklea.github.io/spotlight-caffeinate/privacy/`.
+7. You have macOS screenshots ready.
 
 ## Every Release: Local Preparation
 
@@ -82,6 +83,17 @@ xcodebuild -project SpotlightCaffeinate.xcodeproj -scheme SpotlightCaffeinateCLI
 
 xcodebuild -project SpotlightCaffeinate.xcodeproj -scheme SpotlightCaffeinate -configuration Debug -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO test
 ```
+
+### 5. Run Signed Sync Validation Before Submission
+
+Before building the final App Store archive, validate the signed App Group path from `/Applications`:
+
+1. Build a signed app using the owning Apple team.
+2. Install `/Applications/Spotlight Caffeinate.app`.
+3. Run `/Applications/Spotlight Caffeinate.app/Contents/Resources/cli/install-cli.sh`.
+4. Start a session from `spotlight-caffeinate-cli`.
+5. Confirm the menu bar app reflects the same active session.
+6. Confirm `status`, `extend`, and `stop` stay in sync across the bundled CLI and app.
 
 ## App Store Metadata Package
 
@@ -231,8 +243,8 @@ Useful preview mode:
 What the script does:
 
 1. creates a Release archive for macOS
-2. exports an App Store distribution build
-3. writes the exported files to `build/app-store-export`
+2. writes the archive to `build/SpotlightCaffeinateAppStore.xcarchive`
+3. leaves upload to Xcode Organizer or Transporter, which is the supported next step for this release flow
 
 If the script fails, check:
 
@@ -243,7 +255,7 @@ If the script fails, check:
 
 ## Upload The Build
 
-After archiving/exporting:
+After the archive is created:
 
 1. Open Xcode Organizer and locate the archive, or use Transporter.
 2. Upload the App Store build to App Store Connect.

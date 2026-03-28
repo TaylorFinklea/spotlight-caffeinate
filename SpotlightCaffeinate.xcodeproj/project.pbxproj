@@ -350,11 +350,11 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					3A4EBF3E4C0315676383D144 = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = K7CBQW6MPG;
 						ProvisioningStyle = Automatic;
 					};
 					72B2B7669E2C4D2162BF66CB = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = K7CBQW6MPG;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -600,7 +600,7 @@
 				CODE_SIGN_ENTITLEMENTS = SpotlightCaffeinate/SpotlightCaffeinate.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = K7CBQW6MPG;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = SpotlightCaffeinate/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -710,7 +710,7 @@
 				CODE_SIGN_ENTITLEMENTS = SpotlightCaffeinate/SpotlightCaffeinate.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = K7CBQW6MPG;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = SpotlightCaffeinate/Info.plist;
@@ -731,7 +731,7 @@
 				CODE_SIGN_ENTITLEMENTS = SpotlightCaffeinateCLI/SpotlightCaffeinateCLI.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = K7CBQW6MPG;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -749,7 +749,7 @@
 				CODE_SIGN_ENTITLEMENTS = SpotlightCaffeinateCLI/SpotlightCaffeinateCLI.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = K7CBQW6MPG;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

@@ -1,9 +1,14 @@
 # Next Steps
 
-- [ ] Enable and provision the App Group `group.io.taylorfinklea.spotlightcaffeinate` for the app and bundled CLI signing path.
-- [ ] Run a signed `/Applications` validation pass for app and bundled CLI shared-state sync:
-  - start from bundled CLI
-  - confirm app reflects the active session
-  - extend and stop from both surfaces
-- [ ] Update release packaging and submission docs if the signed validation reveals entitlement or install-path adjustments.
+- [ ] Finish App Store Connect execution work:
+  - screenshots
+  - pricing
+  - App Privacy answers
+  - App Review notes
+- [ ] Run the full signed `/Applications` release checklist before submission:
+  - menu bar validation
+  - notifications
+  - launch at login
+  - bundled CLI sync
+- [ ] Upload the App Store archive from Xcode Organizer or Transporter and complete submission.
 - [ ] Continue maintaining `docs/ai/current-state.md`, `docs/ai/next-steps.md`, and `docs/ai/decisions.md` at the end of each work session.

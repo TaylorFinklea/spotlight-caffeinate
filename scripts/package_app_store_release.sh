@@ -4,7 +4,7 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Archive and export a Mac App Store build for Spotlight Caffeinate.
+Archive a Mac App Store build for Spotlight Caffeinate.
 
 Usage:
   ./scripts/package_app_store_release.sh --team-id <TEAM_ID> [--dry-run]
@@ -32,7 +32,6 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 build_root="$repo_root/build"
 derived_data_path="${DERIVED_DATA_PATH:-$build_root/DerivedDataAppStore}"
 archive_path="$build_root/SpotlightCaffeinateAppStore.xcarchive"
-export_path="$build_root/app-store-export"
 team_id="${DEVELOPMENT_TEAM:-}"
 dry_run=0
 
@@ -64,28 +63,6 @@ if [[ -z "$team_id" ]]; then
 fi
 
 mkdir -p "$build_root"
-export_options_plist="$(mktemp "$build_root/app-store-export-options.XXXXXX")"
-cleanup() {
-  rm -f "$export_options_plist"
-}
-trap cleanup EXIT
-
-cat >"$export_options_plist" <<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>destination</key>
-  <string>export</string>
-  <key>method</key>
-  <string>app-store</string>
-  <key>signingStyle</key>
-  <string>automatic</string>
-  <key>teamID</key>
-  <string>${team_id}</string>
-</dict>
-</plist>
-EOF
 
 archive_cmd=(
   xcodebuild
@@ -100,25 +77,14 @@ archive_cmd=(
   archive
 )
 
-export_cmd=(
-  xcodebuild
-  -exportArchive
-  -archivePath "$archive_path"
-  -exportPath "$export_path"
-  -exportOptionsPlist "$export_options_plist"
-  -allowProvisioningUpdates
-)
-
 if [[ $dry_run -eq 1 ]]; then
   print_command "Archive command:" "${archive_cmd[@]}"
-  print_command "Export command:" "${export_cmd[@]}"
   exit 0
 fi
 
-rm -rf "$derived_data_path" "$archive_path" "$export_path"
+rm -rf "$derived_data_path" "$archive_path"
 
 "${archive_cmd[@]}"
-"${export_cmd[@]}"
 
-echo "Created App Store export at $export_path"
-find "$export_path" -maxdepth 2 -type f | sort
+echo "Created App Store archive at $archive_path"
+echo "Next step: upload the archive with Xcode Organizer or Transporter."

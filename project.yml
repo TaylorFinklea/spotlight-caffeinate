@@ -51,7 +51,7 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_ENTITLEMENTS: SpotlightCaffeinate/SpotlightCaffeinate.entitlements
         CODE_SIGN_STYLE: Automatic
-        DEVELOPMENT_TEAM: ""
+        DEVELOPMENT_TEAM: K7CBQW6MPG
       configs:
         Release:
           ENABLE_HARDENED_RUNTIME: YES
@@ -84,7 +84,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: io.taylorfinklea.spotlightcaffeinate.cli
         CODE_SIGN_ENTITLEMENTS: SpotlightCaffeinateCLI/SpotlightCaffeinateCLI.entitlements
         CODE_SIGN_STYLE: Automatic
-        DEVELOPMENT_TEAM: ""
+        DEVELOPMENT_TEAM: K7CBQW6MPG
     scheme:
       gatherCoverageData: false
   SpotlightCaffeinateTests:

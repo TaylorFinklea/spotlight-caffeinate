@@ -7,6 +7,7 @@
 1. Install a `Developer ID Application` certificate in your login keychain.
 2. Sign in to Xcode with the Apple Developer account that owns the app.
 3. Know the Apple Developer team ID you want to use for export.
+4. If the app uses App Groups, register the App Group in Apple Developer and attach it to the app ID before attempting a signed build.
 
 You can verify the signing identity with:
 
@@ -60,5 +61,6 @@ If you want to verify the commands before using your signing credentials:
 ## Notes
 
 - `scripts/package_release.sh` remains the unsigned packaging path used for local/dev builds.
-- `Spotlight Caffeinate` is not sandboxed today, so this Developer ID path is for direct distribution only, not the Mac App Store.
+- `Spotlight Caffeinate` is sandboxed and uses an App Group for the signed app plus bundled CLI sync path.
+- Direct-download and Mac App Store builds still remain separate release paths.
 - Validate notifications and launch-at-login only from a signed app copied into `/Applications`. The maintainer release checklist lives in [release-checklist.md](release-checklist.md).

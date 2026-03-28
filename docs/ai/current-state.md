@@ -10,35 +10,54 @@
 - Added one-time migration logic for legacy app and standalone CLI data into the shared container.
 - Added standalone CLI warning behavior for unsynced installs.
 - Added shared AI handoff workflow docs and aligned repo instructions for both Codex and Claude.
+- Enabled signed local builds against Apple team `K7CBQW6MPG` and verified the App Group entitlement resolves in the built app and bundled CLI.
+- Installed a signed app into `/Applications`, ran the bundled CLI installer, and verified `start`, `status`, `extend`, and `stop` use the shared App Group container successfully.
+- Updated the Mac App Store packaging script to produce the archive only and leave upload to Xcode Organizer or Transporter, which matches the current local Xcode export behavior for this app.
 
 ## Changed Files In Current Session
 
-- `AGENTS.md`
-- `CLAUDE.md`
-- `docs/ai/roadmap.md`
+- `project.yml`
+- `SpotlightCaffeinate.xcodeproj/project.pbxproj`
+- `scripts/package_app_store_release.sh`
+- `docs/developer-id-notarization.md`
+- `docs/app-store-publish.md`
 - `docs/ai/current-state.md`
 - `docs/ai/next-steps.md`
 - `docs/ai/decisions.md`
-- `docs/ai/handoff-template.md`
 
 ## Current Blockers
 
-- Signed local validation for App Group sync is still pending. The code is in place, but a provisioned signing setup for `group.io.taylorfinklea.spotlightcaffeinate` is still needed for end-to-end runtime verification.
+- No code blocker is currently open for signed App Group sync.
+- Remaining release work is execution work: finish App Store metadata, capture screenshots, create the archive, and upload it from Organizer or Transporter.
 
 ## Open Questions
 
-- None at the moment beyond the pending signed App Group validation.
+- The local signed build resolved the app ID to team `K7CBQW6MPG`, but the signing identity selected by Xcode during local development was `Apple Development: taylor.finklea@icloud.com (N8SUK4L228)`. Confirm this is the expected local-account setup before final release signing if signing behavior looks inconsistent.
 
 ## Validation / Test Status
 
-- For the shared App Group sync change in `181550e`:
+- For the App Group provisioning/signing pass:
   - `xcodegen generate` passed
+  - signed app Debug build with `-allowProvisioningUpdates` passed
+  - entitlements inspection confirmed:
+    - app sandbox enabled
+    - App Group `group.io.taylorfinklea.spotlightcaffeinate`
+    - calendar entitlement on the app target
+  - signed `/Applications` runtime validation passed for the bundled CLI sync path:
+    - `start`
+    - `status`
+    - `extend`
+    - `stop`
+  - App Group container files were created under `~/Library/Group Containers/group.io.taylorfinklea.spotlightcaffeinate/SpotlightCaffeinate`
+- For the App Store packaging flow:
+  - `./scripts/package_app_store_release.sh --team-id K7CBQW6MPG` passed
+  - archive created at `build/SpotlightCaffeinateAppStore.xcarchive`
+  - local `xcodebuild -exportArchive` did not offer a usable Mac App Store export method for this archive on the current toolchain
+  - repo script now stops after archive creation and points the release flow to Xcode Organizer or Transporter for upload
+- Final validation reruns after the packaging-script changes:
   - app Debug build with `CODE_SIGNING_ALLOWED=NO` passed
   - CLI Debug build with `CODE_SIGNING_ALLOWED=NO` passed
   - app test suite with `CODE_SIGNING_ALLOWED=NO` passed
-- For the AI handoff docs added in this session:
-  - docs-only change
-  - no build or test rerun performed after the docs update
 
 ## Notes
 

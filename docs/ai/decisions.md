@@ -19,3 +19,16 @@
 - On first shared-container initialization, prefer sandboxed app presets and automations.
 - Carry over an active standalone CLI session if present.
 - Merge session and automation history conservatively instead of attempting a full preset/rule reconciliation.
+
+## 2026-03-28
+
+### Apple team `K7CBQW6MPG` is the default local signing team
+
+- `project.yml` now defaults the app and CLI signing path to Apple team `K7CBQW6MPG`.
+- The App Group `group.io.taylorfinklea.spotlightcaffeinate` is expected to exist on that team for local signed validation and App Store packaging.
+
+### App Store packaging stops at the archive
+
+- On the current local Xcode toolchain, `xcodebuild -exportArchive` did not expose a usable Mac App Store export path for this app archive.
+- The repo App Store packaging script should create `build/SpotlightCaffeinateAppStore.xcarchive` and hand off upload to Xcode Organizer or Transporter.
+- Do not treat a local `build/app-store-export` output as part of the required App Store submission flow for this repo.
