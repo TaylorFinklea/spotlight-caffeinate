@@ -11,4 +11,5 @@
   - launch at login
   - bundled CLI sync
 - [ ] Upload the App Store archive from Xcode Organizer or Transporter and complete submission.
+- [ ] Update `TaylorFinklea/homebrew-tap/Formula/spotlight-caffeinate-cli.rb` to use the prebuilt GitHub release tarball instead of the source archive.
 - [ ] Continue maintaining `docs/ai/current-state.md`, `docs/ai/next-steps.md`, and `docs/ai/decisions.md` at the end of each work session.

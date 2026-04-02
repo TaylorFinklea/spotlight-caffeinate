@@ -108,6 +108,23 @@ brew install TaylorFinklea/tap/spotlight-caffeinate-cli
 This is the preferred non-admin path when Homebrew already lives in a user-writable prefix.
 This standalone install keeps its own local state and does not sync with the sandboxed app.
 
+If you want a binary-only install with no Homebrew build step, install the release artifact directly:
+
+```bash
+./scripts/install_cli_release.sh
+```
+
+Or, without cloning the repo first:
+
+```bash
+mkdir -p "$HOME/.local/bin"
+curl -fsSL https://github.com/TaylorFinklea/spotlight-caffeinate/releases/latest/download/spotlight-caffeinate-cli.tar.gz \
+  | tar -xz -C "$HOME/.local/bin"
+ln -sf "$HOME/.local/bin/spotlight-caffeinate-cli" "$HOME/.local/bin/caf"
+```
+
+If the current tap formula still tries to run `xcodebuild`, use this release-based install path until the tap formula is updated.
+
 ## Signed Releases
 
 For direct distribution outside Homebrew, the repo now includes a Developer ID and notarization path.
@@ -178,6 +195,12 @@ Or:
 brew install TaylorFinklea/tap/spotlight-caffeinate-cli
 ```
 
+If you need to avoid `xcodebuild` entirely on the destination machine, use the prebuilt release installer instead:
+
+```bash
+./scripts/install_cli_release.sh
+```
+
 Build and install it into `~/.local/bin`:
 
 ```bash
@@ -195,6 +218,7 @@ Install it somewhere else by passing a destination directory:
 The CLI installed from the app bundle shares state with the menu bar app.
 Standalone CLI installs built from source or Homebrew keep their own local state instead.
 If Homebrew is not available, the install script remains the fallback non-admin path.
+Release-based CLI installs also use independent local state instead of the app's App Group storage.
 
 ## Development
 

@@ -39,13 +39,16 @@ These checks must be performed from a signed app copied into `/Applications`.
    - `Contents/Resources/cli/install-cli.sh`
 5. Create the GitHub release with:
    - `build/SpotlightCaffeinate.zip`
-   - optionally `build/spotlight-caffeinate-cli.tar.gz`
+   - `build/spotlight-caffeinate-cli.tar.gz`
 6. Update the Homebrew tap:
    - `Casks/spotlight-caffeinate.rb`
    - `Formula/spotlight-caffeinate-cli.rb`
    - set the new `version`
    - set the cask SHA256 from `SpotlightCaffeinate.zip`
-   - set the formula SHA256 from `https://github.com/TaylorFinklea/spotlight-caffeinate/archive/refs/tags/v<TAG>.tar.gz`
+   - set the formula URL to `https://github.com/TaylorFinklea/spotlight-caffeinate/releases/download/v<TAG>/spotlight-caffeinate-cli.tar.gz`
+   - set the formula SHA256 from `build/spotlight-caffeinate-cli.tar.gz`
+   - formula install should `bin.install "spotlight-caffeinate-cli"` and add the `caf` symlink
+   - `./scripts/render_homebrew_cli_formula.sh --version <TAG_WITHOUT_V>` prints the expected formula body
 7. Verify a fresh Homebrew install of the released cask.
 8. Verify the bundled installer from the app:
    - `/Applications/Spotlight Caffeinate.app/Contents/Resources/cli/install-cli.sh`

@@ -32,3 +32,11 @@
 - On the current local Xcode toolchain, `xcodebuild -exportArchive` did not expose a usable Mac App Store export path for this app archive.
 - The repo App Store packaging script should create `build/SpotlightCaffeinateAppStore.xcarchive` and hand off upload to Xcode Organizer or Transporter.
 - Do not treat a local `build/app-store-export` output as part of the required App Store submission flow for this repo.
+
+## 2026-04-02
+
+### Homebrew CLI distribution should use the prebuilt release tarball
+
+- The Homebrew formula for `spotlight-caffeinate-cli` should download `spotlight-caffeinate-cli.tar.gz` from GitHub Releases and install the binary directly.
+- Do not point the formula at the repository source tarball or invoke `xcodebuild` on end-user machines for CLI-only installs.
+- The repo ships `scripts/install_cli_release.sh` for direct binary installs and `scripts/render_homebrew_cli_formula.sh` to render the expected formula body for the tap update.

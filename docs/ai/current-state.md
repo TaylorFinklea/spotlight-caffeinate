@@ -13,6 +13,8 @@
 - Enabled signed local builds against Apple team `K7CBQW6MPG` and verified the App Group entitlement resolves in the built app and bundled CLI.
 - Installed a signed app into `/Applications`, ran the bundled CLI installer, and verified `start`, `status`, `extend`, and `stop` use the shared App Group container successfully.
 - Updated the Mac App Store packaging script to produce the archive only and leave upload to Xcode Organizer or Transporter, which matches the current local Xcode export behavior for this app.
+- Added a release-based CLI installer script so terminal-only installs can avoid local `xcodebuild`.
+- Added a Homebrew formula renderer script and updated release/docs guidance so the CLI formula should consume the prebuilt release tarball instead of building from the source archive.
 
 ## Changed Files In Current Session
 
@@ -24,10 +26,16 @@
 - `docs/ai/current-state.md`
 - `docs/ai/next-steps.md`
 - `docs/ai/decisions.md`
+- `README.md`
+- `docs/release-checklist.md`
+- `AGENTS.md`
+- `scripts/install_cli_release.sh`
+- `scripts/render_homebrew_cli_formula.sh`
 
 ## Current Blockers
 
 - No code blocker is currently open for signed App Group sync.
+- The external Homebrew tap formula still needs to be updated to the new binary-release install path; until that lands, some `brew install spotlight-caffeinate-cli` flows will still invoke `xcodebuild`.
 - Remaining release work is execution work: finish App Store metadata, capture screenshots, create the archive, and upload it from Organizer or Transporter.
 
 ## Open Questions
@@ -58,6 +66,10 @@
   - app Debug build with `CODE_SIGNING_ALLOWED=NO` passed
   - CLI Debug build with `CODE_SIGNING_ALLOWED=NO` passed
   - app test suite with `CODE_SIGNING_ALLOWED=NO` passed
+- For the CLI binary-distribution tooling:
+  - `bash -n scripts/install_cli_release.sh scripts/render_homebrew_cli_formula.sh` passed
+  - `./scripts/install_cli_release.sh --help` passed
+  - `./scripts/render_homebrew_cli_formula.sh --version 0.4.0 --sha256 <dummy>` rendered the expected binary-based formula body
 
 ## Notes
 

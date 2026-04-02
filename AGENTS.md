@@ -78,6 +78,14 @@
   - Packages `spotlight-caffeinate-cli` as `build/spotlight-caffeinate-cli.tar.gz`.
   - Prints the tarball SHA256 for optional direct CLI distribution.
 
+- `scripts/install_cli_release.sh`
+  - Downloads the prebuilt CLI tarball from GitHub Releases.
+  - Installs `spotlight-caffeinate-cli` and the `caf` alias without requiring `xcodebuild` on the destination machine.
+
+- `scripts/render_homebrew_cli_formula.sh`
+  - Renders the expected binary-based Homebrew formula body for the CLI release asset.
+  - Defaults to the current `MARKETING_VERSION` and can read the SHA256 from `build/spotlight-caffeinate-cli.tar.gz`.
+
 - `scripts/package_signed_release.sh`
   - Archives and exports a Developer ID signed release build.
   - Optionally notarizes and staples the app when a `notarytool` keychain profile is provided.
@@ -113,13 +121,15 @@ When a source change should ship to users:
    - `./scripts/package_cli_release.sh`
 6. Create a GitHub release tag like `v0.4.0` with:
    - `build/SpotlightCaffeinate.zip`
-   - optionally `build/spotlight-caffeinate-cli.tar.gz`
+   - `build/spotlight-caffeinate-cli.tar.gz`
 7. Update the Homebrew tap repo `TaylorFinklea/homebrew-tap`:
    - `Casks/spotlight-caffeinate.rb`
    - `Formula/spotlight-caffeinate-cli.rb`
    - set the new `version`
    - set the cask `sha256` from `SpotlightCaffeinate.zip`
-   - set the formula `sha256` from `https://github.com/TaylorFinklea/spotlight-caffeinate/archive/refs/tags/v<TAG>.tar.gz`
+   - set the formula URL to `https://github.com/TaylorFinklea/spotlight-caffeinate/releases/download/v<TAG>/spotlight-caffeinate-cli.tar.gz`
+   - set the formula `sha256` from `build/spotlight-caffeinate-cli.tar.gz`
+   - install the binary directly in the formula instead of running `xcodebuild`
 8. Use `docs/release-checklist.md` for the signed `/Applications` validation pass before announcing the release.
 
 ## Distribution Notes
