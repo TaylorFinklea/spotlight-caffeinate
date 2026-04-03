@@ -1,0 +1,100 @@
+name: Update Homebrew Tap
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish to the tap, like v0.4.0
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  update-tap:
+    runs-on: ubuntu-latest
+    env:
+      SOURCE_OWNER: TaylorFinklea
+      SOURCE_REPO: spotlight-caffeinate
+      TAP_REPO: TaylorFinklea/homebrew-tap
+
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+
+      - name: Resolve release tag
+        id: release_vars
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "release" ]]; then
+            tag="${{ github.event.release.tag_name }}"
+          else
+            tag="${{ inputs.tag }}"
+          fi
+
+          if [[ -z "$tag" ]]; then
+            echo "Release tag is required." >&2
+            exit 1
+          fi
+
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch release asset digests
+        id: release_assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_json="$(gh api "repos/${SOURCE_OWNER}/${SOURCE_REPO}/releases/tags/${{ steps.release_vars.outputs.tag }}")"
+
+          cli_digest="$(jq -r '.assets[] | select(.name == "spotlight-caffeinate-cli.tar.gz") | .digest' <<<"$release_json")"
+          app_digest="$(jq -r '.assets[] | select(.name == "SpotlightCaffeinate.zip") | .digest' <<<"$release_json")"
+
+          if [[ -z "$cli_digest" || "$cli_digest" == "null" ]]; then
+            echo "Missing spotlight-caffeinate-cli.tar.gz on release ${{ steps.release_vars.outputs.tag }}." >&2
+            exit 1
+          fi
+
+          if [[ -z "$app_digest" || "$app_digest" == "null" ]]; then
+            echo "Missing SpotlightCaffeinate.zip on release ${{ steps.release_vars.outputs.tag }}." >&2
+            exit 1
+          fi
+
+          echo "cli_sha256=${cli_digest#sha256:}" >> "$GITHUB_OUTPUT"
+          echo "app_sha256=${app_digest#sha256:}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout tap repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.TAP_REPO }}
+          token: ${{ secrets.HOMEBREW_TAP_PAT }}
+          path: homebrew-tap
+
+      - name: Render tap files
+        run: |
+          ./scripts/render_homebrew_cli_formula.sh \
+            --version "${{ steps.release_vars.outputs.version }}" \
+            --sha256 "${{ steps.release_assets.outputs.cli_sha256 }}" \
+            > homebrew-tap/Formula/spotlight-caffeinate-cli.rb
+
+          ./scripts/render_homebrew_cask.sh \
+            --version "${{ steps.release_vars.outputs.version }}" \
+            --sha256 "${{ steps.release_assets.outputs.app_sha256 }}" \
+            > homebrew-tap/Casks/spotlight-caffeinate.rb
+
+      - name: Commit and push tap update
+        working-directory: homebrew-tap
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/spotlight-caffeinate-cli.rb Casks/spotlight-caffeinate.rb
+
+          if git diff --cached --quiet; then
+            echo "No tap changes detected."
+            exit 0
+          fi
+
+          git commit -m "Update Spotlight Caffeinate to ${{ steps.release_vars.outputs.tag }}"
+          git push origin HEAD:main

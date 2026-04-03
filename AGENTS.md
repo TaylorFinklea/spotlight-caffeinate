@@ -86,6 +86,10 @@
   - Renders the expected binary-based Homebrew formula body for the CLI release asset.
   - Defaults to the current `MARKETING_VERSION` and can read the SHA256 from `build/spotlight-caffeinate-cli.tar.gz`.
 
+- `scripts/render_homebrew_cask.sh`
+  - Renders the expected Homebrew cask body for the signed app release artifact.
+  - Defaults to the current `MARKETING_VERSION` and can read the SHA256 from `build/SpotlightCaffeinate.zip`.
+
 - `scripts/package_signed_release.sh`
   - Archives and exports a Developer ID signed release build.
   - Optionally notarizes and staples the app when a `notarytool` keychain profile is provided.

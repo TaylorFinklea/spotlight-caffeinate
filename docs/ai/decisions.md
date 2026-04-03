@@ -40,3 +40,9 @@
 - The Homebrew formula for `spotlight-caffeinate-cli` should download `spotlight-caffeinate-cli.tar.gz` from GitHub Releases and install the binary directly.
 - Do not point the formula at the repository source tarball or invoke `xcodebuild` on end-user machines for CLI-only installs.
 - The repo ships `scripts/install_cli_release.sh` for direct binary installs and `scripts/render_homebrew_cli_formula.sh` to render the expected formula body for the tap update.
+
+### Future tap updates should come from release asset digests
+
+- The repo now includes `.github/workflows/update-homebrew-tap.yml` so published releases can update both the Homebrew cask and formula in `TaylorFinklea/homebrew-tap`.
+- That workflow expects a repo secret named `HOMEBREW_TAP_PAT` with permission to push to `TaylorFinklea/homebrew-tap`.
+- The workflow should render tap files from published release asset digests rather than recomputing hashes from a fresh local build.

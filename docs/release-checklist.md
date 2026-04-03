@@ -49,6 +49,8 @@ These checks must be performed from a signed app copied into `/Applications`.
    - set the formula SHA256 from `build/spotlight-caffeinate-cli.tar.gz`
    - formula install should `bin.install "spotlight-caffeinate-cli"` and add the `caf` symlink
    - `./scripts/render_homebrew_cli_formula.sh --version <TAG_WITHOUT_V>` prints the expected formula body
+   - `./scripts/render_homebrew_cask.sh --version <TAG_WITHOUT_V>` prints the expected cask body
+   - if `HOMEBREW_TAP_PAT` is configured in this repo, `.github/workflows/update-homebrew-tap.yml` can push both tap updates automatically after the GitHub release is published
 7. Verify a fresh Homebrew install of the released cask.
 8. Verify the bundled installer from the app:
    - `/Applications/Spotlight Caffeinate.app/Contents/Resources/cli/install-cli.sh`

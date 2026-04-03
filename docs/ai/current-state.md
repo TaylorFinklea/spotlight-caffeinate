@@ -15,6 +15,8 @@
 - Updated the Mac App Store packaging script to produce the archive only and leave upload to Xcode Organizer or Transporter, which matches the current local Xcode export behavior for this app.
 - Added a release-based CLI installer script so terminal-only installs can avoid local `xcodebuild`.
 - Added a Homebrew formula renderer script and updated release/docs guidance so the CLI formula should consume the prebuilt release tarball instead of building from the source archive.
+- Added a GitHub Actions workflow that can update the Homebrew tap from published release asset digests when `HOMEBREW_TAP_PAT` is configured.
+- Updated `TaylorFinklea/homebrew-tap` `main` so `spotlight-caffeinate-cli` now installs from the prebuilt release tarball instead of invoking `xcodebuild`.
 
 ## Changed Files In Current Session
 
@@ -31,11 +33,13 @@
 - `AGENTS.md`
 - `scripts/install_cli_release.sh`
 - `scripts/render_homebrew_cli_formula.sh`
+- `.github/workflows/update-homebrew-tap.yml`
+- `scripts/render_homebrew_cask.sh`
 
 ## Current Blockers
 
 - No code blocker is currently open for signed App Group sync.
-- The external Homebrew tap formula still needs to be updated to the new binary-release install path; until that lands, some `brew install spotlight-caffeinate-cli` flows will still invoke `xcodebuild`.
+- The new tap-update workflow still requires the repo secret `HOMEBREW_TAP_PAT` before release publishing can update `TaylorFinklea/homebrew-tap` automatically.
 - Remaining release work is execution work: finish App Store metadata, capture screenshots, create the archive, and upload it from Organizer or Transporter.
 
 ## Open Questions
@@ -70,6 +74,11 @@
   - `bash -n scripts/install_cli_release.sh scripts/render_homebrew_cli_formula.sh` passed
   - `./scripts/install_cli_release.sh --help` passed
   - `./scripts/render_homebrew_cli_formula.sh --version 0.4.0 --sha256 <dummy>` rendered the expected binary-based formula body
+- For the Homebrew tap automation work:
+  - `bash -n scripts/render_homebrew_cask.sh` passed
+  - Ruby YAML parse of `.github/workflows/update-homebrew-tap.yml` passed
+  - `./scripts/render_homebrew_cask.sh --version 0.4.0 --sha256 635764...` rendered the expected cask body
+  - live tap update pushed to `TaylorFinklea/homebrew-tap` commit `c57b413`
 
 ## Notes
 

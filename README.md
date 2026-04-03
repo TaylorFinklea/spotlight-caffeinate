@@ -157,6 +157,7 @@ Full setup notes live in [docs/developer-id-notarization.md](docs/developer-id-n
 The signed-build validation checklist lives in [docs/release-checklist.md](docs/release-checklist.md).
 Signed app bundles produced by the release scripts also embed the CLI in `Contents/Resources/cli`.
 That bundled CLI shares the app's App Group storage after installation, so it stays in sync with the menu bar app.
+Published releases can also update the Homebrew tap automatically when the repo secret `HOMEBREW_TAP_PAT` is configured.
 
 ## Support And Privacy
 
