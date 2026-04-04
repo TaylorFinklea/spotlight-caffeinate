@@ -1,18 +1,8 @@
 # Claude Repository Guide
 
-## Shared AI Workflow
+## Session Workflow
 
-- Treat `docs/ai/` as the cross-assistant source of truth. Prefer those files over chat memory or inferred context.
-- Start every session by reading:
-  - `docs/ai/roadmap.md`
-  - `docs/ai/current-state.md`
-  - `docs/ai/next-steps.md`
-- End every work session by updating:
-  - `docs/ai/current-state.md`
-  - `docs/ai/next-steps.md`
-  - `docs/ai/decisions.md` when a durable decision, tradeoff, or policy changed
-- Use `docs/ai/handoff-template.md` for concise baton-passing notes.
-- Keep assistant-specific execution style in this file or `AGENTS.md`, but keep project state and workflow aligned through the shared docs.
+Handoff state lives in `.docs/ai/` — see global `~/CLAUDE.md` for the standard workflow.
 
 ## Project Summary
 

@@ -16,7 +16,7 @@
   - Validate signed App Group builds end to end.
   - Finalize App Store metadata, screenshots, and submission flow.
 - Assistant continuity:
-  - Keep `docs/ai/` current so work can be handed cleanly between assistants.
+  - Keep `.docs/ai/` current so work can be handed cleanly between assistants.
 
 ## Constraints
 
@@ -24,6 +24,19 @@
 - `project.yml` is the Xcode project source of truth.
 - Menu bar app remains sandboxed for App Store submission.
 - Shared AI docs are the source of truth for repo state and next actions.
+
+## Backlog (parallel, tiered by model capability)
+
+<!-- tier3_owner: codex -->
+
+### Haiku (mechanical, no judgment)
+<!-- Populate with /audit-backlog or manually -->
+
+### Sonnet (some architectural judgment)
+<!-- Populate with /audit-backlog or manually -->
+
+### Opus (design skill, cross-cutting — owned by Codex)
+<!-- Reserved for tier3_owner -->
 
 ## Non-Goals
 
