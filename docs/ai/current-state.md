@@ -54,6 +54,13 @@
 
 - No code blocker is currently open for signed App Group sync.
 - The launch-time privacy prompt fix and post-expiry sleep behavior were validated through unit/integration coverage, but still need a signed `/Applications` runtime sanity check on the menu bar app itself.
+- Installed a fresh signed archive build into `/Applications` and verified:
+  - the app launches and stays running from `/Applications`
+  - no visible `CoreServicesUIAgent` privacy alert window appeared after launch
+  - no matching `"would like to access data from other apps"` string appeared in the recent system log sample after launch
+  - the bundled CLI reinstalled from the app successfully
+  - a one-minute installed-bundle session expired cleanly and `pmset -g assertions` returned to the baseline state afterward
+- The remaining runtime gap is direct UI coverage of the app-native assertion path started from the menu bar or Spotlight action itself; the assertion backend is covered by tests, but this specific interactive path was not automated in this session.
 - The new tap-update workflow still requires the repo secret `HOMEBREW_TAP_PAT` before release publishing can update `TaylorFinklea/homebrew-tap` automatically.
 - Remaining release work is execution work: finish App Store metadata, capture screenshots, create the archive, and upload it from Organizer or Transporter.
 
@@ -67,6 +74,14 @@
   - macOS test suite passed with:
     - `xcodebuild -project SpotlightCaffeinate.xcodeproj -scheme SpotlightCaffeinate -configuration Debug -destination 'platform=macOS' -derivedDataPath build/DerivedDataDebugTestsFix CODE_SIGNING_ALLOWED=NO test`
   - sandboxed `xcodebuild` still fails on Swift macro plugin execution; use the normal host environment for reliable validation.
+  - signed archive build succeeded with:
+    - `./scripts/package_signed_release.sh --team-id K7CBQW6MPG`
+    - note: the archive/export script still fails at the `developer-id` export step on the current toolchain, matching the existing repo note, but the archive bundle itself was produced and used for runtime validation
+  - installed-app runtime check passed for the bundled CLI path:
+    - installed `build/SpotlightCaffeinate.xcarchive/Products/Applications/Spotlight Caffeinate.app` into `/Applications`
+    - reinstalled the bundled CLI from `/Applications/Spotlight Caffeinate.app/Contents/Resources/cli/install-cli.sh`
+    - `spotlight-caffeinate-cli start 1` produced the expected temporary `caffeinate` assertions
+    - after expiry, `spotlight-caffeinate-cli status` returned idle and `pmset -g assertions` no longer showed the session-owned assertions
 
 - For the App Group provisioning/signing pass:
   - `xcodegen generate` passed

@@ -7,8 +7,8 @@
   - App Review notes
 - [ ] Run the full signed `/Applications` release checklist before submission:
   - menu bar validation
-  - confirm the launch-time privacy prompt no longer appears
-  - confirm the machine can sleep again after a timer-backed session expires
+  - manually confirm the launch-time privacy prompt no longer appears when launched from Finder after a clean relaunch
+  - manually confirm a menu-bar-started or Spotlight-started session lets the machine sleep again after timer expiry
   - notifications
   - launch at login
   - bundled CLI sync
