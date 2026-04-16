@@ -173,14 +173,27 @@ private final class AutomationFakeProcessController: @unchecked Sendable, Caffei
     var nextPID: Int32 = 100
     var launchedArguments: [[String]] = []
     var terminatedPIDs: [Int32] = []
+    var terminatedAssertionGroups: [[UInt32]] = []
     var runningPIDs: Set<Int32> = []
 
-    func launch(arguments: [String]) throws -> Int32 {
+    func launch(arguments: [String]) throws -> CaffeinateLaunchResult {
         launchedArguments.append(arguments)
-        let pid = nextPID
-        nextPID += 1
-        runningPIDs.insert(pid)
-        return pid
+        let assertionCount = assertionCount(for: arguments)
+
+        if assertionCount == 0 {
+            let pid = nextPID
+            nextPID += 1
+            runningPIDs.insert(pid)
+            return CaffeinateLaunchResult(pid: pid, assertionIDs: nil)
+        }
+
+        let assertionIDs = (0..<assertionCount).map { offset in
+            UInt32(nextPID + Int32(offset))
+        }
+        let primaryID = Int32(assertionIDs[0])
+        nextPID += Int32(assertionCount)
+        runningPIDs.insert(primaryID)
+        return CaffeinateLaunchResult(pid: primaryID, assertionIDs: assertionIDs)
     }
 
     func terminate(pid: Int32) throws {
@@ -188,8 +201,28 @@ private final class AutomationFakeProcessController: @unchecked Sendable, Caffei
         runningPIDs.remove(pid)
     }
 
+    func terminate(assertionIDs: [UInt32]) throws {
+        terminatedAssertionGroups.append(assertionIDs)
+
+        if let primaryID = assertionIDs.first {
+            runningPIDs.remove(Int32(primaryID))
+        }
+    }
+
     func isRunning(pid: Int32) -> Bool {
         runningPIDs.contains(pid)
+    }
+
+    private func assertionCount(for arguments: [String]) -> Int {
+        guard let flags = arguments.first, flags.hasPrefix("-") else {
+            return 0
+        }
+
+        var count = 0
+        if flags.contains("d") { count += 1 }
+        if flags.contains("i") || flags.contains("s") { count += 1 }
+        if flags.contains("u") { count += 1 }
+        return count
     }
 }
 

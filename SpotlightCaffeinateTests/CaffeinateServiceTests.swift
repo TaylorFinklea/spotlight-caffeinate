@@ -109,9 +109,9 @@ struct CaffeinateServiceTests {
         let extended = try await secondHarness.service.extend(minutes: 10, source: .cli)
         #expect(extended.state == .active)
         #expect(extended.minutesRequested == 40)
-        #expect(harness.processController.terminatedPIDs == [100])
+        #expect(harness.processController.terminatedAssertionGroups == [[100, 101, 102]])
         #expect(harness.processController.launchedArguments.count == 2)
-        #expect(harness.processController.runningPIDs.contains(101))
+        #expect(harness.processController.runningPIDs.contains(103))
     }
 
     @Test
@@ -141,25 +141,76 @@ struct CaffeinateServiceTests {
         #expect(restarted.pid == 100)
         #expect(harness.processController.launchedArguments.last == ["-i", "-s", "-u", "-t", "900"])
     }
+
+    @Test
+    func expiredAssertionSessionReleasesAssertionsBeforeArchiving() async throws {
+        let harness = ServiceHarness()
+        harness.timeBox.now = Date(timeIntervalSinceReferenceDate: 1_000)
+
+        _ = try await harness.service.start(minutes: 1, powerMode: .full, source: .app)
+        harness.timeBox.now = Date(timeIntervalSinceReferenceDate: 1_061)
+
+        let snapshot = try await harness.service.status()
+        let history = try await harness.service.recentSessions(limit: 5)
+
+        #expect(snapshot.state == .inactive)
+        #expect(harness.processController.terminatedAssertionGroups == [[100, 101, 102]])
+        #expect(history.count == 1)
+        #expect(history.first?.endedAt == Date(timeIntervalSinceReferenceDate: 1_060))
+    }
+
+    @Test
+    func separateServiceInstancesCanStopTheSameAssertionSession() async throws {
+        let harness = ServiceHarness()
+        harness.timeBox.now = Date(timeIntervalSinceReferenceDate: 1_000)
+        _ = try await harness.service.start(minutes: 30, powerMode: .display, source: .app)
+
+        let secondHarness = ServiceHarness(
+            baseDirectory: harness.baseDirectory,
+            processController: harness.processController,
+            notificationCenter: harness.notificationCenter,
+            timeBox: harness.timeBox
+        )
+
+        harness.timeBox.now = Date(timeIntervalSinceReferenceDate: 1_300)
+        let status = try await secondHarness.service.status()
+        let stopped = try await secondHarness.service.stop()
+
+        #expect(status.state == .active)
+        #expect(stopped.state == .inactive)
+        #expect(harness.processController.terminatedAssertionGroups == [[100, 101]])
+    }
 }
 
 private final class FakeProcessController: @unchecked Sendable, CaffeinateProcessControlling {
     var nextPID: Int32 = 100
     var launchedArguments: [[String]] = []
     var terminatedPIDs: [Int32] = []
+    var terminatedAssertionGroups: [[UInt32]] = []
     var runningPIDs: Set<Int32> = []
 
-    func launch(arguments: [String]) throws -> Int32 {
+    func launch(arguments: [String]) throws -> CaffeinateLaunchResult {
         launchedArguments.append(arguments)
         let pid = nextPID
-        nextPID += 1
+        let flags = Set(arguments.filter { $0.hasPrefix("-") })
+        let assertionCount =
+            (flags.contains("-d") ? 1 : 0) +
+            ((flags.contains("-i") || flags.contains("-s")) ? 1 : 0) +
+            (flags.contains("-u") ? 1 : 0)
+        let assertionIDs = (0..<assertionCount).map { UInt32(pid + Int32($0)) }
+        nextPID += Int32(max(assertionCount, 1))
         runningPIDs.insert(pid)
-        return pid
+        return CaffeinateLaunchResult(pid: pid, assertionIDs: assertionIDs)
     }
 
     func terminate(pid: Int32) throws {
         terminatedPIDs.append(pid)
         runningPIDs.remove(pid)
+    }
+
+    func terminate(assertionIDs: [UInt32]) throws {
+        terminatedAssertionGroups.append(assertionIDs)
+        runningPIDs.remove(Int32(assertionIDs.first ?? 0))
     }
 
     func isRunning(pid: Int32) -> Bool {

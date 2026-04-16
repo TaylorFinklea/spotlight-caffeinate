@@ -2,10 +2,24 @@ import Foundation
 import IOKit.pwr_mgt
 import Darwin
 
+struct CaffeinateLaunchResult: Sendable {
+    let pid: Int32
+    let assertionIDs: [UInt32]?
+}
+
 protocol CaffeinateProcessControlling: Sendable {
-    func launch(arguments: [String]) throws -> Int32
+    func launch(arguments: [String]) throws -> CaffeinateLaunchResult
     func terminate(pid: Int32) throws
+    func terminate(assertionIDs: [UInt32]) throws
     func isRunning(pid: Int32) -> Bool
+}
+
+extension CaffeinateProcessControlling {
+    func terminate(assertionIDs: [UInt32]) throws {
+        for assertionID in assertionIDs {
+            try terminate(pid: Int32(assertionID))
+        }
+    }
 }
 
 final class SubprocessCaffeinateProcessController: CaffeinateProcessControlling {
@@ -13,7 +27,7 @@ final class SubprocessCaffeinateProcessController: CaffeinateProcessControlling 
     private static let executableName = "caffeinate"
     private static let processPathBufferSize = Int(MAXPATHLEN) * 4
 
-    func launch(arguments: [String]) throws -> Int32 {
+    func launch(arguments: [String]) throws -> CaffeinateLaunchResult {
         let process = Process()
         process.executableURL = Self.executableURL
         process.arguments = arguments
@@ -31,7 +45,10 @@ final class SubprocessCaffeinateProcessController: CaffeinateProcessControlling 
             )
         }
 
-        return process.processIdentifier
+        return CaffeinateLaunchResult(
+            pid: process.processIdentifier,
+            assertionIDs: nil
+        )
     }
 
     func terminate(pid: Int32) throws {
@@ -85,19 +102,24 @@ final class SystemCaffeinateProcessController: @unchecked Sendable, CaffeinatePr
     private struct AssertionRequest {
         let types: [CFString]
         let declaresUserActivity: Bool
+        let timeoutSeconds: CFTimeInterval
     }
 
     private let stateLock = NSLock()
-    private var nextHandleID: Int32 = 1
     private var activeAssertions: [Int32: [IOPMAssertionID]] = [:]
 
-    func launch(arguments: [String]) throws -> Int32 {
+    func launch(arguments: [String]) throws -> CaffeinateLaunchResult {
         let request = try assertionRequest(for: arguments)
         var createdAssertions: [IOPMAssertionID] = []
 
         do {
             for assertionType in request.types {
-                createdAssertions.append(try createAssertion(type: assertionType))
+                createdAssertions.append(
+                    try createAssertion(
+                        type: assertionType,
+                        timeoutSeconds: request.timeoutSeconds
+                    )
+                )
             }
 
             if request.declaresUserActivity {
@@ -109,12 +131,16 @@ final class SystemCaffeinateProcessController: @unchecked Sendable, CaffeinatePr
         }
 
         stateLock.lock()
-        let handleID = nextHandleID
-        nextHandleID += 1
+        let handleID = Int32(createdAssertions.first ?? 0)
         activeAssertions[handleID] = createdAssertions
         stateLock.unlock()
 
-        return handleID
+        return CaffeinateLaunchResult(
+            pid: handleID,
+            assertionIDs: createdAssertions.map { assertion in
+                UInt32(assertion)
+            }
+        )
     }
 
     func terminate(pid: Int32) throws {
@@ -122,7 +148,18 @@ final class SystemCaffeinateProcessController: @unchecked Sendable, CaffeinatePr
         let assertions = activeAssertions.removeValue(forKey: pid) ?? []
         stateLock.unlock()
 
+        if assertions.isEmpty {
+            _ = IOPMAssertionRelease(IOPMAssertionID(pid))
+            return
+        }
+
         releaseAssertions(assertions)
+    }
+
+    func terminate(assertionIDs: [UInt32]) throws {
+        releaseAssertions(assertionIDs.map { assertionID in
+            IOPMAssertionID(assertionID)
+        })
     }
 
     func isRunning(pid: Int32) -> Bool {
@@ -137,6 +174,7 @@ final class SystemCaffeinateProcessController: @unchecked Sendable, CaffeinatePr
         let keepsDisplayAwake = flags.contains("-d")
         let keepsSystemAwake = flags.contains("-i") || flags.contains("-s")
         let declaresUserActivity = flags.contains("-u")
+        let timeoutSeconds = assertionTimeout(from: arguments)
 
         var types: [CFString] = []
 
@@ -156,15 +194,23 @@ final class SystemCaffeinateProcessController: @unchecked Sendable, CaffeinatePr
             )
         }
 
-        return AssertionRequest(types: types, declaresUserActivity: declaresUserActivity)
+        return AssertionRequest(
+            types: types,
+            declaresUserActivity: declaresUserActivity,
+            timeoutSeconds: timeoutSeconds
+        )
     }
 
-    private func createAssertion(type: CFString) throws -> IOPMAssertionID {
+    private func createAssertion(type: CFString, timeoutSeconds: CFTimeInterval) throws -> IOPMAssertionID {
         var assertionID = IOPMAssertionID(0)
-        let result = IOPMAssertionCreateWithName(
+        let result = IOPMAssertionCreateWithDescription(
             type,
-            IOPMAssertionLevel(kIOPMAssertionLevelOn),
             "Spotlight Caffeinate session" as CFString,
+            nil,
+            nil,
+            nil,
+            timeoutSeconds,
+            nil,
             &assertionID
         )
 
@@ -177,6 +223,14 @@ final class SystemCaffeinateProcessController: @unchecked Sendable, CaffeinatePr
         }
 
         return assertionID
+    }
+
+    private func assertionTimeout(from arguments: [String]) -> CFTimeInterval {
+        guard let timeoutIndex = arguments.firstIndex(of: "-t"), arguments.indices.contains(timeoutIndex + 1) else {
+            return 0
+        }
+
+        return CFTimeInterval(Int(arguments[timeoutIndex + 1]) ?? 0)
     }
 
     private func declareUserActivity() throws -> IOPMAssertionID {

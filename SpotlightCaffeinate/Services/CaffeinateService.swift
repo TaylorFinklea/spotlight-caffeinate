@@ -45,6 +45,7 @@ enum CaffeinateSessionBackend: String, Codable, Sendable {
 
 struct CaffeinateRecord: Codable, Sendable {
     let pid: Int32
+    let assertionIDs: [UInt32]?
     let startedAt: Date
     let endsAt: Date
     let minutes: Int
@@ -205,16 +206,12 @@ actor CaffeinateService {
         let currentDate = now()
 
         if shouldDiscardLegacyCLIRecord(record) {
-            try appendToHistory(record, endedAt: min(currentDate, record.endsAt))
-            try clearRecord()
-            await notificationService.cancelPendingCompletionNotification()
+            try await archiveInactiveSession(record, endedAt: min(currentDate, record.endsAt))
             return .inactive
         }
 
         guard isSessionRunning(record, at: currentDate) else {
-            try appendToHistory(record, endedAt: min(currentDate, record.endsAt))
-            try clearRecord()
-            await notificationService.cancelPendingCompletionNotification()
+            try await archiveInactiveSession(record, endedAt: min(currentDate, record.endsAt))
             return .inactive
         }
 
@@ -470,15 +467,16 @@ actor CaffeinateService {
         let remainingSeconds = max(1, Int(endsAt.timeIntervalSince(launchedAt).rounded(.down)))
         let arguments = Self.arguments(for: powerMode, seconds: remainingSeconds)
 
-        let pid: Int32
+        let launchResult: CaffeinateLaunchResult
         do {
-            pid = try processController.launch(arguments: arguments)
+            launchResult = try processController.launch(arguments: arguments)
         } catch {
             throw CaffeinateServiceError.failedToLaunch(error.localizedDescription)
         }
 
         let record = CaffeinateRecord(
-            pid: pid,
+            pid: launchResult.pid,
+            assertionIDs: launchResult.assertionIDs,
             startedAt: startedAt,
             endsAt: endsAt,
             minutes: minutesRequested,
@@ -503,16 +501,12 @@ actor CaffeinateService {
         }
 
         if shouldDiscardLegacyCLIRecord(record) {
-            try appendToHistory(record, endedAt: min(now, record.endsAt))
-            try clearRecord()
-            await notificationService.cancelPendingCompletionNotification()
+            try await archiveInactiveSession(record, endedAt: min(now, record.endsAt))
             throw CaffeinateServiceError.noActiveSession
         }
 
         guard isSessionRunning(record, at: now) else {
-            try appendToHistory(record, endedAt: min(now, record.endsAt))
-            try clearRecord()
-            await notificationService.cancelPendingCompletionNotification()
+            try await archiveInactiveSession(record, endedAt: min(now, record.endsAt))
             throw CaffeinateServiceError.noActiveSession
         }
 
@@ -538,6 +532,13 @@ actor CaffeinateService {
             throw CaffeinateServiceError.failedToStop(error.localizedDescription)
         }
 
+        try appendToHistory(record, endedAt: endedAt)
+        try clearRecord()
+        await notificationService.cancelPendingCompletionNotification()
+    }
+
+    private func archiveInactiveSession(_ record: CaffeinateRecord, endedAt: Date) async throws {
+        try? terminateSession(for: record)
         try appendToHistory(record, endedAt: endedAt)
         try clearRecord()
         await notificationService.cancelPendingCompletionNotification()
@@ -575,10 +576,6 @@ actor CaffeinateService {
         case .subprocess:
             return subprocessController.isRunning(pid: record.pid)
         case .assertion:
-            if sessionBackend == .assertion {
-                return processController.isRunning(pid: record.pid)
-            }
-
             return true
         }
     }
@@ -592,7 +589,11 @@ actor CaffeinateService {
                 throw CaffeinateServiceError.sessionManagedByApp
             }
 
-            try processController.terminate(pid: record.pid)
+            if let assertionIDs = record.assertionIDs, !assertionIDs.isEmpty {
+                try processController.terminate(assertionIDs: assertionIDs)
+            } else {
+                try processController.terminate(pid: record.pid)
+            }
         }
     }
 

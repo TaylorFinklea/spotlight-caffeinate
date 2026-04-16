@@ -98,16 +98,22 @@ enum SpotlightCaffeinatePaths {
         let userApplicationSupportDirectory = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? URL(fileURLWithPath: NSHomeDirectory()).appending(path: "Library/Application Support", directoryHint: .isDirectory)
 
-        let sandboxApplicationSupportDirectory = URL(fileURLWithPath: NSHomeDirectory())
-            .appending(path: "Library/Containers", directoryHint: .isDirectory)
-            .appending(path: bundleIdentifier, directoryHint: .isDirectory)
-            .appending(path: "Data/Library/Application Support", directoryHint: .isDirectory)
-
         return SpotlightCaffeinateStorageEnvironment(
             appGroupContainerDirectory: fileManager.containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier),
             userApplicationSupportDirectory: userApplicationSupportDirectory,
-            sandboxApplicationSupportDirectory: sandboxApplicationSupportDirectory
+            // Avoid probing ~/Library/Containers directly on launch, which can trigger
+            // macOS app-data access prompts. When the current process is already sandboxed,
+            // its application support directory already points at the legacy container.
+            sandboxApplicationSupportDirectory: inferredSandboxApplicationSupportDirectory(
+                from: userApplicationSupportDirectory
+            )
         )
+    }
+
+    private static func inferredSandboxApplicationSupportDirectory(from directory: URL) -> URL? {
+        let normalizedPath = directory.standardizedFileURL.path
+        let sandboxSuffix = "/Library/Containers/\(bundleIdentifier)/Data/Library/Application Support"
+        return normalizedPath.contains(sandboxSuffix) ? directory : nil
     }
 
     private static func migrateLegacyStoresIfNeeded(

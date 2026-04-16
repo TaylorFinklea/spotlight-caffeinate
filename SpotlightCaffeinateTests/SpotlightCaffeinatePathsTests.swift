@@ -73,6 +73,7 @@ struct SpotlightCaffeinatePathsTests {
         )
         let cliState = CaffeinateRecord(
             pid: 4242,
+            assertionIDs: nil,
             startedAt: .now.addingTimeInterval(-300),
             endsAt: .now.addingTimeInterval(1_800),
             minutes: 30,
