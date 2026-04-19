@@ -3,84 +3,53 @@
 ## Branch
 
 - Active branch: `main`
+- Ahead of `origin/main` by 2 commits before this session.
 
 ## Recent Progress
 
-- Added App Group-based shared storage resolution so the signed app and bundled CLI can sync state again.
-- Added one-time migration logic for legacy app and standalone CLI data into the shared container.
-- Added standalone CLI warning behavior for unsynced installs.
-- Added shared AI handoff workflow docs and aligned repo instructions for both Codex and Claude.
-- Enabled signed local builds against Apple team `K7CBQW6MPG` and verified the App Group entitlement resolves in the built app and bundled CLI.
-- Installed a signed app into `/Applications`, ran the bundled CLI installer, and verified `start`, `status`, `extend`, and `stop` use the shared App Group container successfully.
-- Updated the Mac App Store packaging script to produce the archive only and leave upload to Xcode Organizer or Transporter, which matches the current local Xcode export behavior for this app.
-- Added a release-based CLI installer script so terminal-only installs can avoid local `xcodebuild`.
-- Added a Homebrew formula renderer script and updated release/docs guidance so the CLI formula should consume the prebuilt release tarball instead of building from the source archive.
-- Added a GitHub Actions workflow that can update the Homebrew tap from published release asset digests when `HOMEBREW_TAP_PAT` is configured.
-- Updated `TaylorFinklea/homebrew-tap` `main` so `spotlight-caffeinate-cli` now installs from the prebuilt release tarball instead of invoking `xcodebuild`.
+- Rewrote `.docs/ai/roadmap.md` with six sequenced milestones (M1–M6) and a populated tiered backlog (Haiku / Sonnet / Opus).
+- Added phase briefs under `.docs/ai/phases/`: M1 and M2 in full, M3–M6 as stubs.
+- Recorded the 2026-04-19 milestone structure in `.docs/ai/decisions.md`.
+- No app or CLI code changed in this session.
+
+## Milestone Snapshot
+
+- **M1 Quality hardening** — next in flight. Blocks 1.0. User-directed for Claude despite `tier3_owner: codex`.
+- **M2 1.0 release** — blocked on M1. Execution-only; no new feature work.
+- **M3 Menu bar / UX polish** — stub. Post-1.0.
+- **M4 Shortcuts / Spotlight depth** — stub. Post-1.0.
+- **M5 Automation trigger depth** — stub. Post-1.0.
+- **M6 Platform integrations** — stub. Post-1.0. Highest scope.
 
 ## Changed Files In Current Session
 
-- `project.yml`
-- `SpotlightCaffeinate.xcodeproj/project.pbxproj`
-- `scripts/package_app_store_release.sh`
-- `docs/developer-id-notarization.md`
-- `docs/app-store-publish.md`
-- `docs/ai/current-state.md`
-- `docs/ai/next-steps.md`
-- `docs/ai/decisions.md`
-- `README.md`
-- `docs/release-checklist.md`
-- `AGENTS.md`
-- `scripts/install_cli_release.sh`
-- `scripts/render_homebrew_cli_formula.sh`
-- `.github/workflows/update-homebrew-tap.yml`
-- `scripts/render_homebrew_cask.sh`
+- `.docs/ai/roadmap.md`
+- `.docs/ai/decisions.md`
+- `.docs/ai/current-state.md`
+- `.docs/ai/next-steps.md`
+- `.docs/ai/phases/M1-quality-hardening.md` (new)
+- `.docs/ai/phases/M2-1.0-release.md` (new)
+- `.docs/ai/phases/M3-menu-bar-ux-polish.md` (new)
+- `.docs/ai/phases/M4-shortcuts-spotlight-depth.md` (new)
+- `.docs/ai/phases/M5-automation-trigger-depth.md` (new)
+- `.docs/ai/phases/M6-platform-integrations.md` (new)
 
 ## Current Blockers
 
-- No code blocker is currently open for signed App Group sync.
-- The new tap-update workflow still requires the repo secret `HOMEBREW_TAP_PAT` before release publishing can update `TaylorFinklea/homebrew-tap` automatically.
-- Remaining release work is execution work: finish App Store metadata, capture screenshots, create the archive, and upload it from Organizer or Transporter.
+- None at the code level.
+- The prior release-execution blockers (App Store metadata/submission, `HOMEBREW_TAP_PAT` secret, signed `/Applications` release-checklist pass) are now scoped inside M2 and blocked behind M1.
 
 ## Open Questions
 
-- The local signed build resolved the app ID to team `K7CBQW6MPG`, but the signing identity selected by Xcode during local development was `Apple Development: taylor.finklea@icloud.com (N8SUK4L228)`. Confirm this is the expected local-account setup before final release signing if signing behavior looks inconsistent.
+- Confirm Claude will plan and execute M1 despite the repo-level `tier3_owner: codex`. User directed this at session start on 2026-04-19; if direction changes, reassign.
+- See per-phase `Open questions` sections in `.docs/ai/phases/M1-*.md` and `M2-*.md`.
 
 ## Validation / Test Status
 
-- For the App Group provisioning/signing pass:
-  - `xcodegen generate` passed
-  - signed app Debug build with `-allowProvisioningUpdates` passed
-  - entitlements inspection confirmed:
-    - app sandbox enabled
-    - App Group `group.io.taylorfinklea.spotlightcaffeinate`
-    - calendar entitlement on the app target
-  - signed `/Applications` runtime validation passed for the bundled CLI sync path:
-    - `start`
-    - `status`
-    - `extend`
-    - `stop`
-  - App Group container files were created under `~/Library/Group Containers/group.io.taylorfinklea.spotlightcaffeinate/SpotlightCaffeinate`
-- For the App Store packaging flow:
-  - `./scripts/package_app_store_release.sh --team-id K7CBQW6MPG` passed
-  - archive created at `build/SpotlightCaffeinateAppStore.xcarchive`
-  - local `xcodebuild -exportArchive` did not offer a usable Mac App Store export method for this archive on the current toolchain
-  - repo script now stops after archive creation and points the release flow to Xcode Organizer or Transporter for upload
-- Final validation reruns after the packaging-script changes:
-  - app Debug build with `CODE_SIGNING_ALLOWED=NO` passed
-  - CLI Debug build with `CODE_SIGNING_ALLOWED=NO` passed
-  - app test suite with `CODE_SIGNING_ALLOWED=NO` passed
-- For the CLI binary-distribution tooling:
-  - `bash -n scripts/install_cli_release.sh scripts/render_homebrew_cli_formula.sh` passed
-  - `./scripts/install_cli_release.sh --help` passed
-  - `./scripts/render_homebrew_cli_formula.sh --version 0.4.0 --sha256 <dummy>` rendered the expected binary-based formula body
-- For the Homebrew tap automation work:
-  - `bash -n scripts/render_homebrew_cask.sh` passed
-  - Ruby YAML parse of `.github/workflows/update-homebrew-tap.yml` passed
-  - `./scripts/render_homebrew_cask.sh --version 0.4.0 --sha256 635764...` rendered the expected cask body
-  - live tap update pushed to `TaylorFinklea/homebrew-tap` commit `c57b413`
+- No builds or tests run this session — docs-only changes.
 
 ## Notes
 
-- Use `docs/ai/next-steps.md` as the immediate execution queue.
-- Use `docs/ai/decisions.md` for durable decisions instead of burying them in commit history or chat.
+- Use `.docs/ai/next-steps.md` as the immediate execution queue.
+- Use `.docs/ai/decisions.md` for durable decisions instead of commit history or chat.
+- Phase briefs in `.docs/ai/phases/` are the source of truth for milestone scope and exit criteria.

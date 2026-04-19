@@ -46,3 +46,20 @@
 - The repo now includes `.github/workflows/update-homebrew-tap.yml` so published releases can update both the Homebrew cask and formula in `TaylorFinklea/homebrew-tap`.
 - That workflow expects a repo secret named `HOMEBREW_TAP_PAT` with permission to push to `TaylorFinklea/homebrew-tap`.
 - The workflow should render tap files from published release asset digests rather than recomputing hashes from a fresh local build.
+
+## 2026-04-19
+
+### Milestone structure: hardening → 1.0 → focused depth
+
+- Six sequenced milestones live in `.docs/ai/roadmap.md`: M1 hardening, M2 1.0, M3 menu-bar/UX polish, M4 Shortcuts/Spotlight depth, M5 automation trigger depth, M6 platform integrations.
+- M1 is a hard gate on 1.0. CLI integration tests, automation `os.Logger` failure logging, and error-path coverage must land before 1.0.
+- M2 is a coordinated 1.0 across App Store, Homebrew (cask + formula), and signed direct-download on the same day. Decoupling channels at 1.0 was explicitly rejected.
+- Post-1.0 direction is "focused depth in existing surfaces." No generalization into a shell launcher or multi-tool.
+- All four post-1.0 directions are in-scope intent: more automation triggers, menu bar/UX polish, Shortcuts/Spotlight depth, platform integrations. Order after M2 is a working guess and may be re-prioritized.
+- Non-goal added: no telemetry or analytics. App Privacy answer stays "No data collected."
+
+### Phase briefs live under `.docs/ai/phases/`
+
+- One short brief per milestone, named `M{N}-{slug}.md`.
+- M1 and M2 are written in full; M3–M6 are stubs to be filled in as they become next.
+- `tier3_owner` stays `codex` at the repo level, but M1 is user-directed for Claude for the 2026-04-19 session.
