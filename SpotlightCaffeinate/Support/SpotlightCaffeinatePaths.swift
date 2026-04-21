@@ -17,6 +17,11 @@ enum SpotlightCaffeinatePaths {
     static let bundleIdentifier = "io.taylorfinklea.spotlightcaffeinate"
     static let appGroupIdentifier = "group.io.taylorfinklea.spotlightcaffeinate"
 
+    /// When set to a non-empty path, forces the legacy (non-shared-container)
+    /// storage branch and routes all reads and writes into the override directory.
+    /// Intended for integration tests; documented but unadvertised.
+    static let storageRootEnvironmentKey = "SPOTLIGHT_CAFFEINATE_STORAGE_ROOT"
+
     private static let stateFileName = "state.json"
     private static let presetsFileName = "presets.json"
     private static let historyFileName = "history.json"
@@ -94,7 +99,19 @@ enum SpotlightCaffeinatePaths {
         )
     }
 
-    private static func defaultEnvironment(fileManager: FileManager) -> SpotlightCaffeinateStorageEnvironment {
+    static func defaultEnvironment(
+        fileManager: FileManager,
+        processEnvironment: [String: String] = ProcessInfo.processInfo.environment
+    ) -> SpotlightCaffeinateStorageEnvironment {
+        if let overrideRoot = processEnvironment[storageRootEnvironmentKey], !overrideRoot.isEmpty {
+            let overrideDirectory = URL(fileURLWithPath: overrideRoot, isDirectory: true)
+            return SpotlightCaffeinateStorageEnvironment(
+                appGroupContainerDirectory: nil,
+                userApplicationSupportDirectory: overrideDirectory,
+                sandboxApplicationSupportDirectory: nil
+            )
+        }
+
         let userApplicationSupportDirectory = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? URL(fileURLWithPath: NSHomeDirectory()).appending(path: "Library/Application Support", directoryHint: .isDirectory)
 

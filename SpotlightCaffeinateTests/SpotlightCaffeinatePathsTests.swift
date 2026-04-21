@@ -194,6 +194,51 @@ struct SpotlightCaffeinatePathsTests {
     }
 
     @Test
+    func storageRootEnvironmentKeyOverridesDefaultEnvironment() throws {
+        let fileManager = FileManager.default
+        let overrideRoot = fileManager.temporaryDirectory
+            .appending(path: UUID().uuidString, directoryHint: .isDirectory)
+
+        let environment = SpotlightCaffeinatePaths.defaultEnvironment(
+            fileManager: fileManager,
+            processEnvironment: [
+                SpotlightCaffeinatePaths.storageRootEnvironmentKey: overrideRoot.path
+            ]
+        )
+
+        #expect(environment.appGroupContainerDirectory == nil)
+        #expect(environment.sandboxApplicationSupportDirectory == nil)
+        #expect(environment.userApplicationSupportDirectory.standardizedFileURL.path == overrideRoot.standardizedFileURL.path)
+
+        let context = try SpotlightCaffeinatePaths.prepareStorage(
+            fileManager: fileManager,
+            environment: environment
+        )
+
+        #expect(!context.usesSharedContainer)
+        #expect(!context.shouldWarnStandaloneCLIAboutUnsyncedApp)
+        #expect(
+            context.directory.standardizedFileURL.path ==
+                overrideRoot.appending(path: SpotlightCaffeinatePaths.appDirectoryName, directoryHint: .isDirectory)
+                    .standardizedFileURL.path
+        )
+    }
+
+    @Test
+    func storageRootEnvironmentKeyIgnoredWhenEmpty() {
+        let fileManager = FileManager.default
+        let environment = SpotlightCaffeinatePaths.defaultEnvironment(
+            fileManager: fileManager,
+            processEnvironment: [
+                SpotlightCaffeinatePaths.storageRootEnvironmentKey: ""
+            ]
+        )
+
+        // Empty value must not force the legacy branch; real defaults apply.
+        #expect(!environment.userApplicationSupportDirectory.path.isEmpty)
+    }
+
+    @Test
     func legacyFallbackWarnsWhenSandboxedAppStoreExists() throws {
         let fileManager = FileManager.default
         let root = fileManager.temporaryDirectory.appending(path: UUID().uuidString, directoryHint: .isDirectory)
