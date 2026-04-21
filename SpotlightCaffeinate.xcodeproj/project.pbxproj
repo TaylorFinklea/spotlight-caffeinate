@@ -81,6 +81,7 @@
 		EB2DDC9585E396ED92DC606A /* AutomationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79DD29BA8ACF0F14EA30FA55 /* AutomationService.swift */; };
 		EC0C41AAD981924B87F892D0 /* CaffeinateServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 205DB6963ADE1B964CDF99FE /* CaffeinateServiceTests.swift */; };
 		EDC210277B56F06EA1EBEC30 /* SpotlightCaffeinateCLICommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76E675238CEA486E99B64548 /* SpotlightCaffeinateCLICommandTests.swift */; };
+		EF78B7A5082676071F702D76 /* CLIIntegrationHarness.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DE84E42BE5EBFB41043475F /* CLIIntegrationHarness.swift */; };
 		F0195EF52D793A67D5CB2DC0 /* CaffeinateIntentMessageFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57112614347A7B9E56E9CB52 /* CaffeinateIntentMessageFormatterTests.swift */; };
 		F04967BFFA7F4A4350D75D42 /* CaffeinateSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5140115420CD7C5CA54132A2 /* CaffeinateSnapshot.swift */; };
 		F37111F7B15E938F86F3CFBA /* CaffeinateCLIJSONFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF15351B2CA39139F508D1E9 /* CaffeinateCLIJSONFormatter.swift */; };
@@ -95,6 +96,13 @@
 
 /* Begin PBXContainerItemProxy section */
 		3B34147BE3A229D1F97B351C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D6DB98A510E1F0C43AD9A743 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3A4EBF3E4C0315676383D144;
+			remoteInfo = SpotlightCaffeinateCLI;
+		};
+		45DDD4EA5B09FA1457B9E63E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = D6DB98A510E1F0C43AD9A743 /* Project object */;
 			proxyType = 1;
@@ -119,6 +127,7 @@
 		3E86A2FF81B718DE23ED2D7D /* SpotlightCaffeinate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpotlightCaffeinate.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		41DBBE19AFB966736F439D33 /* SpotlightCaffeinatePaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightCaffeinatePaths.swift; sourceTree = "<group>"; };
 		44B3064CCC9C71AB532C285C /* LaunchAtLoginService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginService.swift; sourceTree = "<group>"; };
+		4DE84E42BE5EBFB41043475F /* CLIIntegrationHarness.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLIIntegrationHarness.swift; sourceTree = "<group>"; };
 		5140115420CD7C5CA54132A2 /* CaffeinateSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateSnapshot.swift; sourceTree = "<group>"; };
 		5373A7EF9069C25E4C0E7222 /* RecentSessionEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentSessionEntryTests.swift; sourceTree = "<group>"; };
 		56A580FFCED111065519575C /* CaffeinateStatusSnippetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeinateStatusSnippetView.swift; sourceTree = "<group>"; };
@@ -267,6 +276,7 @@
 				205DB6963ADE1B964CDF99FE /* CaffeinateServiceTests.swift */,
 				C635F912327D623B2ADE48FD /* CaffeinateSnapshotTests.swift */,
 				96164FBDAACFA011FBA6958E /* CaffeinateStatusFormatterTests.swift */,
+				4DE84E42BE5EBFB41043475F /* CLIIntegrationHarness.swift */,
 				5373A7EF9069C25E4C0E7222 /* RecentSessionEntryTests.swift */,
 				76E675238CEA486E99B64548 /* SpotlightCaffeinateCLICommandTests.swift */,
 				F064DF7EF3759854553BD5A8 /* SpotlightCaffeinatePathsTests.swift */,
@@ -312,6 +322,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				3E15703C3F3F75D98BB77841 /* PBXTargetDependency */,
 			);
 			name = SpotlightCaffeinateTests;
 			packageProductDependencies = (
@@ -426,6 +437,7 @@
 				B79F29D757420DB3BC14D146 /* AutomationRunRecord.swift in Sources */,
 				DCE190E0CD07AA9D8B074B84 /* AutomationService.swift in Sources */,
 				5FFBE79C66A1C3D21A313A25 /* AutomationServiceTests.swift in Sources */,
+				EF78B7A5082676071F702D76 /* CLIIntegrationHarness.swift in Sources */,
 				F37111F7B15E938F86F3CFBA /* CaffeinateCLIJSONFormatter.swift in Sources */,
 				D9D1574C10BC328D7A4D658E /* CaffeinateCLIJSONFormatterTests.swift in Sources */,
 				14707AEE2E967252A258D46E /* CaffeinateIntentMessageFormatter.swift in Sources */,
@@ -521,6 +533,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		3E15703C3F3F75D98BB77841 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3A4EBF3E4C0315676383D144 /* SpotlightCaffeinateCLI */;
+			targetProxy = 45DDD4EA5B09FA1457B9E63E /* PBXContainerItemProxy */;
+		};
 		9FF8AD10926471BDB70FD560 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 3A4EBF3E4C0315676383D144 /* SpotlightCaffeinateCLI */;

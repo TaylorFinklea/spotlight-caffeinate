@@ -91,6 +91,9 @@ targets:
     type: bundle.unit-test
     platform: macOS
     deploymentTarget: "26.0"
+    dependencies:
+      - target: SpotlightCaffeinateCLI
+        link: false
     sources:
       - path: SpotlightCaffeinateTests
       - path: SpotlightCaffeinate/Models
