@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 
 enum AutomationServiceError: LocalizedError {
     case invalidRuleName
@@ -43,8 +44,20 @@ actor AutomationService {
     private let sessionService: CaffeinateService
     private let calendarStore: any AutomationCalendarStoreControlling
     private let now: @Sendable () -> Date
+    private let logger = Logger(
+        subsystem: "io.taylorfinklea.spotlightcaffeinate",
+        category: "automation"
+    )
 
     private static let historyLimit = 50
+
+    private static func triggerKind(_ trigger: AutomationTrigger) -> String {
+        switch trigger {
+        case .weekly: return "weekly"
+        case .power: return "power"
+        case .calendar: return "calendar"
+        }
+    }
 
     init(
         sessionService: CaffeinateService = .shared,
@@ -198,7 +211,7 @@ actor AutomationService {
                 await execute(rule: rule, at: date, calendarEventID: nil)
             }
         } catch {
-            // Swallow automation evaluation errors; they should not break the app loop.
+            logger.error("Failed to evaluate schedule rules: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -215,7 +228,7 @@ actor AutomationService {
                 await execute(rule: rule, at: date, calendarEventID: nil)
             }
         } catch {
-            // Swallow automation evaluation errors; they should not break the app loop.
+            logger.error("Failed to evaluate power rules for event \(event.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -252,7 +265,7 @@ actor AutomationService {
                 }
             }
         } catch {
-            // Swallow automation evaluation errors; they should not break the app loop.
+            logger.error("Failed to evaluate calendar rules: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -305,7 +318,7 @@ actor AutomationService {
                 message: "Started preset '\(preset.name)'.",
                 calendarEventID: calendarEventID
             )
-        } catch {
+        } catch let executionError {
             do {
                 try mark(ruleID: rule.id, at: date)
                 try appendRunRecord(
@@ -313,11 +326,11 @@ actor AutomationService {
                     ruleName: rule.name,
                     firedAt: date,
                     outcome: .failed,
-                    message: error.localizedDescription,
+                    message: executionError.localizedDescription,
                     calendarEventID: calendarEventID
                 )
             } catch {
-                // Ignore logging failures during automation execution.
+                logger.error("Failed to record automation outcome for rule \(rule.id.uuidString, privacy: .public) kind=\(Self.triggerKind(rule.trigger), privacy: .public) name=\(rule.name, privacy: .private): \(error.localizedDescription, privacy: .public) (original error: \(executionError.localizedDescription, privacy: .public))")
             }
         }
     }
