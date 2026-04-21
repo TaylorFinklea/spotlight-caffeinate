@@ -183,3 +183,36 @@ a:hover {
 .small {
   font-size: 0.95rem;
 }
+
+pre {
+  margin: 12px 0 18px;
+  padding: 14px 16px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow-x: auto;
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+@media (prefers-color-scheme: light) {
+  pre {
+    background: rgba(19, 32, 60, 0.06);
+  }
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+}
+
+pre code {
+  font-size: inherit;
+}
+
+.panel h3 {
+  margin: 18px 0 6px;
+  font-size: 1.05rem;
+}

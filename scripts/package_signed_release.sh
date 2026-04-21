@@ -71,6 +71,22 @@ if [[ -z "$team_id" ]]; then
   exit 1
 fi
 
+marketing_version=$(awk '/^[[:space:]]*MARKETING_VERSION:/ {print $2; exit}' "$repo_root/project.yml")
+if [[ -z "$marketing_version" ]]; then
+  echo "Could not read MARKETING_VERSION from project.yml." >&2
+  exit 1
+fi
+
+if [[ ! -f "$repo_root/CHANGELOG.md" ]]; then
+  echo "CHANGELOG.md is missing. Add a release entry before building a signed release." >&2
+  exit 1
+fi
+
+if ! grep -qE "^## \[${marketing_version//./\\.}\]" "$repo_root/CHANGELOG.md"; then
+  echo "CHANGELOG.md has no \"## [$marketing_version]\" section. Promote ## [Unreleased] before tagging." >&2
+  exit 1
+fi
+
 mkdir -p "$build_root"
 export_options_plist="$(mktemp "$build_root/developer-id-export-options.XXXXXX")"
 cleanup() {

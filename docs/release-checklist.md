@@ -5,12 +5,10 @@ Use this checklist when shipping `Spotlight Caffeinate` to end users.
 ## Before Tagging
 
 1. Pull and rebase on `main`.
-2. Bump the version in `project.yml`.
-3. Run `xcodegen generate`.
-4. Verify local development gates:
-   - app Debug build
-   - CLI Debug build
-   - test target
+2. Bump the version in `project.yml` (both `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION`).
+3. Promote the `## [Unreleased]` section of `CHANGELOG.md` to the new version heading. `scripts/package_signed_release.sh` and `scripts/release_preflight.sh` both fail fast if there is no matching entry.
+4. Run `xcodegen generate`.
+5. Run `./scripts/release_preflight.sh` — this regenerates the project, builds both targets, runs the test suite, shell-lints `scripts/`, and verifies the changelog. Any manual gates it does not cover are listed at the end of its output.
 
 ## Signed Build Validation
 

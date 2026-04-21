@@ -50,6 +50,39 @@
         </article>
       </section>
 
+      <article class="panel card">
+        <h2>Install</h2>
+        <p>Three supported installation paths. Pick the one that fits your setup.</p>
+
+        <h3>Menu bar app (Homebrew cask)</h3>
+        <p>The menu bar app with Spotlight actions, presets, and automations:</p>
+        <pre><code>brew install --cask TaylorFinklea/tap/spotlight-caffeinate</code></pre>
+        <p class="small">
+          If Gatekeeper blocks first launch, run
+          <code>xattr -dr com.apple.quarantine "/Applications/Spotlight Caffeinate.app"</code>
+          and try again.
+        </p>
+
+        <h3>CLI only (Homebrew formula)</h3>
+        <p>Terminal-only install for machines that do not need the app bundle:</p>
+        <pre><code>brew install TaylorFinklea/tap/spotlight-caffeinate-cli</code></pre>
+
+        <h3>CLI only (binary tarball)</h3>
+        <p>No Homebrew, no <code>xcodebuild</code>, just the prebuilt binary:</p>
+        <pre><code>curl -fsSL https://github.com/TaylorFinklea/spotlight-caffeinate/releases/latest/download/spotlight-caffeinate-cli.tar.gz \
+  | tar -xz -C "$HOME/.local/bin"
+ln -sf "$HOME/.local/bin/spotlight-caffeinate-cli" "$HOME/.local/bin/caf"</code></pre>
+
+        <h3>Already installed the app?</h3>
+        <p>The signed app ships a bundled CLI that shares state with the menu bar app:</p>
+        <pre><code>/Applications/Spotlight\ Caffeinate.app/Contents/Resources/cli/install-cli.sh</code></pre>
+
+        <div class="actions">
+          <a class="button secondary" href="https://github.com/TaylorFinklea/spotlight-caffeinate/releases/latest">Latest release</a>
+          <a class="button secondary" href="https://github.com/TaylorFinklea/homebrew-tap">Homebrew tap</a>
+        </div>
+      </article>
+
       <p class="footer">Support email: <a href="mailto:support@finklea.dev">support@finklea.dev</a></p>
     </main>
   </body>
