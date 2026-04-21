@@ -3,8 +3,9 @@ import Foundation
 /// Spawns the built `spotlight-caffeinate-cli` binary with an isolated
 /// storage root and returns completed or still-running processes.
 ///
-/// The binary path is resolved from the `BUILT_PRODUCTS_DIR` environment
-/// variable that Xcode sets at test time. The test target declares a
+/// The binary is located relative to the test bundle: Xcode places
+/// `SpotlightCaffeinateTests.xctest` and `spotlight-caffeinate-cli`
+/// in the same `BUILT_PRODUCTS_DIR`. The test target declares a
 /// build-order dependency on `SpotlightCaffeinateCLI` in `project.yml`
 /// so the binary is guaranteed to exist before tests run.
 ///
@@ -16,15 +17,9 @@ struct CLIRunner {
     let storageRoot: URL
 
     static func make() throws -> CLIRunner {
-        guard
-            let builtProductsDir = ProcessInfo.processInfo.environment["BUILT_PRODUCTS_DIR"]
-                .flatMap({ $0.isEmpty ? nil : $0 })
-        else {
-            throw CLIRunnerError.missingBuiltProductsDir
-        }
-
-        let binaryURL = URL(fileURLWithPath: builtProductsDir, isDirectory: true)
-            .appending(path: "spotlight-caffeinate-cli")
+        let testBundleURL = Bundle(for: CLIBundleAnchor.self).bundleURL
+        let productsDir = testBundleURL.deletingLastPathComponent()
+        let binaryURL = productsDir.appending(path: "spotlight-caffeinate-cli")
 
         guard FileManager.default.isExecutableFile(atPath: binaryURL.path) else {
             throw CLIRunnerError.missingBinary(binaryURL.path)
@@ -40,6 +35,11 @@ struct CLIRunner {
 
     /// Runs the CLI with the given arguments and waits for it to exit.
     /// Times out by sending SIGTERM if the process exceeds `timeout`.
+    ///
+    /// Pipe drainage uses `readabilityHandler` instead of `readToEnd()`
+    /// because the CLI may spawn `/usr/bin/caffeinate` which inherits
+    /// the pipe's write-end FD and prevents EOF from arriving after
+    /// the CLI itself exits.
     func run(_ arguments: [String], timeout: Duration = .seconds(10)) async throws -> CLIResult {
         let process = Process()
         let stdout = Pipe()
@@ -49,6 +49,11 @@ struct CLIRunner {
         process.standardOutput = stdout
         process.standardError = stderr
         process.environment = processEnvironment()
+
+        let stdoutCollector = PipeCollector()
+        let stderrCollector = PipeCollector()
+        stdoutCollector.install(on: stdout.fileHandleForReading)
+        stderrCollector.install(on: stderr.fileHandleForReading)
 
         try process.run()
 
@@ -62,13 +67,17 @@ struct CLIRunner {
 
         await Task.detached { process.waitUntilExit() }.value
 
-        let stdoutData = try stdout.fileHandleForReading.readToEnd() ?? Data()
-        let stderrData = try stderr.fileHandleForReading.readToEnd() ?? Data()
+        // Let any trailing writes land before we tear down the handlers.
+        try? await Task.sleep(for: .milliseconds(50))
+        stdout.fileHandleForReading.readabilityHandler = nil
+        stderr.fileHandleForReading.readabilityHandler = nil
+        try? stdout.fileHandleForReading.close()
+        try? stderr.fileHandleForReading.close()
 
         return CLIResult(
             exitCode: process.terminationStatus,
-            stdout: String(decoding: stdoutData, as: UTF8.self),
-            stderr: String(decoding: stderrData, as: UTF8.self)
+            stdout: String(decoding: stdoutCollector.finalize(), as: UTF8.self),
+            stderr: String(decoding: stderrCollector.finalize(), as: UTF8.self)
         )
     }
 
@@ -119,6 +128,15 @@ struct CLIRunner {
     /// may have left running. Safe to call even when no session is active.
     func cleanup() async {
         _ = try? await run(["stop"], timeout: .seconds(5))
+        try? FileManager.default.removeItem(at: storageRoot)
+    }
+
+    /// Synchronous filesystem cleanup. Suitable for `defer` blocks where
+    /// launching a fire-and-forget `Task { await cleanup() }` would leak
+    /// file descriptors across parallel/serialized test runs. Individual
+    /// tests are expected to call `stop` explicitly before returning when
+    /// they started a session.
+    func cleanupStorage() {
         try? FileManager.default.removeItem(at: storageRoot)
     }
 
@@ -188,15 +206,42 @@ final class RunningProcess {
 }
 
 enum CLIRunnerError: Error, CustomStringConvertible {
-    case missingBuiltProductsDir
     case missingBinary(String)
 
     var description: String {
         switch self {
-        case .missingBuiltProductsDir:
-            return "BUILT_PRODUCTS_DIR is not set. Run tests through xcodebuild or Xcode."
         case .missingBinary(let path):
             return "spotlight-caffeinate-cli binary not found at \(path). The test target must depend on the CLI target."
         }
+    }
+}
+
+/// Anchor class used only to resolve the test bundle URL via `Bundle(for:)`.
+/// Swift Testing `@Suite` structs do not have a runtime class, so an
+/// explicit anchor is needed to bridge to `Bundle(for:)`.
+private final class CLIBundleAnchor {}
+
+/// Accumulates data from a `FileHandle` via `readabilityHandler`.
+/// Used to drain CLI subprocess pipes during process lifetime so
+/// blocking reads don't wait on descriptors inherited by grandchildren
+/// like `/usr/bin/caffeinate`.
+private final class PipeCollector: @unchecked Sendable {
+    private let lock = NSLock()
+    private var buffer = Data()
+
+    func install(on handle: FileHandle) {
+        handle.readabilityHandler = { [weak self] pipe in
+            let chunk = pipe.availableData
+            if chunk.isEmpty { return }
+            self?.lock.lock()
+            self?.buffer.append(chunk)
+            self?.lock.unlock()
+        }
+    }
+
+    func finalize() -> Data {
+        lock.lock()
+        defer { lock.unlock() }
+        return buffer
     }
 }

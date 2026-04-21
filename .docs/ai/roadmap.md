@@ -121,6 +121,7 @@ Items are independent and low-risk, scoped for a fresh agent with no session con
 - [ ] Write a `CHANGELOG.md` scaffold following Keep a Changelog; wire `package_signed_release.sh` to fail if `MARKETING_VERSION` is not referenced in the changelog.
 - [ ] Add `scripts/verify_release_assets.sh` that re-checks a published release's zip + tarball SHA256 and refuses to update the tap if digests disagree.
 - [ ] Split the GitHub Pages site (`docs/index.html`, `docs/site.css`) into a minimal landing page with current screenshots, install instructions for all three channels, and links to support/privacy.
+- [ ] Re-enable the five `@Test(.disabled(...))` integration tests in `SpotlightCaffeinateTests/SpotlightCaffeinateCLIIntegrationTests.swift` (`startPersistsStateAndStopClearsIt`, `startPresetLooksUpByCaseInsensitiveName`, `extendAddsMinutesToActiveSession`, `extendPresetRequiresExistingPreset`, `historyHumanAndJSONAfterCompletedSession`). Root cause: `/usr/bin/caffeinate` inherits non-stdio file descriptors from the CLI via Foundation `Process`, holding pipe write-ends open past CLI exit so the next test's `readabilityHandler` never drains. Fix candidates: mark test-side `Pipe` write-ends `FD_CLOEXEC` before `process.run()`; or replace the current `SubprocessCaffeinateProcessController` `Process` spawn with a direct `posix_spawn` that passes `POSIX_SPAWN_CLOEXEC_DEFAULT`.
 
 ### Opus (design skill, cross-cutting — owned by Codex per `tier3_owner`)
 
