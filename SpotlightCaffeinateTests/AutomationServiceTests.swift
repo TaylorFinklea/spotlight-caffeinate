@@ -148,6 +148,262 @@ struct AutomationServiceTests {
     }
 
     @Test
+    func createRuleRejectsEmptyName() async throws {
+        let harness = AutomationHarness()
+        let preset = try await harness.sessionService.presets()[0]
+
+        for invalid in ["", "   "] {
+            do {
+                _ = try await harness.automationService.createRule(
+                    name: invalid,
+                    presetID: preset.id,
+                    trigger: .power(.connected),
+                    enabled: true
+                )
+                Issue.record("Expected invalidRuleName for \"\(invalid)\"")
+            } catch let error as AutomationServiceError {
+                guard case .invalidRuleName = error else {
+                    Issue.record("Expected .invalidRuleName, got \(error)")
+                    continue
+                }
+            }
+        }
+    }
+
+    @Test
+    func createRuleRejectsEmptyWeekdays() async throws {
+        let harness = AutomationHarness()
+        let preset = try await harness.sessionService.presets()[0]
+
+        do {
+            _ = try await harness.automationService.createRule(
+                name: "Bad",
+                presetID: preset.id,
+                trigger: .weekly(
+                    WeeklyAutomationTrigger(weekdays: [], hour: 9, minute: 0)
+                ),
+                enabled: true
+            )
+            Issue.record("Expected invalidWeekdays")
+        } catch let error as AutomationServiceError {
+            guard case .invalidWeekdays = error else {
+                Issue.record("Expected .invalidWeekdays, got \(error)")
+                return
+            }
+        }
+    }
+
+    @Test
+    func createRuleRejectsInvalidTime() async throws {
+        let harness = AutomationHarness()
+        let preset = try await harness.sessionService.presets()[0]
+
+        let invalid: [(Int, Int)] = [(24, 0), (0, 60)]
+        for (hour, minute) in invalid {
+            do {
+                _ = try await harness.automationService.createRule(
+                    name: "Bad",
+                    presetID: preset.id,
+                    trigger: .weekly(
+                        WeeklyAutomationTrigger(weekdays: [.monday], hour: hour, minute: minute)
+                    ),
+                    enabled: true
+                )
+                Issue.record("Expected invalidTime for \(hour):\(minute)")
+            } catch let error as AutomationServiceError {
+                guard case .invalidTime = error else {
+                    Issue.record("Expected .invalidTime, got \(error)")
+                    continue
+                }
+            }
+        }
+    }
+
+    @Test
+    func createRuleRejectsEmptyCalendarSelection() async throws {
+        let harness = AutomationHarness()
+        let preset = try await harness.sessionService.presets()[0]
+
+        do {
+            _ = try await harness.automationService.createRule(
+                name: "Bad",
+                presetID: preset.id,
+                trigger: .calendar(
+                    CalendarAutomationTrigger(
+                        calendarIdentifiers: [],
+                        startsBeforeMinutes: 5,
+                        titleContains: nil
+                    )
+                ),
+                enabled: true
+            )
+            Issue.record("Expected invalidCalendarSelection")
+        } catch let error as AutomationServiceError {
+            guard case .invalidCalendarSelection = error else {
+                Issue.record("Expected .invalidCalendarSelection, got \(error)")
+                return
+            }
+        }
+    }
+
+    @Test
+    func createRuleRejectsOutOfRangeLeadTime() async throws {
+        let harness = AutomationHarness()
+        let preset = try await harness.sessionService.presets()[0]
+
+        for invalid in [-1, 241] {
+            do {
+                _ = try await harness.automationService.createRule(
+                    name: "Bad",
+                    presetID: preset.id,
+                    trigger: .calendar(
+                        CalendarAutomationTrigger(
+                            calendarIdentifiers: ["work"],
+                            startsBeforeMinutes: invalid,
+                            titleContains: nil
+                        )
+                    ),
+                    enabled: true
+                )
+                Issue.record("Expected invalidLeadTime for \(invalid)")
+            } catch let error as AutomationServiceError {
+                guard case .invalidLeadTime = error else {
+                    Issue.record("Expected .invalidLeadTime, got \(error)")
+                    continue
+                }
+            }
+        }
+    }
+
+    @Test
+    func availableCalendarsIsEmptyWhenDenied() async throws {
+        let harness = AutomationHarness()
+        harness.calendarStore.state = .denied
+        harness.calendarStore.options = [
+            AutomationCalendarOption(id: "work", title: "Work", sourceTitle: "iCloud")
+        ]
+
+        let calendars = await harness.automationService.availableCalendars()
+        #expect(calendars.isEmpty)
+    }
+
+    @Test
+    func evaluateCalendarRulesSkipsWhenDenied() async throws {
+        let harness = AutomationHarness()
+        let preset = try await harness.sessionService.presets()[1]
+        harness.calendarStore.state = .granted
+        harness.calendarStore.options = [
+            AutomationCalendarOption(id: "work", title: "Work", sourceTitle: "iCloud")
+        ]
+        harness.calendarStore.eventsToReturn = [
+            AutomationCalendarEvent(
+                identifier: "event-1",
+                title: "Daily Standup",
+                startDate: mondayAt(hour: 10, minute: 5)
+            )
+        ]
+
+        _ = try await harness.automationService.createRule(
+            name: "Standup Prep",
+            presetID: preset.id,
+            trigger: .calendar(
+                CalendarAutomationTrigger(
+                    calendarIdentifiers: ["work"],
+                    startsBeforeMinutes: 5,
+                    titleContains: "Standup"
+                )
+            ),
+            enabled: true
+        )
+
+        // Revoke access after the rule is stored. Evaluation must early-return.
+        harness.calendarStore.state = .denied
+        harness.timeBox.now = mondayAt(hour: 10, minute: 0)
+        await harness.automationService.evaluateCalendarRules(at: harness.timeBox.now)
+
+        #expect(harness.processController.launchedArguments.isEmpty)
+    }
+
+    @Test
+    func corruptedAutomationsJSONThrowsFailedToReadState() async throws {
+        let harness = AutomationHarness()
+        try harness.writeCorruptAutomationFile(named: "automations.json")
+
+        do {
+            _ = try await harness.automationService.rules()
+            Issue.record("Expected failedToReadState")
+        } catch let error as CaffeinateServiceError {
+            guard case .failedToReadState = error else {
+                Issue.record("Expected .failedToReadState, got \(error)")
+                return
+            }
+        }
+    }
+
+    @Test
+    func corruptedAutomationHistoryJSONThrowsFailedToReadState() async throws {
+        let harness = AutomationHarness()
+        try harness.writeCorruptAutomationFile(named: "automation-history.json")
+
+        do {
+            _ = try await harness.automationService.runHistory(limit: 10)
+            Issue.record("Expected failedToReadState")
+        } catch let error as CaffeinateServiceError {
+            guard case .failedToReadState = error else {
+                Issue.record("Expected .failedToReadState, got \(error)")
+                return
+            }
+        }
+    }
+
+    @Test
+    func evaluateContinuesWhenAutomationsJSONCorrupt() async throws {
+        let harness = AutomationHarness()
+        try harness.writeCorruptAutomationFile(named: "automations.json")
+        harness.timeBox.now = mondayAt(hour: 9, minute: 0)
+
+        // Must not throw; the failure is logged and swallowed to keep the 1 Hz loop alive.
+        await harness.automationService.evaluateScheduleRules(at: harness.timeBox.now)
+        await harness.automationService.evaluatePowerRules(for: .connected, at: harness.timeBox.now)
+        await harness.automationService.evaluateCalendarRules(at: harness.timeBox.now)
+
+        #expect(harness.processController.launchedArguments.isEmpty)
+    }
+
+    @Test
+    func createRuleFailsOnUnwritableDirectory() async throws {
+        let harness = AutomationHarness()
+        let preset = try await harness.sessionService.presets()[0]
+
+        let directory = harness.baseDirectory.appending(path: "SpotlightCaffeinate", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let originalAttributes = try FileManager.default.attributesOfItem(atPath: directory.path)
+        try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: directory.path)
+        defer {
+            if let mode = originalAttributes[.posixPermissions] {
+                try? FileManager.default.setAttributes([.posixPermissions: mode], ofItemAtPath: directory.path)
+            } else {
+                try? FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
+            }
+        }
+
+        do {
+            _ = try await harness.automationService.createRule(
+                name: "Blocked",
+                presetID: preset.id,
+                trigger: .power(.connected),
+                enabled: true
+            )
+            Issue.record("Expected failedToPersist")
+        } catch let error as CaffeinateServiceError {
+            guard case .failedToPersist = error else {
+                Issue.record("Expected .failedToPersist, got \(error)")
+                return
+            }
+        }
+    }
+
+    @Test
     func automationHistoryIsCappedAtFiftyRecords() async throws {
         let harness = AutomationHarness()
         let preset = try await harness.sessionService.presets()[0]
@@ -295,6 +551,12 @@ private struct AutomationHarness {
             calendarStore: calendarStore,
             now: { timeBox.now }
         )
+    }
+
+    func writeCorruptAutomationFile(named fileName: String) throws {
+        let directory = baseDirectory.appending(path: "SpotlightCaffeinate", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try Data("{not-json".utf8).write(to: directory.appending(path: fileName), options: .atomic)
     }
 }
 

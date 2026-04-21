@@ -160,6 +160,121 @@ struct CaffeinateServiceTests {
     }
 
     @Test
+    func createPresetRejectsInvalidMinutes() async throws {
+        let harness = ServiceHarness()
+
+        for invalid in [0, 1_441] {
+            do {
+                _ = try await harness.service.createPreset(name: "Test", minutes: invalid, powerMode: .full, isPinned: false)
+                Issue.record("Expected invalidMinutes for \(invalid)")
+            } catch let error as CaffeinateServiceError {
+                guard case .invalidMinutes = error else {
+                    Issue.record("Expected .invalidMinutes, got \(error)")
+                    continue
+                }
+            }
+        }
+    }
+
+    @Test
+    func createPresetRejectsEmptyName() async throws {
+        let harness = ServiceHarness()
+
+        for invalid in ["", "   "] {
+            do {
+                _ = try await harness.service.createPreset(name: invalid, minutes: 30, powerMode: .full, isPinned: false)
+                Issue.record("Expected invalidPresetName for \"\(invalid)\"")
+            } catch let error as CaffeinateServiceError {
+                guard case .invalidPresetName = error else {
+                    Issue.record("Expected .invalidPresetName, got \(error)")
+                    continue
+                }
+            }
+        }
+    }
+
+    @Test
+    func corruptedPresetsJSONThrowsFailedToReadState() async throws {
+        let harness = ServiceHarness()
+        // Seed the directory + file by calling presets() once (writes defaults).
+        _ = try await harness.service.presets()
+        try harness.writeCorruptFile(named: "presets.json")
+
+        do {
+            _ = try await harness.service.presets()
+            Issue.record("Expected failedToReadState")
+        } catch let error as CaffeinateServiceError {
+            guard case .failedToReadState = error else {
+                Issue.record("Expected .failedToReadState, got \(error)")
+                return
+            }
+        }
+    }
+
+    @Test
+    func corruptedStateJSONThrowsFailedToReadState() async throws {
+        let harness = ServiceHarness()
+        // Ensure directory exists.
+        _ = try await harness.service.presets()
+        try harness.writeCorruptFile(named: "state.json")
+
+        do {
+            _ = try await harness.service.status()
+            Issue.record("Expected failedToReadState")
+        } catch let error as CaffeinateServiceError {
+            guard case .failedToReadState = error else {
+                Issue.record("Expected .failedToReadState, got \(error)")
+                return
+            }
+        }
+    }
+
+    @Test
+    func corruptedHistoryJSONThrowsFailedToReadState() async throws {
+        let harness = ServiceHarness()
+        _ = try await harness.service.presets()
+        try harness.writeCorruptFile(named: "history.json")
+
+        do {
+            _ = try await harness.service.recentSessions(limit: 10)
+            Issue.record("Expected failedToReadState")
+        } catch let error as CaffeinateServiceError {
+            guard case .failedToReadState = error else {
+                Issue.record("Expected .failedToReadState, got \(error)")
+                return
+            }
+        }
+    }
+
+    @Test
+    func createPresetFailsOnUnwritableDirectory() async throws {
+        let harness = ServiceHarness()
+        // Seed so the directory exists.
+        _ = try await harness.service.presets()
+
+        let directory = harness.baseDirectory.appending(path: "SpotlightCaffeinate", directoryHint: .isDirectory)
+        let originalAttributes = try FileManager.default.attributesOfItem(atPath: directory.path)
+        try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: directory.path)
+        defer {
+            if let mode = originalAttributes[.posixPermissions] {
+                try? FileManager.default.setAttributes([.posixPermissions: mode], ofItemAtPath: directory.path)
+            } else {
+                try? FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
+            }
+        }
+
+        do {
+            _ = try await harness.service.createPreset(name: "Blocked", minutes: 30, powerMode: .full, isPinned: false)
+            Issue.record("Expected failedToPersist")
+        } catch let error as CaffeinateServiceError {
+            guard case .failedToPersist = error else {
+                Issue.record("Expected .failedToPersist, got \(error)")
+                return
+            }
+        }
+    }
+
+    @Test
     func separateServiceInstancesCanStopTheSameAssertionSession() async throws {
         let harness = ServiceHarness()
         harness.timeBox.now = Date(timeIntervalSinceReferenceDate: 1_000)
@@ -290,5 +405,11 @@ private struct ServiceHarness {
         }
 
         try data.write(to: directory.appending(path: "state.json"))
+    }
+
+    func writeCorruptFile(named fileName: String) throws {
+        let directory = baseDirectory.appending(path: "SpotlightCaffeinate", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try Data("{not-json".utf8).write(to: directory.appending(path: fileName), options: .atomic)
     }
 }
