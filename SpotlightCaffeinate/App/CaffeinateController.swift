@@ -1,10 +1,16 @@
 import AppKit
 import Foundation
 import Observation
+import OSLog
 
 @MainActor
 @Observable
 final class CaffeinateController {
+    private static let logger = Logger(
+        subsystem: "io.taylorfinklea.spotlightcaffeinate",
+        category: "controller"
+    )
+
     var snapshot: CaffeinateSnapshot = .inactive
     var presets: [CaffeinatePreset] = []
     var recentSessions: [RecentSessionEntry] = []
@@ -422,25 +428,61 @@ final class CaffeinateController {
         operation: @escaping () async -> NotificationPreferenceUpdateResult
     ) async {
         let previousPolicy = NSApplication.shared.activationPolicy()
-        if previousPolicy != .regular {
+        let needsPolicyChange = previousPolicy != .regular
+        if needsPolicyChange {
             NSApplication.shared.setActivationPolicy(.regular)
         }
 
-        NSApplication.shared.activate(ignoringOtherApps: true)
-
-        do {
-            try await Task.sleep(for: .milliseconds(200))
-        } catch {
-            // Ignore cancellation here. If the task was cancelled, the next await will no-op naturally.
+        if needsPolicyChange || !NSApplication.shared.isActive {
+            await awaitAppActivation(timeout: .milliseconds(500))
         }
 
         let result = await operation()
 
-        if previousPolicy != .regular {
+        if needsPolicyChange {
             NSApplication.shared.setActivationPolicy(previousPolicy)
         }
 
         await applyNotificationPreferenceUpdate(result)
+    }
+
+    private func awaitAppActivation(timeout: Duration) async {
+        if NSApplication.shared.isActive { return }
+
+        // Register observer before calling activate() to close the race where
+        // the notification fires between the activate call and the iterator
+        // starting to listen.
+        let stream = NotificationCenter.default.notifications(
+            named: NSApplication.didBecomeActiveNotification,
+            object: NSApplication.shared
+        )
+        var iterator = stream.makeAsyncIterator()
+        NSApplication.shared.activate(ignoringOtherApps: true)
+        if NSApplication.shared.isActive { return }
+
+        let timeoutTask = Task {
+            try? await Task.sleep(for: timeout)
+        }
+        let observerTask = Task {
+            _ = await iterator.next()
+        }
+
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask {
+                await timeoutTask.value
+            }
+            group.addTask {
+                await observerTask.value
+            }
+            _ = await group.next()
+            group.cancelAll()
+        }
+        timeoutTask.cancel()
+        observerTask.cancel()
+
+        if !NSApplication.shared.isActive {
+            Self.logger.warning("App did not become active within notification-enable timeout; proceeding anyway.")
+        }
     }
 
     private func applyNotificationPreferenceUpdate(_ result: NotificationPreferenceUpdateResult) async {
