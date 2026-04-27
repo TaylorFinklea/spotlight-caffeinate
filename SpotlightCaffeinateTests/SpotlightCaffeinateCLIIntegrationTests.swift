@@ -3,15 +3,7 @@ import Testing
 
 @Suite(.serialized)
 struct SpotlightCaffeinateCLIIntegrationTests {
-    @Test(
-        .disabled("""
-        Flaky in full-suite order: passes alone, but when several caffeinate-spawning tests \
-        run in sequence a later test hangs on pipe read. Root cause is Foundation Process \
-        inheriting parent file descriptors into /usr/bin/caffeinate, which holds pipe \
-        write-ends open past CLI exit. Safe to re-enable once the CLI marks non-stdio fds \
-        CLOEXEC before spawning caffeinate; tracked in the Sonnet backlog.
-        """)
-    )
+    @Test
     func startPersistsStateAndStopClearsIt() async throws {
         let runner = try CLIRunner.make()
         defer { runner.cleanupStorage() }
@@ -28,7 +20,7 @@ struct SpotlightCaffeinateCLIIntegrationTests {
         #expect(fileExists(at: runner.storageRoot, "history.json"))
     }
 
-    @Test(.disabled("Spawns caffeinate; see startPersistsStateAndStopClearsIt."))
+    @Test
     func startPresetLooksUpByCaseInsensitiveName() async throws {
         let runner = try CLIRunner.make()
         defer { runner.cleanupStorage() }
@@ -83,7 +75,7 @@ struct SpotlightCaffeinateCLIIntegrationTests {
         #expect(exitCode != 0 || exitCode == 0)
     }
 
-    @Test(.disabled("Spawns caffeinate; see startPersistsStateAndStopClearsIt."))
+    @Test
     func extendAddsMinutesToActiveSession() async throws {
         let runner = try CLIRunner.make()
         defer { runner.cleanupStorage() }
@@ -96,7 +88,7 @@ struct SpotlightCaffeinateCLIIntegrationTests {
         _ = try await runner.run(["stop"])
     }
 
-    @Test(.disabled("Spawns caffeinate; see startPersistsStateAndStopClearsIt."))
+    @Test
     func extendPresetRequiresExistingPreset() async throws {
         let runner = try CLIRunner.make()
         defer { runner.cleanupStorage() }
@@ -110,7 +102,7 @@ struct SpotlightCaffeinateCLIIntegrationTests {
         _ = try await runner.run(["stop"])
     }
 
-    @Test(.disabled("Spawns caffeinate via start; see startPersistsStateAndStopClearsIt."))
+    @Test
     func historyHumanAndJSONAfterCompletedSession() async throws {
         let runner = try CLIRunner.make()
         defer { runner.cleanupStorage() }

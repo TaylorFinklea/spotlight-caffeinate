@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 
 /// Spawns the built `spotlight-caffeinate-cli` binary with an isolated
@@ -36,26 +37,33 @@ struct CLIRunner {
     /// Runs the CLI with the given arguments and waits for it to exit.
     /// Times out by sending SIGTERM if the process exceeds `timeout`.
     ///
-    /// Pipe drainage uses `readabilityHandler` instead of `readToEnd()`
-    /// because the CLI may spawn `/usr/bin/caffeinate` which inherits
-    /// the pipe's write-end FD and prevents EOF from arriving after
-    /// the CLI itself exits.
+    /// Output is captured by redirecting the CLI's stdout/stderr to
+    /// temp files instead of pipes. Pipes deadlock here when the CLI
+    /// spawns `/usr/bin/caffeinate` and Foundation's `Process` does not
+    /// fully release the parent's copy of the pipe write end after
+    /// `run()`. Temp files have no EOF semantics, so the readers can
+    /// run freely after the child exits.
     func run(_ arguments: [String], timeout: Duration = .seconds(10)) async throws -> CLIResult {
+        let stdoutURL = Self.makeOutputTempFile()
+        let stderrURL = Self.makeOutputTempFile()
+        defer {
+            try? FileManager.default.removeItem(at: stdoutURL)
+            try? FileManager.default.removeItem(at: stderrURL)
+        }
+
+        let stdoutHandle = try FileHandle(forWritingTo: stdoutURL)
+        let stderrHandle = try FileHandle(forWritingTo: stderrURL)
+        defer {
+            try? stdoutHandle.close()
+            try? stderrHandle.close()
+        }
+
         let process = Process()
-        let stdout = Pipe()
-        let stderr = Pipe()
         process.executableURL = binaryURL
         process.arguments = arguments
-        process.standardOutput = stdout
-        process.standardError = stderr
+        process.standardOutput = stdoutHandle
+        process.standardError = stderrHandle
         process.environment = processEnvironment()
-
-        let stdoutCollector = PipeCollector()
-        let stderrCollector = PipeCollector()
-        stdoutCollector.install(on: stdout.fileHandleForReading)
-        stderrCollector.install(on: stderr.fileHandleForReading)
-
-        try process.run()
 
         let timeoutTask = Task {
             try? await Task.sleep(for: timeout)
@@ -65,20 +73,33 @@ struct CLIRunner {
         }
         defer { timeoutTask.cancel() }
 
-        await Task.detached { process.waitUntilExit() }.value
+        let exitCode: Int32 = try await withCheckedThrowingContinuation { continuation in
+            let resumer = ContinuationResumer(continuation: continuation)
+            process.terminationHandler = { task in
+                resumer.resume(.success(task.terminationStatus))
+            }
+            do {
+                try process.run()
+            } catch {
+                resumer.resume(.failure(error))
+            }
+        }
 
-        // Let any trailing writes land before we tear down the handlers.
-        try? await Task.sleep(for: .milliseconds(50))
-        stdout.fileHandleForReading.readabilityHandler = nil
-        stderr.fileHandleForReading.readabilityHandler = nil
-        try? stdout.fileHandleForReading.close()
-        try? stderr.fileHandleForReading.close()
+        let stdoutData = (try? Data(contentsOf: stdoutURL)) ?? Data()
+        let stderrData = (try? Data(contentsOf: stderrURL)) ?? Data()
 
         return CLIResult(
-            exitCode: process.terminationStatus,
-            stdout: String(decoding: stdoutCollector.finalize(), as: UTF8.self),
-            stderr: String(decoding: stderrCollector.finalize(), as: UTF8.self)
+            exitCode: exitCode,
+            stdout: String(decoding: stdoutData, as: UTF8.self),
+            stderr: String(decoding: stderrData, as: UTF8.self)
         )
+    }
+
+    private static func makeOutputTempFile() -> URL {
+        let url = FileManager.default.temporaryDirectory
+            .appending(path: "spotlight-caffeinate-cli-out-\(UUID().uuidString).log")
+        FileManager.default.createFile(atPath: url.path, contents: nil)
+        return url
     }
 
     /// Spawns the CLI without waiting. Callers drive it via `RunningProcess`
@@ -93,9 +114,60 @@ struct CLIRunner {
         process.standardError = stderr
         process.environment = processEnvironment()
 
-        try process.run()
+        Self.markCloseOnExec(stdout)
+        Self.markCloseOnExec(stderr)
 
-        return RunningProcess(process: process, stdout: stdout, stderr: stderr)
+        // Set the termination handler before `run()` so we cannot miss
+        // a fast-exiting process. The handler bridges Foundation's
+        // process-exit signal into a Task we can `await` reliably,
+        // bypassing `Process.waitUntilExit()` which has been observed
+        // to hang here even after the child has terminated.
+        let (exitStream, exitContinuation) = AsyncStream<Int32>.makeStream(bufferingPolicy: .bufferingNewest(1))
+        process.terminationHandler = { task in
+            exitContinuation.yield(task.terminationStatus)
+            exitContinuation.finish()
+        }
+
+        do {
+            try process.run()
+        } catch {
+            exitContinuation.finish()
+            throw error
+        }
+
+        let exitTask: Task<Int32, Never> = Task {
+            var iterator = exitStream.makeAsyncIterator()
+            return await iterator.next() ?? -1
+        }
+
+        // Drop the parent's copy of the write end so EOF on the read end
+        // arrives when the child exits (see `run` for the longer note).
+        try? stdout.fileHandleForWriting.close()
+        try? stderr.fileHandleForWriting.close()
+
+        return RunningProcess(process: process, stdout: stdout, stderr: stderr, exitTask: exitTask)
+    }
+
+    /// Marks both ends of `pipe` close-on-exec so the spawned CLI does not
+    /// leak the test-side pipe descriptors into its own grandchildren
+    /// (most notably `/usr/bin/caffeinate`). Without this, the grandchild
+    /// keeps a copy of the pipe write end open past the CLI's exit and the
+    /// test harness's next pipe read can hang waiting for EOF.
+    ///
+    /// Foundation promotes the pipe write end onto the child's fd 1/2
+    /// using `posix_spawn_file_actions_adddup2` before exec, and dup2
+    /// clears `FD_CLOEXEC` on the destination, so the CLI still gets a
+    /// usable stdout/stderr. The original parent-side fds remain
+    /// inherited at their original numbers until exec; with
+    /// `FD_CLOEXEC` set, exec closes them and they never reach grandchildren.
+    private static func markCloseOnExec(_ pipe: Pipe) {
+        for fd in [pipe.fileHandleForReading.fileDescriptor,
+                   pipe.fileHandleForWriting.fileDescriptor] {
+            let flags = fcntl(fd, F_GETFD)
+            if flags >= 0 {
+                _ = fcntl(fd, F_SETFD, flags | FD_CLOEXEC)
+            }
+        }
     }
 
     /// Writes a single preset to the hermetic storage directory so tests
@@ -157,11 +229,13 @@ final class RunningProcess {
     let process: Process
     let stdout: Pipe
     let stderr: Pipe
+    private let exitTask: Task<Int32, Never>
 
-    init(process: Process, stdout: Pipe, stderr: Pipe) {
+    init(process: Process, stdout: Pipe, stderr: Pipe, exitTask: Task<Int32, Never>) {
         self.process = process
         self.stdout = stdout
         self.stderr = stderr
+        self.exitTask = exitTask
     }
 
     /// Reads the next newline-terminated line from stdout. Returns `nil`
@@ -198,10 +272,7 @@ final class RunningProcess {
     }
 
     func waitUntilExit() async -> Int32 {
-        await Task.detached { [process] in
-            process.waitUntilExit()
-            return process.terminationStatus
-        }.value
+        await exitTask.value
     }
 }
 
@@ -221,27 +292,27 @@ enum CLIRunnerError: Error, CustomStringConvertible {
 /// explicit anchor is needed to bridge to `Bundle(for:)`.
 private final class CLIBundleAnchor {}
 
-/// Accumulates data from a `FileHandle` via `readabilityHandler`.
-/// Used to drain CLI subprocess pipes during process lifetime so
-/// blocking reads don't wait on descriptors inherited by grandchildren
-/// like `/usr/bin/caffeinate`.
-private final class PipeCollector: @unchecked Sendable {
+/// Single-shot wrapper around `CheckedContinuation` so the termination
+/// handler and the synchronous `process.run()` failure path can both
+/// resolve the same continuation without risking a double resume.
+private final class ContinuationResumer: @unchecked Sendable {
     private let lock = NSLock()
-    private var buffer = Data()
+    private var continuation: CheckedContinuation<Int32, Error>?
 
-    func install(on handle: FileHandle) {
-        handle.readabilityHandler = { [weak self] pipe in
-            let chunk = pipe.availableData
-            if chunk.isEmpty { return }
-            self?.lock.lock()
-            self?.buffer.append(chunk)
-            self?.lock.unlock()
+    init(continuation: CheckedContinuation<Int32, Error>) {
+        self.continuation = continuation
+    }
+
+    func resume(_ result: Result<Int32, Error>) {
+        lock.lock()
+        let pending = continuation
+        continuation = nil
+        lock.unlock()
+        guard let pending else { return }
+        switch result {
+        case .success(let value): pending.resume(returning: value)
+        case .failure(let error): pending.resume(throwing: error)
         }
     }
-
-    func finalize() -> Data {
-        lock.lock()
-        defer { lock.unlock() }
-        return buffer
-    }
 }
+
