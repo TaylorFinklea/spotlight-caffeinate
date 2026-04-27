@@ -9,3 +9,4 @@ build
 *.moved-aside
 *.xcworkspace/xcuserdata
 *.xcodeproj/xcuserdata
+.claude/
