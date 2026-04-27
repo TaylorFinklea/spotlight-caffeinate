@@ -101,9 +101,10 @@ before M2 wraps:
 - `scripts/package_cli_release.sh` produces a working binary tarball
   locally; smoke test against the extracted binary returns the
   expected JSON status payload.
+- `scripts/release_preflight.sh` is **green** on the 1.0.0 cut: clean
+  tree, regenerated project, app + CLI build, full test suite, shell
+  lint, CHANGELOG entry verified.
 - No signed build or App Store archive attempted this session.
-- `scripts/release_preflight.sh` was not re-run after the harness fix
-  landed; rerun before tagging to capture the green state in CI.
 
 ## Notes
 
