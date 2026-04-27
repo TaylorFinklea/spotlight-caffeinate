@@ -78,3 +78,12 @@
 - `CHANGELOG.md` follows Keep a Changelog. Every release tag must have a matching `## [X.Y.Z]` heading.
 - `scripts/package_signed_release.sh` and `scripts/release_preflight.sh` both fail fast if the current `MARKETING_VERSION` has no changelog entry.
 - Intent: prevent accidental tagging without a user-facing release note, and make the changelog the single source of truth for "what changed for end users."
+
+## 2026-04-27
+
+### CLI integration test harness uses temp files + `terminationHandler`, not pipes + `waitUntilExit`
+
+- `CLIRunner.run` now redirects the CLI's stdout/stderr to per-invocation temp files instead of `Pipe`. Foundation's `Process` does not fully release the parent's copy of a pipe write end after `run()`, which kept the test process itself a writer on the pipe and prevented EOF on the read end after the CLI exited.
+- Both `CLIRunner.run` and `RunningProcess.waitUntilExit` now bridge `Process.terminationHandler` through `CheckedContinuation` (run) or an `AsyncStream`-backed `Task` (spawn). `Process.waitUntilExit()` was observed to block indefinitely in the xctest harness even after the child process had terminated; the termination handler fires reliably.
+- `spawn` (used by the streaming `watch` test) keeps a `Pipe` but additionally marks both pipe ends `FD_CLOEXEC` so `/usr/bin/caffeinate` and similar grandchildren cannot inherit them.
+- Result: all five previously `.disabled(...)` integration tests run cleanly in suite order; full suite is green at 0.6 s.
