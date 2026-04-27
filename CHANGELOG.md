@@ -8,7 +8,7 @@ Each release heading matches the Git tag pushed for that version.
 
 Nothing user-facing yet. Drafts land here and are promoted to the next version section at tag time.
 
-## [1.0.0] — TBD
+## [1.0.0] — 2026-04-27
 
 First stable release. Ships to App Store, Homebrew (cask and formula), and signed direct download on the same day.
 
