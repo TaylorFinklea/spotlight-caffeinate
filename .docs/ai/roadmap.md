@@ -1,5 +1,24 @@
 # AI Roadmap
 
+## Now / Next / Later
+
+Active items. Trim as completed.
+
+### Now (M1 manual QA before cutting 1.0)
+- Install a signed Debug build into `/Applications`, corrupt `~/Library/Group Containers/group.io.taylorfinklea.spotlightcaffeinate/SpotlightCaffeinate/automations.json`, toggle an automation on, then `log stream --predicate 'subsystem == "io.taylorfinklea.spotlightcaffeinate" && category == "automation"'` should show the new error line.
+- Delete `~/Library/Group Containers/group.io.taylorfinklea.spotlightcaffeinate`, cold-launch the app, toggle notifications on, confirm the macOS auth prompt appears reliably and the `category == "controller"` warning does **not** fire on the happy path.
+
+### Next (M2 user-owned execution queue)
+1. Pre-flight on the 1.0.0 cut: `./scripts/release_preflight.sh` — must pass clean.
+2. Signed `/Applications` release-checklist pass: build via `./scripts/package_signed_release.sh --team-id K7CBQW6MPG --notary-profile <PROFILE>`, install into `/Applications`, walk through every bullet in `docs/release-checklist.md`.
+3. App Store Connect: capture/refresh screenshots (main menu active/idle, presets, automations, settings); set pricing; submit App Privacy answers ("No data collected" — draft in `docs/app-store-metadata.md`); submit App Review notes; build archive via `./scripts/package_app_store_release.sh --team-id K7CBQW6MPG`; upload from Xcode Organizer or Transporter.
+4. Homebrew tap automation: add the `HOMEBREW_TAP_PAT` repo secret (GitHub PAT with push rights to `TaylorFinklea/homebrew-tap`); confirm `.github/workflows/update-homebrew-tap.yml` runs on release publish.
+5. GitHub release: rebuild CLI tarball with `./scripts/package_cli_release.sh`, tag `v1.0.0`, push, attach `build/SpotlightCaffeinate.zip` and `build/spotlight-caffeinate-cli.tar.gz` to the release.
+6. Post-publish verification: `brew install --cask TaylorFinklea/tap/spotlight-caffeinate` installs and launches; `brew install TaylorFinklea/tap/spotlight-caffeinate-cli` installs the CLI; the curl-tarball install path works; App Store listing is live.
+
+### Later
+- Keep `.docs/ai/current-state.md`, `.docs/ai/roadmap.md` Now/Next/Later, and `.docs/ai/decisions.md` current at the end of each session.
+
 ## Durable Goals
 
 - Ship a reliable macOS menu bar app for starting, stopping, extending, and checking `caffeinate` sessions.
@@ -94,13 +113,11 @@ Candidate work:
 - Do not ship telemetry or analytics. The App Privacy answer stays "No data collected."
 - Do not bundle features that require non-public entitlements or App-Store-rejection-risk APIs.
 
-## Backlog (parallel, tiered by model capability)
+## Backlog
 
-<!-- tier3_owner: codex -->
+> Self-contained items any agent can pick up. First agent to start it executes it. Tier hints are advice, not gating.
 
-Items are independent and low-risk, scoped for a fresh agent with no session context. Use the claim protocol in `~/CLAUDE.md`: `- [ ]` → `- [~]` (in progress) → `- [x]` (done). Always skip `- [~]`.
-
-### Haiku (mechanical, no judgment)
+### Mechanical (Haiku candidates)
 
 - [ ] Audit repo docs for stale `docs/ai/` references (old path); replace with `.docs/ai/` where they appear in README, AGENTS.md, `docs/release-checklist.md`, `docs/app-store-*`, and any script comments. Do not move the files.
 - [ ] Add `NSHumanReadableCopyright` to `SpotlightCaffeinate/Info.plist` via `project.yml` if missing.
@@ -112,7 +129,7 @@ Items are independent and low-risk, scoped for a fresh agent with no session con
 - [ ] Audit README for macOS version strings — confirm "macOS 26" is consistent across install, notes, and development sections.
 - [ ] Add a "Supported macOS versions" line to `README.md` under Install, matching `deploymentTarget: "26.0"` in `project.yml`.
 
-### Sonnet (some architectural judgment)
+### Architectural (Sonnet candidates)
 
 - [ ] Add structured `os.Logger` logging for `AutomationService` evaluation failures; today errors are silently caught in `Services/AutomationService.swift`. Log rule id, trigger kind, and error. Do not log user data (event titles, calendar names) at info level.
 - [ ] Extract the `shouldDiscardLegacyCLIRecord` heuristic in `Services/CaffeinateService.swift` into a named, tested policy helper so its rules are explicit and covered.
@@ -123,7 +140,7 @@ Items are independent and low-risk, scoped for a fresh agent with no session con
 - [ ] Split the GitHub Pages site (`docs/index.html`, `docs/site.css`) into a minimal landing page with current screenshots, install instructions for all three channels, and links to support/privacy.
 - [x] Re-enable the five `@Test(.disabled(...))` integration tests in `SpotlightCaffeinateTests/SpotlightCaffeinateCLIIntegrationTests.swift`. Resolved 2026-04-27: `CLIRunner.run` now redirects stdout/stderr to per-invocation temp files instead of pipes, and both `CLIRunner.run` and `RunningProcess.waitUntilExit` bridge `Process.terminationHandler` through `CheckedContinuation` / `AsyncStream`-backed `Task` instead of `Process.waitUntilExit()`. Pipe ends in `spawn` are also marked `FD_CLOEXEC`. Suite passes in 0.4s with all 12 integration tests green.
 
-### Opus (design skill, cross-cutting — owned by Codex per `tier3_owner`)
+### Cross-cutting (needs Opus to scope)
 
 - [ ] Design and implement CLI end-to-end integration tests: spawn the built `spotlight-caffeinate-cli`, point it at an isolated temporary storage context, verify full parse → execute → persisted state for every command. Include `watch` with an explicit cancellation check.
 - [ ] Error-path coverage pass across `CaffeinateService` and `AutomationService`: invalid preset names, calendar auth denial, invalid automation parameters, file-permission failures, corrupted JSON recovery. Decide the error-reporting contract for each service.

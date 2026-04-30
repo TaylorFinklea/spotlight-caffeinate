@@ -1,17 +1,13 @@
-# Repository Notes
+# Spotlight Caffeinate — Agent Instructions
+
+Project-specific guidance for any AI coding agent (Claude Code, Codex, Copilot, etc.). Shared agent behavior (shell discipline, commit/push defaults) lives in `~/AGENTS.md`.
 
 ## AI Handoff Workflow
 
-- Treat `docs/ai/` as the shared source of truth across assistants. Do not rely on chat memory for project continuity.
-- Start every session by reading:
-  - `docs/ai/roadmap.md`
-  - `docs/ai/current-state.md`
-  - `docs/ai/next-steps.md`
-- End every work session by updating:
-  - `docs/ai/current-state.md`
-  - `docs/ai/next-steps.md`
-  - `docs/ai/decisions.md` when a durable decision, tradeoff, or policy changed
-- Use `docs/ai/handoff-template.md` as the default shape for session-end handoff notes.
+- Treat `.docs/ai/` as the shared source of truth across assistants. Do not rely on chat memory for project continuity.
+- Start every session by reading `.docs/ai/roadmap.md` (Now/Next/Later) and `.docs/ai/current-state.md`.
+- End every session by updating `current-state.md`, `roadmap.md` (Now/Next/Later), and `decisions.md` when a durable decision changed.
+- Use `.docs/ai/handoff-template.md` as the default shape for session-end handoff notes.
 - If shared AI docs conflict with stale chat context, follow the docs and bring them up to date.
 
 ## Purpose
