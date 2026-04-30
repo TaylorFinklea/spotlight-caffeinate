@@ -14,6 +14,9 @@ struct SpotlightCaffeinateApp: App {
         let now = controller.currentTime
         let remainingFraction = CGFloat(controller.snapshot.remainingFraction(at: now))
         let remainingTitle = controller.snapshot.menuBarTitle(at: now)
+        let activeMode: PowerMode? = controller.snapshot.isRunning(at: now)
+            ? controller.snapshot.powerMode
+            : nil
 
         MenuBarExtra {
             StatusMenuView(controller: controller)
@@ -21,6 +24,7 @@ struct SpotlightCaffeinateApp: App {
             MenuBarGlyphView(
                 style: controller.glyphStyle,
                 fillFraction: remainingFraction,
+                mode: activeMode,
                 remainingTitle: remainingTitle
             )
             .fixedSize()

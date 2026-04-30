@@ -233,6 +233,31 @@ private struct CompactBoltIconView: View {
     }
 }
 
+private struct ModeDotsView: View {
+    let mode: PowerMode
+    let glyphSize: CGFloat
+
+    private var dotCount: Int {
+        switch mode {
+        case .display: return 1
+        case .system: return 2
+        case .full: return 3
+        }
+    }
+
+    var body: some View {
+        let dotDiameter = max(1, glyphSize * 0.18)
+        HStack(spacing: glyphSize * 0.10) {
+            ForEach(0 ..< dotCount, id: \.self) { _ in
+                Circle()
+                    .frame(width: dotDiameter, height: dotDiameter)
+                    .foregroundStyle(.black)
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}
+
 private enum MenuBarRendering {
     case boltFill
     case ring
@@ -243,15 +268,20 @@ private struct MenuBarRenderCacheKey: Hashable {
     let rendering: MenuBarRendering
     let pixelRows: Int
     let step: Int
+    let mode: PowerMode?
 }
 
 @MainActor
 private enum MenuBarGlyphRenderer {
     private static var cache: [MenuBarRenderCacheKey: NSImage] = [:]
 
+    private static let dotStripHeightFraction: CGFloat = 0.22
+    private static let dotStripGapFraction: CGFloat = 0.06
+
     static func image(
         rendering: MenuBarRendering,
         fillFraction: CGFloat,
+        mode: PowerMode?,
         size: CGFloat
     ) -> NSImage {
         let scale = NSScreen.main?.backingScaleFactor ?? 2
@@ -266,7 +296,8 @@ private enum MenuBarGlyphRenderer {
         let cacheKey = MenuBarRenderCacheKey(
             rendering: rendering,
             pixelRows: pixelRows,
-            step: step
+            step: step,
+            mode: mode
         )
 
         if let cached = cache[cacheKey] {
@@ -274,39 +305,64 @@ private enum MenuBarGlyphRenderer {
         }
 
         let quantizedFillFraction = CGFloat(step) / CGFloat(pixelRows)
-        let nsImage: NSImage
-        switch rendering {
-        case .boltFill:
-            let renderer = ImageRenderer(
-                content: ProgressBoltIconView(
-                    fillFraction: quantizedFillFraction,
-                    size: size,
-                    style: .menuBarTemplate
-                )
-            )
-            renderer.scale = scale
-            nsImage = renderer.nsImage ?? NSImage(size: NSSize(width: size, height: size))
-        case .ring:
-            let renderer = ImageRenderer(
-                content: RingProgressIconView(
-                    fillFraction: quantizedFillFraction,
-                    size: size
-                )
-            )
-            renderer.scale = scale
-            nsImage = renderer.nsImage ?? NSImage(size: NSSize(width: size, height: size))
-        case .compactBolt:
-            let renderer = ImageRenderer(
-                content: CompactBoltIconView(size: size)
-            )
-            renderer.scale = scale
-            nsImage = renderer.nsImage ?? NSImage(size: NSSize(width: size, height: size))
-        }
+        let glyph = glyphView(
+            rendering: rendering,
+            fillFraction: quantizedFillFraction,
+            size: size
+        )
+        let composed = composedView(glyph: glyph, mode: mode, glyphSize: size)
+        let totalHeight = mode == nil
+            ? size
+            : size + (size * (dotStripHeightFraction + dotStripGapFraction))
 
-        nsImage.size = NSSize(width: size, height: size)
+        let renderer = ImageRenderer(content: composed)
+        renderer.scale = scale
+        let nsImage = renderer.nsImage ?? NSImage(size: NSSize(width: size, height: totalHeight))
+
+        nsImage.size = NSSize(width: size, height: totalHeight)
         nsImage.isTemplate = true
         cache[cacheKey] = nsImage
         return nsImage
+    }
+
+    @ViewBuilder
+    private static func glyphView(
+        rendering: MenuBarRendering,
+        fillFraction: CGFloat,
+        size: CGFloat
+    ) -> some View {
+        switch rendering {
+        case .boltFill:
+            ProgressBoltIconView(
+                fillFraction: fillFraction,
+                size: size,
+                style: .menuBarTemplate
+            )
+        case .ring:
+            RingProgressIconView(
+                fillFraction: fillFraction,
+                size: size
+            )
+        case .compactBolt:
+            CompactBoltIconView(size: size)
+        }
+    }
+
+    @ViewBuilder
+    private static func composedView<Inner: View>(
+        glyph: Inner,
+        mode: PowerMode?,
+        glyphSize: CGFloat
+    ) -> some View {
+        if let mode {
+            VStack(spacing: glyphSize * dotStripGapFraction) {
+                glyph
+                ModeDotsView(mode: mode, glyphSize: glyphSize)
+                    .frame(height: glyphSize * dotStripHeightFraction)
+            }
+        } else {
+            glyph
+        }
     }
 }
 
@@ -327,6 +383,7 @@ struct MenuBarBoltIconView: View {
             nsImage: MenuBarGlyphRenderer.image(
                 rendering: .boltFill,
                 fillFraction: fillFraction,
+                mode: nil,
                 size: 15
             )
         )
@@ -338,6 +395,7 @@ struct MenuBarBoltIconView: View {
 struct MenuBarGlyphView: View {
     let style: GlyphStyle
     let fillFraction: CGFloat
+    let mode: PowerMode?
     let remainingTitle: String
 
     private static let standardSize: CGFloat = 15
@@ -350,6 +408,7 @@ struct MenuBarGlyphView: View {
                 nsImage: MenuBarGlyphRenderer.image(
                     rendering: .boltFill,
                     fillFraction: fillFraction,
+                    mode: mode,
                     size: Self.standardSize
                 )
             )
@@ -361,6 +420,7 @@ struct MenuBarGlyphView: View {
                 nsImage: MenuBarGlyphRenderer.image(
                     rendering: .ring,
                     fillFraction: fillFraction,
+                    mode: mode,
                     size: Self.standardSize
                 )
             )
@@ -373,6 +433,7 @@ struct MenuBarGlyphView: View {
                     nsImage: MenuBarGlyphRenderer.image(
                         rendering: .compactBolt,
                         fillFraction: 0,
+                        mode: mode,
                         size: Self.compactBoltSize
                     )
                 )
