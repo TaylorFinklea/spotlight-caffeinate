@@ -13,18 +13,16 @@ struct SpotlightCaffeinateApp: App {
     var body: some Scene {
         let now = controller.currentTime
         let remainingFraction = CGFloat(controller.snapshot.remainingFraction(at: now))
+        let remainingTitle = controller.snapshot.menuBarTitle(at: now)
 
         MenuBarExtra {
             StatusMenuView(controller: controller)
         } label: {
-            HStack(spacing: controller.showMenuBarTime ? 4 : 0) {
-                MenuBarBoltIconView(fillFraction: remainingFraction)
-
-                if controller.showMenuBarTime {
-                    Text(controller.snapshot.menuBarTitle(at: now))
-                        .monospacedDigit()
-                }
-            }
+            MenuBarGlyphView(
+                style: controller.glyphStyle,
+                fillFraction: remainingFraction,
+                remainingTitle: remainingTitle
+            )
             .fixedSize()
             .foregroundStyle(.primary)
         }

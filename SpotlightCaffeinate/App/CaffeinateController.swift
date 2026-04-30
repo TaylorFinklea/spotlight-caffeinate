@@ -21,6 +21,8 @@ final class CaffeinateController {
     var suggestedMinutes = 5
     var suggestedPowerMode: PowerMode = .full
     var showMenuBarTime: Bool
+    var glyphStyle: GlyphStyle
+    var pulseThreshold: PulseThreshold
     var launchAtLoginEnabled: Bool
     var launchAtLoginStatus: String?
     var launchAtLoginStatusIsError: Bool
@@ -60,7 +62,13 @@ final class CaffeinateController {
     )!
 
     @ObservationIgnored
-    private static let showMenuBarTimeKey = "showMenuBarTime"
+    private nonisolated static let showMenuBarTimeKey = "showMenuBarTime"
+
+    @ObservationIgnored
+    private nonisolated static let glyphStyleKey = "glyphStyle"
+
+    @ObservationIgnored
+    private nonisolated static let pulseThresholdKey = "pulseThreshold"
 
     init(
         service: CaffeinateService = .shared,
@@ -77,6 +85,8 @@ final class CaffeinateController {
         self.automationEngine = automationEngine
         self.defaults = defaults
         showMenuBarTime = Self.showMenuBarTimePreference(defaults: defaults)
+        glyphStyle = Self.glyphStylePreference(defaults: defaults)
+        pulseThreshold = Self.pulseThresholdPreference(defaults: defaults)
         launchAtLoginEnabled = false
         launchAtLoginStatus = nil
         launchAtLoginStatusIsError = false
@@ -329,6 +339,16 @@ final class CaffeinateController {
     func setShowMenuBarTime(_ enabled: Bool) {
         showMenuBarTime = enabled
         defaults.set(enabled, forKey: Self.showMenuBarTimeKey)
+    }
+
+    func setGlyphStyle(_ style: GlyphStyle) {
+        glyphStyle = style
+        defaults.set(style.rawValue, forKey: Self.glyphStyleKey)
+    }
+
+    func setPulseThreshold(_ threshold: PulseThreshold) {
+        pulseThreshold = threshold
+        defaults.set(threshold.rawValue, forKey: Self.pulseThresholdKey)
     }
 
     func setNotificationsEnabled(_ enabled: Bool) {
@@ -591,5 +611,27 @@ final class CaffeinateController {
         }
 
         return value
+    }
+
+    private nonisolated static func glyphStylePreference(defaults: UserDefaults) -> GlyphStyle {
+        if let raw = defaults.string(forKey: glyphStyleKey),
+           let style = GlyphStyle(rawValue: raw) {
+            return style
+        }
+
+        if let legacyShowTime = defaults.object(forKey: showMenuBarTimeKey) as? Bool, legacyShowTime {
+            return .text
+        }
+
+        return .default
+    }
+
+    private nonisolated static func pulseThresholdPreference(defaults: UserDefaults) -> PulseThreshold {
+        if let raw = defaults.string(forKey: pulseThresholdKey),
+           let threshold = PulseThreshold(rawValue: raw) {
+            return threshold
+        }
+
+        return .default
     }
 }

@@ -164,40 +164,149 @@ private struct ProgressBoltIconView: View {
     }
 }
 
-private struct MenuBarBoltCacheKey: Hashable {
+private struct RingProgressIconView: View {
+    let fillFraction: CGFloat
+    let size: CGFloat
+
+    private var clampedFillFraction: CGFloat {
+        min(max(fillFraction, 0), 1)
+    }
+
+    var body: some View {
+        let trackWidth: CGFloat = max(1, size * 0.12)
+        let inset = trackWidth / 2
+
+        ZStack {
+            Circle()
+                .inset(by: inset)
+                .stroke(.black.opacity(0.25), lineWidth: trackWidth)
+
+            Circle()
+                .inset(by: inset)
+                .trim(from: 0, to: clampedFillFraction)
+                .stroke(
+                    .black,
+                    style: StrokeStyle(lineWidth: trackWidth, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+
+            BoltShape()
+                .padding(size * 0.30)
+                .foregroundStyle(.black)
+
+            BoltShape()
+                .stroke(
+                    .black,
+                    style: StrokeStyle(
+                        lineWidth: max(0.5, size * 0.04),
+                        lineCap: .round,
+                        lineJoin: .round
+                    )
+                )
+                .padding(size * 0.30)
+        }
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
+    }
+}
+
+private struct CompactBoltIconView: View {
+    let size: CGFloat
+
+    var body: some View {
+        ZStack {
+            BoltShape()
+                .foregroundStyle(.black)
+
+            BoltShape()
+                .stroke(
+                    .black,
+                    style: StrokeStyle(
+                        lineWidth: max(0.5, size * 0.06),
+                        lineCap: .round,
+                        lineJoin: .round
+                    )
+                )
+        }
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
+    }
+}
+
+private enum MenuBarRendering {
+    case boltFill
+    case ring
+    case compactBolt
+}
+
+private struct MenuBarRenderCacheKey: Hashable {
+    let rendering: MenuBarRendering
     let pixelRows: Int
     let step: Int
 }
 
 @MainActor
-private enum MenuBarBoltRenderer {
-    private static var cache: [MenuBarBoltCacheKey: NSImage] = [:]
+private enum MenuBarGlyphRenderer {
+    private static var cache: [MenuBarRenderCacheKey: NSImage] = [:]
 
-    static func image(fillFraction: CGFloat, size: CGFloat) -> NSImage {
+    static func image(
+        rendering: MenuBarRendering,
+        fillFraction: CGFloat,
+        size: CGFloat
+    ) -> NSImage {
         let scale = NSScreen.main?.backingScaleFactor ?? 2
         let pixelRows = max(1, Int(round(size * scale)))
-        let step = max(0, min(pixelRows, Int((min(max(fillFraction, 0), 1) * CGFloat(pixelRows)).rounded())))
-        let cacheKey = MenuBarBoltCacheKey(pixelRows: pixelRows, step: step)
+        let step: Int
+        switch rendering {
+        case .boltFill, .ring:
+            step = max(0, min(pixelRows, Int((min(max(fillFraction, 0), 1) * CGFloat(pixelRows)).rounded())))
+        case .compactBolt:
+            step = 0
+        }
+        let cacheKey = MenuBarRenderCacheKey(
+            rendering: rendering,
+            pixelRows: pixelRows,
+            step: step
+        )
 
         if let cached = cache[cacheKey] {
             return cached
         }
 
         let quantizedFillFraction = CGFloat(step) / CGFloat(pixelRows)
-        let renderer = ImageRenderer(
-            content: ProgressBoltIconView(
-                fillFraction: quantizedFillFraction,
-                size: size,
-                style: .menuBarTemplate
+        let nsImage: NSImage
+        switch rendering {
+        case .boltFill:
+            let renderer = ImageRenderer(
+                content: ProgressBoltIconView(
+                    fillFraction: quantizedFillFraction,
+                    size: size,
+                    style: .menuBarTemplate
+                )
             )
-        )
-        renderer.scale = scale
+            renderer.scale = scale
+            nsImage = renderer.nsImage ?? NSImage(size: NSSize(width: size, height: size))
+        case .ring:
+            let renderer = ImageRenderer(
+                content: RingProgressIconView(
+                    fillFraction: quantizedFillFraction,
+                    size: size
+                )
+            )
+            renderer.scale = scale
+            nsImage = renderer.nsImage ?? NSImage(size: NSSize(width: size, height: size))
+        case .compactBolt:
+            let renderer = ImageRenderer(
+                content: CompactBoltIconView(size: size)
+            )
+            renderer.scale = scale
+            nsImage = renderer.nsImage ?? NSImage(size: NSSize(width: size, height: size))
+        }
 
-        let image = renderer.nsImage ?? NSImage(size: NSSize(width: size, height: size))
-        image.size = NSSize(width: size, height: size)
-        image.isTemplate = true
-        cache[cacheKey] = image
-        return image
+        nsImage.size = NSSize(width: size, height: size)
+        nsImage.isTemplate = true
+        cache[cacheKey] = nsImage
+        return nsImage
     }
 }
 
@@ -214,8 +323,66 @@ struct MenuBarBoltIconView: View {
     let fillFraction: CGFloat
 
     var body: some View {
-        Image(nsImage: MenuBarBoltRenderer.image(fillFraction: fillFraction, size: 15))
+        Image(
+            nsImage: MenuBarGlyphRenderer.image(
+                rendering: .boltFill,
+                fillFraction: fillFraction,
+                size: 15
+            )
+        )
+        .interpolation(.high)
+        .accessibilityHidden(true)
+    }
+}
+
+struct MenuBarGlyphView: View {
+    let style: GlyphStyle
+    let fillFraction: CGFloat
+    let remainingTitle: String
+
+    private static let standardSize: CGFloat = 15
+    private static let compactBoltSize: CGFloat = 13
+
+    var body: some View {
+        switch style {
+        case .boltFill:
+            Image(
+                nsImage: MenuBarGlyphRenderer.image(
+                    rendering: .boltFill,
+                    fillFraction: fillFraction,
+                    size: Self.standardSize
+                )
+            )
             .interpolation(.high)
             .accessibilityHidden(true)
+
+        case .ring:
+            Image(
+                nsImage: MenuBarGlyphRenderer.image(
+                    rendering: .ring,
+                    fillFraction: fillFraction,
+                    size: Self.standardSize
+                )
+            )
+            .interpolation(.high)
+            .accessibilityHidden(true)
+
+        case .text:
+            HStack(spacing: 4) {
+                Image(
+                    nsImage: MenuBarGlyphRenderer.image(
+                        rendering: .compactBolt,
+                        fillFraction: 0,
+                        size: Self.compactBoltSize
+                    )
+                )
+                .interpolation(.high)
+
+                Text(remainingTitle)
+                    .monospacedDigit()
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(Text(remainingTitle))
+        }
     }
 }
