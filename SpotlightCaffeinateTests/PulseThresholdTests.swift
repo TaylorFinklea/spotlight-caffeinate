@@ -29,6 +29,20 @@ struct PulseThresholdTests {
     }
 
     @Test
+    func shouldPulseRespectsThreshold() {
+        #expect(PulseThreshold.minute1.shouldPulse(remainingSeconds: 30))
+        #expect(PulseThreshold.minute1.shouldPulse(remainingSeconds: 60))
+        #expect(!PulseThreshold.minute1.shouldPulse(remainingSeconds: 61))
+        #expect(!PulseThreshold.minute1.shouldPulse(remainingSeconds: 0))
+        #expect(!PulseThreshold.off.shouldPulse(remainingSeconds: 5))
+        #expect(PulseThreshold.seconds30.shouldPulse(remainingSeconds: 1))
+        #expect(!PulseThreshold.seconds30.shouldPulse(remainingSeconds: 31))
+        #expect(PulseThreshold.minutes5.shouldPulse(remainingSeconds: 299))
+        #expect(PulseThreshold.minutes5.shouldPulse(remainingSeconds: 300))
+        #expect(!PulseThreshold.minutes5.shouldPulse(remainingSeconds: 301))
+    }
+
+    @Test
     func codableRoundTrip() throws {
         let encoder = JSONEncoder()
         let decoder = JSONDecoder()

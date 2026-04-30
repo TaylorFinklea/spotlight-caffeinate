@@ -23,6 +23,7 @@ final class CaffeinateController {
     var showMenuBarTime: Bool
     var glyphStyle: GlyphStyle
     var pulseThreshold: PulseThreshold
+    var pulseOpacity: CGFloat = 1.0
     var launchAtLoginEnabled: Bool
     var launchAtLoginStatus: String?
     var launchAtLoginStatusIsError: Bool
@@ -55,6 +56,15 @@ final class CaffeinateController {
 
     @ObservationIgnored
     private var pollingTask: Task<Void, Never>?
+
+    @ObservationIgnored
+    private var pulseTask: Task<Void, Never>?
+
+    @ObservationIgnored
+    private var pulseStepIndex = 0
+
+    @ObservationIgnored
+    private nonisolated static let pulseStepCount = 8
 
     @ObservationIgnored
     private static let notificationSettingsURL = URL(
@@ -104,6 +114,20 @@ final class CaffeinateController {
             await self?.syncCalendarSettings()
         }
 
+        pulseTask = Task { [weak self] in
+            let interval: Duration = .milliseconds(200)
+
+            while !Task.isCancelled {
+                guard let self else {
+                    return
+                }
+
+                self.tickPulse()
+
+                try? await Task.sleep(for: interval)
+            }
+        }
+
         pollingTask = Task { [weak self] in
             guard let self else {
                 return
@@ -120,6 +144,7 @@ final class CaffeinateController {
 
     deinit {
         pollingTask?.cancel()
+        pulseTask?.cancel()
     }
 
     var isRunning: Bool {
@@ -349,6 +374,32 @@ final class CaffeinateController {
     func setPulseThreshold(_ threshold: PulseThreshold) {
         pulseThreshold = threshold
         defaults.set(threshold.rawValue, forKey: Self.pulseThresholdKey)
+        if !isNearExpiry, pulseOpacity != 1.0 {
+            pulseStepIndex = 0
+            pulseOpacity = 1.0
+        }
+    }
+
+    var isNearExpiry: Bool {
+        pulseThreshold.shouldPulse(remainingSeconds: snapshot.remainingSeconds(at: currentTime))
+    }
+
+    private func tickPulse() {
+        if isNearExpiry {
+            pulseStepIndex = (pulseStepIndex + 1) % Self.pulseStepCount
+            pulseOpacity = Self.pulseOpacity(forStep: pulseStepIndex)
+        } else if pulseOpacity != 1.0 {
+            pulseStepIndex = 0
+            pulseOpacity = 1.0
+        }
+    }
+
+    nonisolated static func pulseOpacity(forStep step: Int) -> CGFloat {
+        let normalizedPhase = Double(step % pulseStepCount) / Double(pulseStepCount) * 2 * .pi
+        let cosValue = cos(normalizedPhase)
+        let normalized = (1 + cosValue) / 2
+        let minimum = 0.35
+        return CGFloat(minimum + normalized * (1.0 - minimum))
     }
 
     func setNotificationsEnabled(_ enabled: Bool) {

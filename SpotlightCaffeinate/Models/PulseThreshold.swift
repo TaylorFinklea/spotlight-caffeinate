@@ -35,4 +35,11 @@ enum PulseThreshold: String, Codable, CaseIterable, Equatable, Identifiable, Sen
             return 300
         }
     }
+
+    func shouldPulse(remainingSeconds: Int) -> Bool {
+        guard remainingSeconds > 0,
+              let limit = seconds
+        else { return false }
+        return Double(remainingSeconds) <= limit
+    }
 }

@@ -29,6 +29,7 @@ struct SpotlightCaffeinateApp: App {
             )
             .fixedSize()
             .foregroundStyle(.primary)
+            .opacity(controller.pulseOpacity)
         }
         .menuBarExtraStyle(.window)
 
