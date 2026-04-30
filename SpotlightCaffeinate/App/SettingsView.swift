@@ -6,19 +6,51 @@ struct SettingsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                settingsCard(title: "Menu Bar") {
-                    Toggle(
-                        "Show remaining time in the menu bar",
-                        isOn: Binding(
-                            get: { controller.showMenuBarTime },
-                            set: { controller.setShowMenuBarTime($0) }
-                        )
-                    )
+                settingsCard(title: "Menu Bar Appearance") {
+                    VStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Glyph style")
+                                .font(.subheadline)
 
-                    Text("When enabled, the menu bar label shows the live countdown beside the bolt icon.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                            Picker(
+                                "Glyph style",
+                                selection: Binding(
+                                    get: { controller.glyphStyle },
+                                    set: { controller.setGlyphStyle($0) }
+                                )
+                            ) {
+                                ForEach(GlyphStyle.allCases) { style in
+                                    Text(style.title).tag(style)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .labelsHidden()
+
+                            Text(controller.glyphStyle.detailText)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Picker(
+                                "Near-expiry pulse",
+                                selection: Binding(
+                                    get: { controller.pulseThreshold },
+                                    set: { controller.setPulseThreshold($0) }
+                                )
+                            ) {
+                                ForEach(PulseThreshold.allCases) { threshold in
+                                    Text(threshold.title).tag(threshold)
+                                }
+                            }
+
+                            Text("The bolt softly fades when remaining time falls below this threshold.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
                 }
 
                 settingsCard(

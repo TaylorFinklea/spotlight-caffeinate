@@ -20,7 +20,6 @@ final class CaffeinateController {
     var currentTime = Date()
     var suggestedMinutes = 5
     var suggestedPowerMode: PowerMode = .full
-    var showMenuBarTime: Bool
     var glyphStyle: GlyphStyle
     var pulseThreshold: PulseThreshold
     var pulseOpacity: CGFloat = 1.0
@@ -94,7 +93,6 @@ final class CaffeinateController {
         self.launchAtLoginService = launchAtLoginService
         self.automationEngine = automationEngine
         self.defaults = defaults
-        showMenuBarTime = Self.showMenuBarTimePreference(defaults: defaults)
         glyphStyle = Self.glyphStylePreference(defaults: defaults)
         pulseThreshold = Self.pulseThresholdPreference(defaults: defaults)
         launchAtLoginEnabled = false
@@ -359,11 +357,6 @@ final class CaffeinateController {
             let settings = await launchAtLoginService.updatePreference(enabled: enabled)
             applyLaunchAtLoginSettings(settings)
         }
-    }
-
-    func setShowMenuBarTime(_ enabled: Bool) {
-        showMenuBarTime = enabled
-        defaults.set(enabled, forKey: Self.showMenuBarTimeKey)
     }
 
     func setGlyphStyle(_ style: GlyphStyle) {
@@ -654,14 +647,6 @@ final class CaffeinateController {
             await syncCalendarSettings()
             return false
         }
-    }
-
-    private nonisolated static func showMenuBarTimePreference(defaults: UserDefaults) -> Bool {
-        guard let value = defaults.object(forKey: "showMenuBarTime") as? Bool else {
-            return true
-        }
-
-        return value
     }
 
     private nonisolated static func glyphStylePreference(defaults: UserDefaults) -> GlyphStyle {
