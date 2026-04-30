@@ -4,13 +4,13 @@ import SwiftUI
 private struct BoltShape: Shape {
     func path(in rect: CGRect) -> Path {
         Path { path in
-            path.move(to: CGPoint(x: rect.minX + rect.width * 0.58, y: rect.minY + rect.height * 0.04))
-            path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.26, y: rect.minY + rect.height * 0.54))
-            path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.48, y: rect.minY + rect.height * 0.54))
-            path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.38, y: rect.minY + rect.height * 0.96))
-            path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.76, y: rect.minY + rect.height * 0.40))
-            path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.56, y: rect.minY + rect.height * 0.40))
-            path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.66, y: rect.minY + rect.height * 0.04))
+            path.move(to: CGPoint(x: rect.minX + rect.width * 0.64, y: rect.minY + rect.height * 0.06))
+            path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.18, y: rect.minY + rect.height * 0.58))
+            path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.42, y: rect.minY + rect.height * 0.58))
+            path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.30, y: rect.minY + rect.height * 0.94))
+            path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.84, y: rect.minY + rect.height * 0.40))
+            path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.60, y: rect.minY + rect.height * 0.40))
+            path.addLine(to: CGPoint(x: rect.minX + rect.width * 0.70, y: rect.minY + rect.height * 0.06))
             path.closeSubpath()
         }
     }
@@ -23,6 +23,7 @@ private struct BoltIconMetrics {
     var strokeWidth: CGFloat { max(1, size * 0.08) }
     var innerInset: CGFloat { strokeWidth + max(0.5, size * 0.03) }
     var boltInset: CGFloat { size * 0.19 }
+    var boltCornerStroke: CGFloat { max(0.5, size * 0.04) }
 }
 
 private struct BoltFillMaskView: View {
@@ -80,7 +81,13 @@ private struct ProgressBoltIconView: View {
     }
 
     private var appIcon: some View {
-        ZStack {
+        let cornerStrokeStyle = StrokeStyle(
+            lineWidth: metrics.boltCornerStroke,
+            lineCap: .round,
+            lineJoin: .round
+        )
+
+        return ZStack {
             tileShape
                 .fill(.white)
 
@@ -93,11 +100,21 @@ private struct ProgressBoltIconView: View {
                 .padding(metrics.boltInset)
                 .foregroundStyle(.black)
 
+            BoltShape()
+                .stroke(.black, style: cornerStrokeStyle)
+                .padding(metrics.boltInset)
+
             if clampedFillFraction > 0 {
-                BoltShape()
-                    .padding(metrics.boltInset)
-                    .foregroundStyle(.white)
-                    .mask(clippedFillMask)
+                ZStack {
+                    BoltShape()
+                        .padding(metrics.boltInset)
+                        .foregroundStyle(.white)
+
+                    BoltShape()
+                        .stroke(.white, style: cornerStrokeStyle)
+                        .padding(metrics.boltInset)
+                }
+                .mask(clippedFillMask)
             }
 
             tileShape
@@ -106,7 +123,13 @@ private struct ProgressBoltIconView: View {
     }
 
     private var menuBarTemplateIcon: some View {
-        ZStack {
+        let cornerStrokeStyle = StrokeStyle(
+            lineWidth: metrics.boltCornerStroke,
+            lineCap: .round,
+            lineJoin: .round
+        )
+
+        return ZStack {
             if clampedFillFraction > 0 {
                 clippedFillMask
                     .foregroundStyle(.black)
@@ -116,12 +139,22 @@ private struct ProgressBoltIconView: View {
                 .padding(metrics.boltInset)
                 .foregroundStyle(.black)
 
+            BoltShape()
+                .stroke(.black, style: cornerStrokeStyle)
+                .padding(metrics.boltInset)
+
             if clampedFillFraction > 0 {
-                BoltShape()
-                    .padding(metrics.boltInset)
-                    .foregroundStyle(.black)
-                    .mask(clippedFillMask)
-                    .blendMode(.destinationOut)
+                ZStack {
+                    BoltShape()
+                        .padding(metrics.boltInset)
+                        .foregroundStyle(.black)
+
+                    BoltShape()
+                        .stroke(.black, style: cornerStrokeStyle)
+                        .padding(metrics.boltInset)
+                }
+                .mask(clippedFillMask)
+                .blendMode(.destinationOut)
             }
 
             tileShape
