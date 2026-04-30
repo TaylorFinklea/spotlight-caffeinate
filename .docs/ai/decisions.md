@@ -87,3 +87,24 @@
 - Both `CLIRunner.run` and `RunningProcess.waitUntilExit` now bridge `Process.terminationHandler` through `CheckedContinuation` (run) or an `AsyncStream`-backed `Task` (spawn). `Process.waitUntilExit()` was observed to block indefinitely in the xctest harness even after the child process had terminated; the termination handler fires reliably.
 - `spawn` (used by the streaming `watch` test) keeps a `Pipe` but additionally marks both pipe ends `FD_CLOEXEC` so `/usr/bin/caffeinate` and similar grandchildren cannot inherit them.
 - Result: all five previously `.disabled(...)` integration tests run cleanly in suite order; full suite is green at 0.6 s.
+
+## 2026-04-30
+
+### M3 logo redesign keeps the bolt metaphor and ships an original shape
+
+- Apple's SF Symbols license forbids using SF Symbols "in any logos or icons used to represent your company, product, or app or as part of your trademark or trade name." The bolt in `BoltIconView` serves as both the menu bar glyph and the app icon, so it functions as the brand mark — using `bolt.fill` as the source path would violate that clause.
+- The replacement is the "C3 — Bold geometric bolt" shape from the brainstorming session: same lightning-bolt metaphor, balanced proportions, rounded line joins/caps via a same-color stroke overlay so the corners read as designed rather than hand-drawn.
+- SF Symbols remain fine for in-app UI elsewhere (settings rows, picker icons, etc.); the restriction is specifically the brand mark.
+
+### Menu bar glyph style is user-selectable; mode encoding is geometric, not chromatic
+
+- New `GlyphStyle` enum (`boltFill` / `ring` / `text`) drives the menu bar glyph; default is `.boltFill` for new users, with one-shot migration mapping legacy `showMenuBarTime=true` to `.text`.
+- The legacy "Show remaining time" toggle was removed from Settings. `GlyphStyle.text` subsumes the same UX (small bolt + remaining-time text) and the picker is the single way to opt in.
+- Mode (display / system / full) is signalled by 1/2/3 dots beneath the glyph, rendered into the same `NSImage` as the glyph. No color encoding because the menu bar glyph renders as a template image and macOS would discard color anyway.
+- Dots are visible only while a session is running; idle state shows just the bolt outline. Image height grows by ~22% when dots are present so the bolt stays at its full menu-bar size.
+
+### Near-expiry pulse is a controller-driven cosine breath, not a SwiftUI animation
+
+- `MenuBarExtra` template images do not animate via SwiftUI's `.animation(...)` modifier reliably — macOS treats the rendered image as static. The pulse is driven by `CaffeinateController.pulseOpacity`, updated every 200 ms by a dedicated task that quantises the breath into 8 cosine steps over a ~1.6 s loop.
+- `SpotlightCaffeinateApp` applies `.opacity(controller.pulseOpacity)` to the whole `MenuBarGlyphView`, so the alpha is baked in to the rendered output before macOS tints it.
+- Pulse fires when `PulseThreshold.shouldPulse(remainingSeconds:)` is true. Threshold options: Off / 30 s / 1 min / 5 min, persisted via `UserDefaults`. Default is 1 min.

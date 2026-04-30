@@ -4,9 +4,12 @@
 
 Active items. Trim as completed.
 
-### Now (M1 manual QA before cutting 1.0)
+### Now (manual QA on a signed install before cutting 1.0)
 - Install a signed Debug build into `/Applications`, corrupt `~/Library/Group Containers/group.io.taylorfinklea.spotlightcaffeinate/SpotlightCaffeinate/automations.json`, toggle an automation on, then `log stream --predicate 'subsystem == "io.taylorfinklea.spotlightcaffeinate" && category == "automation"'` should show the new error line.
 - Delete `~/Library/Group Containers/group.io.taylorfinklea.spotlightcaffeinate`, cold-launch the app, toggle notifications on, confirm the macOS auth prompt appears reliably and the `category == "controller"` warning does **not** fire on the happy path.
+- M3 glyph slice: switch through Bolt fill / Ring / Bolt + Time in Settings; confirm each renders correctly at the system menu bar height, including the mode-dot strip when a session is running.
+- M3 pulse: start a 2-minute session with the default 1-minute threshold; confirm the bolt begins fading at ~1:00 remaining and stops on extend/stop. Verify each pulse threshold value (Off / 30s / 1m / 5m).
+- M3 app icon: confirm Finder, Dock, Launchpad, and About-window icons all show the new bolt at every preview size.
 
 ### Next (M2 user-owned execution queue)
 1. Pre-flight on the 1.0.0 cut: `./scripts/release_preflight.sh` — must pass clean.
@@ -59,12 +62,14 @@ Exit criteria:
 
 Goal: make the existing UI measurably better without expanding scope.
 
+Status: glyph polish slice done 2026-04-30 (new bolt geometry, three selectable glyph styles, mode dots, configurable near-expiry pulse). Remaining slices below.
+
 Candidate work:
-- Global hotkey / keyboard shortcut to start/stop/extend without opening the menu.
-- Accessibility pass: VoiceOver labels, dynamic type, keyboard navigation across all windows.
-- Richer progress visualization in the menu bar glyph (the draining ring already exists — polish + options).
-- Preset list enhancements: search, grouping, import/export.
-- First-run onboarding tips and empty-state copy.
+- [x] Menu bar glyph polish: new C3 bolt geometry, selectable styles (boltFill / ring / text), mode dots (1/2/3 = display/system/full), opacity-breath pulse with configurable threshold (Off / 30s / 1m / 5m). Settings UI replaced "Show remaining time" toggle with a Menu Bar Appearance card. App icon regenerated.
+- [ ] Global hotkey / keyboard shortcut to start/stop/extend without opening the menu.
+- [ ] Accessibility pass: VoiceOver labels, dynamic type, keyboard navigation across all windows.
+- [ ] Preset list enhancements: search, grouping, import/export.
+- [ ] First-run onboarding tips and empty-state copy.
 
 ### M4 — Shortcuts and Spotlight depth
 

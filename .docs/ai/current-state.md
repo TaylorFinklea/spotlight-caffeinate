@@ -3,46 +3,55 @@
 ## Branch
 
 - Active branch: `main`
-- Ahead of `origin/main` by 14 commits.
+- Ahead of `origin/main` by 22 commits (15 from prior 1.0.0 prep + 7 from this M3 glyph polish slice).
 
 ## Recent Progress
 
-### M1 — Quality hardening (done)
+### M3 — Menu bar glyph polish (done 2026-04-30)
 
-Six commits landed in M1; details remain in the previous session's notes
-and in the M1 phase brief.
+Seven sequenced commits landed the first M3 slice ("menu bar glyph
+polish"). Plan source: `~/.claude/plans/wise-imagining-platypus.md`.
 
-### M2 — 1.0 release (prep landed; version cut and CLI-test deferral retired)
-
-Three further commits since the last session:
-
-- `0c9c103` (prior session) — CHANGELOG, preflight, landing page.
-- `b0760d8` (prior session) — handoff doc updates.
-- `7b8ee32` — `MARKETING_VERSION` 0.4.0 → 1.0.0, `CURRENT_PROJECT_VERSION`
-  4 → 10, `CFBundleShortVersionString` / `CFBundleVersion` regenerated,
-  `## [1.0.0] — 2026-04-27` heading promoted in `CHANGELOG.md`.
-- `4967b0d` — re-enables the five caffeinate-spawning CLI integration
-  tests by switching `CLIRunner.run` to temp-file capture and bridging
-  `Process.terminationHandler` through async/await for both `run` and
-  `RunningProcess.waitUntilExit`. The Sonnet backlog item that tracked
-  this work is now marked `[x]` in `.docs/ai/roadmap.md`.
-
-CLI release tarball was rebuilt locally as a dry run:
-
-- `build/spotlight-caffeinate-cli.tar.gz` (459 KB) contains the Release
-  binary plus a `caf` symlink. A local smoke test confirms
-  `spotlight-caffeinate-cli status --json` returns the expected idle
-  payload.
-
-Full test suite: **all 10 suites green in ~0.6 s**, including all 12
-CLI integration tests.
+- `36cde36` — replace `BoltShape` path with the new bolder C3 bolt
+  (rounded stroke overlay for soft joins/caps).
+- `972cede` — regenerate every `AppIcon.appiconset` PNG to match the
+  new bolt geometry. Adds `scripts/generate_app_icon.swift` (Core
+  Graphics renderer) so future bolt changes have a reproducible
+  pipeline at every required pixel size.
+- `d098cc4` — add `GlyphStyle` (`boltFill` / `ring` / `text`) and
+  `PulseThreshold` (`off` / `seconds30` / `minute1` / `minutes5`)
+  preference enums plus Codable / default-value tests.
+- `454d948` — add `RingProgressIconView` (style B) and
+  `CompactBoltIconView` (style C). Rename `MenuBarBoltRenderer` →
+  `MenuBarGlyphRenderer`; cache key now includes the rendering kind.
+  `CaffeinateController` gains `glyphStyle` + `pulseThreshold`
+  properties with one-shot legacy migration: existing users with
+  `showMenuBarTime=true` get `.text`; everyone else gets `.boltFill`.
+- `62fd3d3` — `ModeDotsView` (1/2/3 dots for display/system/full).
+  Renderer composes glyph + dot strip in a VStack and grows the
+  rendered image height when a session is running. Cache key gains a
+  `mode` field.
+- `54f25de` — pulse animation. `PulseThreshold` gets a
+  `shouldPulse(remainingSeconds:)` predicate. `CaffeinateController`
+  exposes `pulseOpacity` and `isNearExpiry`; a 200ms pulse task ticks
+  an 8-step cosine breath envelope (1.0 → 0.35 → 1.0 over ~1.6 s) when
+  `shouldPulse` is true. `SpotlightCaffeinateApp` applies
+  `.opacity(controller.pulseOpacity)` to the menu bar glyph.
+- `7c90fff` — Settings UI. Drops the "Show remaining time" toggle.
+  Adds a "Menu Bar Appearance" card with a segmented Glyph style
+  picker and a Near-expiry pulse picker, both bound to controller
+  setters. The legacy `showMenuBarTime` instance state, setter, and
+  helper are removed; `glyphStylePreference` still reads the legacy
+  UserDefaults key once for migration.
 
 ## Milestone Snapshot
 
 - **M1 Quality hardening** — done.
 - **M2 1.0 release** — version cut and integration tests re-enabled;
   signing, App Store, Homebrew secret, and tag/push remain user-gated.
-- **M3 Menu bar / UX polish** — stub.
+- **M3 Menu bar / UX polish** — glyph polish slice done. Remaining
+  slices (global hotkey, accessibility pass, preset list
+  enhancements, onboarding) still queued.
 - **M4 Shortcuts / Spotlight depth** — stub.
 - **M5 Automation trigger depth** — stub.
 - **M6 Platform integrations** — stub.
@@ -54,23 +63,28 @@ CLI integration tests.
   `TaylorFinklea/homebrew-tap` on release publish until configured.
 - App Privacy answer in `docs/app-store-metadata.md` is still a draft;
   needs to be submitted through App Store Connect.
+- The new bolt geometry has not yet been validated on a signed
+  `/Applications` install or in App Store screenshots.
 
 ## Changed Files In Current Session
 
-- `.docs/ai/current-state.md`
-- `.docs/ai/next-steps.md`
-- `.docs/ai/decisions.md`
-- `.docs/ai/roadmap.md` (Sonnet backlog item closed)
-- `CHANGELOG.md` (1.0.0 dated 2026-04-27)
-- `project.yml` (version bump to 1.0.0 / 10)
+- `SpotlightCaffeinate/App/BoltIconView.swift` (new bolt + ring +
+  compact-bolt + composed renderer + mode dots)
+- `SpotlightCaffeinate/App/CaffeinateController.swift` (glyphStyle,
+  pulseThreshold, pulseOpacity, isNearExpiry, pulse task)
+- `SpotlightCaffeinate/App/SpotlightCaffeinateApp.swift` (use
+  `MenuBarGlyphView`; apply `.opacity(controller.pulseOpacity)`)
+- `SpotlightCaffeinate/App/SettingsView.swift` (Menu Bar Appearance
+  card)
+- `SpotlightCaffeinate/Models/GlyphStyle.swift` (new)
+- `SpotlightCaffeinate/Models/PulseThreshold.swift` (new)
+- `SpotlightCaffeinateTests/GlyphStyleTests.swift` (new)
+- `SpotlightCaffeinateTests/PulseThresholdTests.swift` (new)
+- `SpotlightCaffeinate/Assets.xcassets/AppIcon.appiconset/*.png`
+  (10 PNGs regenerated)
+- `scripts/generate_app_icon.swift` (new)
 - `SpotlightCaffeinate.xcodeproj/project.pbxproj` (regenerated)
-- `SpotlightCaffeinate/Info.plist` (regenerated)
-- `SpotlightCaffeinateTests/CLIIntegrationHarness.swift` (temp-file
-  capture, terminationHandler bridge, FD_CLOEXEC on `spawn` pipes)
-- `SpotlightCaffeinateTests/SpotlightCaffeinateCLIIntegrationTests.swift`
-  (five `.disabled` annotations removed)
-- `build/spotlight-caffeinate-cli.tar.gz` (1.0.0 dry-run tarball, not
-  attached to a release tag yet)
+- `.docs/ai/roadmap.md` (M3 glyph slice marked done)
 
 ## Current Blockers
 
@@ -79,8 +93,7 @@ CLI integration tests.
 
 ## Manual QA Flagged For User
 
-Two items from M1 still need hands-on verification on a signed install
-before M2 wraps:
+Two M1 items are still queued (unchanged from prior session):
 
 1. **Automation logging.** Install the Debug build, corrupt the real
    App Group `automations.json`, toggle an automation enabled, and run
@@ -89,28 +102,37 @@ before M2 wraps:
 2. **Notification activation.** Delete
    `~/Library/Group Containers/group.io.taylorfinklea.spotlightcaffeinate`,
    cold-launch the app, toggle notifications on from the menu, confirm
-   the macOS auth prompt appears reliably. `log stream` with
-   `category == "controller"` should NOT show the activation-timeout
-   warning on the happy path.
+   the macOS auth prompt appears reliably.
+
+New M3 manual QA items:
+
+3. **Glyph styles render correctly in the menu bar.** Switch through
+   Bolt fill / Ring / Bolt + Time in Settings. Each renders cleanly at
+   the system menu bar height, including the mode-dot strip when a
+   session is running.
+4. **Near-expiry pulse behaves.** Start a 2-minute session with the
+   default 1-minute threshold; confirm the bolt begins fading at
+   ~1:00 remaining, stops on extend or stop. Repeat with each pulse
+   threshold value (Off / 30s / 1m / 5m).
+5. **App icon regeneration.** After installing the build into
+   `/Applications`, confirm Finder, Dock, Launchpad, and About-window
+   icons all show the new bolt at every preview size.
 
 ## Validation / Test Status
 
-- `xcodebuild test` on `SpotlightCaffeinate` scheme: 10 suites green in
-  ~0.6 s. All 12 CLI integration tests pass (none disabled).
-- `bash -n` passes for every script in `scripts/`.
-- `scripts/package_cli_release.sh` produces a working binary tarball
-  locally; smoke test against the extracted binary returns the
-  expected JSON status payload.
-- `scripts/release_preflight.sh` is **green** on the 1.0.0 cut: clean
-  tree, regenerated project, app + CLI build, full test suite, shell
-  lint, CHANGELOG entry verified.
+- `xcodebuild test` on `SpotlightCaffeinate` scheme: **78 tests in 12
+  suites** green (was 68 in 10 before this session). Adds 10 new
+  tests across `GlyphStyleTests`, `PulseThresholdTests`.
+- `bash -n` passes for every script in `scripts/` (including the new
+  `generate_app_icon.swift` Swift script).
+- `scripts/release_preflight.sh` is **green** on the post-M3 cut.
 - No signed build or App Store archive attempted this session.
 
 ## Notes
 
-- Use `.docs/ai/next-steps.md` as the immediate execution queue.
-- Phase briefs in `.docs/ai/phases/M1-quality-hardening.md` and
-  `.docs/ai/phases/M2-1.0-release.md` are the source of truth for
-  milestone scope and exit criteria.
-- `scripts/release_preflight.sh` is the entry point for
-  release-readiness checks before tagging.
+- The live execution queue lives in `.docs/ai/roadmap.md` under
+  **Now / Next / Later**.
+- M3 phase brief (`.docs/ai/phases/M3-...`) does not yet exist; plan
+  for the glyph slice lives at
+  `~/.claude/plans/wise-imagining-platypus.md` if a follow-up agent
+  needs the design rationale.
