@@ -8,9 +8,9 @@ Each release heading matches the Git tag pushed for that version.
 
 Nothing user-facing yet. Drafts land here and are promoted to the next version section at tag time.
 
-## [1.0.0] — 2026-04-27
+## [1.0.0] — 2026-05-05
 
-First stable release. Ships to App Store, Homebrew (cask and formula), and signed direct download on the same day.
+First stable release. Ships to Homebrew (cask and formula) and signed direct download on the same day. App Store submission follows under separate cover.
 
 ### Added
 - App Sandbox support in the menu bar app so it can be distributed through the Mac App Store.
@@ -23,10 +23,15 @@ First stable release. Ships to App Store, Homebrew (cask and formula), and signe
 - Mac App Store packaging workflow (`scripts/package_app_store_release.sh`) producing `build/SpotlightCaffeinateAppStore.xcarchive` for upload through Xcode Organizer or Transporter.
 - Structured `os.Logger` output for automation evaluation failures (subsystem `io.taylorfinklea.spotlightcaffeinate`, category `automation`).
 - Structured `os.Logger` output for the notification enable flow (category `controller`) with a warning when app activation does not land inside the 500 ms budget.
+- New bolt logo: bolder geometric proportions with rounded line joins/caps, regenerated across every app-icon size.
+- Selectable menu bar glyph style in Settings → Menu Bar Appearance: **Bolt** (drain fill, default), **Ring** (circular progress arc with a static bolt), or **Bolt + Time** (compact bolt next to remaining-time text).
+- Mode indicator dots beneath the menu bar glyph: 1 dot = display, 2 = system, 3 = full. Visible only while a session is running.
+- Configurable near-expiry pulse: a soft opacity breath when remaining time falls below the chosen threshold (Off / 30 sec / 1 min default / 5 min).
 
 ### Changed
 - Notification enable flow no longer races a fixed 200 ms sleep against `NSApplication.activate(...)`. The app now waits on `NSApplication.didBecomeActiveNotification` with a 500 ms fallback, and skips the wait entirely when the activation policy is already `.regular` and the app is already active.
 - CLI storage context now honours the `SPOTLIGHT_CAFFEINATE_STORAGE_ROOT` environment variable. Intended for integration tests; users should not rely on it.
+- The legacy "Show remaining time in the menu bar" toggle is replaced by the new Glyph style picker; existing users with the toggle enabled migrate automatically to the **Bolt + Time** style.
 
 ### Fixed
 - Assertion cleanup and startup privacy prompt no longer leak or misfire.

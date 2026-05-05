@@ -58,11 +58,9 @@ polish"). Plan source: `~/.claude/plans/wise-imagining-platypus.md`.
 
 ## Known Limitations
 
-- `HOMEBREW_TAP_PAT` repo secret is still unset, so
-  `.github/workflows/update-homebrew-tap.yml` will not push to
-  `TaylorFinklea/homebrew-tap` on release publish until configured.
 - App Privacy answer in `docs/app-store-metadata.md` is still a draft;
-  needs to be submitted through App Store Connect.
+  needs to be submitted through App Store Connect when the App Store
+  upload happens.
 - The new bolt geometry has not yet been validated on a signed
   `/Applications` install or in App Store screenshots.
 
