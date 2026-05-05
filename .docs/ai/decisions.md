@@ -108,3 +108,18 @@
 - `MenuBarExtra` template images do not animate via SwiftUI's `.animation(...)` modifier reliably — macOS treats the rendered image as static. The pulse is driven by `CaffeinateController.pulseOpacity`, updated every 200 ms by a dedicated task that quantises the breath into 8 cosine steps over a ~1.6 s loop.
 - `SpotlightCaffeinateApp` applies `.opacity(controller.pulseOpacity)` to the whole `MenuBarGlyphView`, so the alpha is baked in to the rendered output before macOS tints it.
 - Pulse fires when `PulseThreshold.shouldPulse(remainingSeconds:)` is true. Threshold options: Off / 30 s / 1 min / 5 min, persisted via `UserDefaults`. Default is 1 min.
+
+## 2026-05-05
+
+### Developer ID + App Sandbox + App Group requires an embedded provisioning profile
+
+- The signed v1.0.0 build was notarized successfully and Gatekeeper accepted it (`source=Notarized Developer ID`), but every launch attempt was killed by macOS with `taskgated-helper: Disallowing ... because no eligible provisioning profiles found` (POSIX error 163, "Launchd job spawn failed"). amfid logged `"No matching profile found"` against `com.apple.developer.team-identifier`.
+- Cause: `com.apple.security.application-groups` is a team-restricted entitlement. For non-MAS distribution macOS requires an embedded Developer ID provisioning profile that explicitly authorises the App Group for the team's Developer ID Application certificate. v0.4.0 never tripped this because it didn't have App Group.
+- Fix: at Apple Developer portal, create a **Distribution → Developer ID** provisioning profile bound to `io.taylorfinklea.spotlightcaffeinate`, pinned to the K7CBQW6MPG Developer ID Application cert, with App Groups capability enabled. Embed the downloaded `.provisionprofile` into the bundle as `Contents/embedded.provisionprofile`, then re-codesign + notarize + staple.
+- The Apple Development "Mac Team Provisioning Profile" that Xcode auto-generates for archive builds is **not** a valid replacement; it is associated with Apple Development certs only and amfid rejects it for Developer ID-signed binaries.
+
+### `package_signed_release.sh`'s exportArchive path is broken on the current Xcode toolchain
+
+- The automatic-signing archive uses an Apple Development certificate from whichever team the developer's Apple ID is on (in this case, the personal team N8SUK4L228) while the entitlements declare K7CBQW6MPG. Xcode 26 then refuses `xcodebuild -exportArchive -exportOptionsPlist ... method=developer-id` with `expected one {} but found developer-id`, meaning zero valid distribution methods.
+- Workaround for the 1.0.0 cut: copy the archived `.app` aside, re-codesign it manually with `codesign --force --options runtime --timestamp --sign "Developer ID Application: Taylor Finklea (K7CBQW6MPG)" --entitlements <entitlements>` (sign the bundled CLI first, then the wrapper), zip via `/usr/bin/ditto -c -k --keepParent`, submit to `notarytool`, and `stapler staple`.
+- The script should be updated to do this manually instead of relying on `exportArchive`. See backlog.

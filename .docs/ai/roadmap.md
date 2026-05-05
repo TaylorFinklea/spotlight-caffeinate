@@ -4,12 +4,11 @@
 
 Active items. Trim as completed.
 
-### Now (manual QA on a signed install before cutting 1.0)
-- Install a signed Debug build into `/Applications`, corrupt `~/Library/Group Containers/group.io.taylorfinklea.spotlightcaffeinate/SpotlightCaffeinate/automations.json`, toggle an automation on, then `log stream --predicate 'subsystem == "io.taylorfinklea.spotlightcaffeinate" && category == "automation"'` should show the new error line.
-- Delete `~/Library/Group Containers/group.io.taylorfinklea.spotlightcaffeinate`, cold-launch the app, toggle notifications on, confirm the macOS auth prompt appears reliably and the `category == "controller"` warning does **not** fire on the happy path.
-- M3 glyph slice: switch through Bolt fill / Ring / Bolt + Time in Settings; confirm each renders correctly at the system menu bar height, including the mode-dot strip when a session is running.
-- M3 pulse: start a 2-minute session with the default 1-minute threshold; confirm the bolt begins fading at ~1:00 remaining and stops on extend/stop. Verify each pulse threshold value (Off / 30s / 1m / 5m).
-- M3 app icon: confirm Finder, Dock, Launchpad, and About-window icons all show the new bolt at every preview size.
+### Now (Developer ID profile + post-1.0.0 fix-in-place)
+- **User-only:** at https://developer.apple.com/account, create a **Distribution → Developer ID** provisioning profile for `io.taylorfinklea.spotlightcaffeinate` pinned to the **Developer ID Application** certificate for K7CBQW6MPG, with App Groups capability enabled. Download the `.provisionprofile` and tell the next agent the path.
+- After the profile arrives: embed it at `Contents/embedded.provisionprofile`, re-codesign the bundled CLI + the app wrapper with the existing Developer ID Application identity, re-zip, re-notarize, re-staple, replace the `SpotlightCaffeinate.zip` asset on the v1.0.0 GitHub release (`gh release upload v1.0.0 ... --clobber`), retrigger `update-homebrew-tap.yml` (`gh workflow run update-homebrew-tap.yml -f tag=v1.0.0`), then `brew reinstall --cask taylorfinklea/tap/spotlight-caffeinate` and confirm the menu bar app launches.
+- Once the signed install launches: M1 manual QA (corrupt automations.json + automation log line; delete app group container, cold-launch, notification auth prompt) and M3 glyph QA (switch glyph styles, exercise pulse threshold values, confirm new app icon).
+- Update `scripts/package_signed_release.sh` to manual-codesign the archived app with `Developer ID Application` instead of relying on the broken `xcodebuild -exportArchive` path. See decisions doc for the working command sequence.
 
 ### Next (M2 user-owned execution queue)
 1. Pre-flight on the 1.0.0 cut: `./scripts/release_preflight.sh` — must pass clean.

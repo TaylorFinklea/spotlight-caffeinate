@@ -58,6 +58,38 @@ polish"). Plan source: `~/.claude/plans/wise-imagining-platypus.md`.
 
 ## Known Limitations
 
+- **v1.0.0 signed app does not launch on Apple Silicon.** macOS
+  refuses the spawn with `taskgated-helper: Disallowing
+  io.taylorfinklea.spotlightcaffeinate because no eligible
+  provisioning profiles found` and `amfid: ... "No matching profile
+  found"`. Cause: 1.0.0 added `com.apple.security.app-sandbox` +
+  `com.apple.security.application-groups`, which are team-restricted
+  entitlements that require an embedded Developer ID provisioning
+  profile authorising the App Group for non-MAS distribution.
+  v0.4.0 didn't have App Group, so it never tripped this check;
+  this is the first Developer ID build of the new entitlement set.
+  - **Fix path (user-only, Apple Developer portal):** confirm the
+    App Groups capability is enabled for the
+    `io.taylorfinklea.spotlightcaffeinate` App ID, then create a
+    **Distribution → Developer ID** provisioning profile pinned to
+    the **Developer ID Application** certificate for K7CBQW6MPG and
+    download it. Once embedded into the bundle and re-signed +
+    re-notarized + restapled, the launch will succeed.
+  - The current `build/Export/Spotlight Caffeinate.app` and the
+    `SpotlightCaffeinate.zip` asset on the v1.0.0 GitHub release
+    are notarized but unlaunchable until the profile is embedded.
+  - The Homebrew tap formula for `spotlight-caffeinate-cli`
+    (CLI-only) is unaffected; `brew install
+    TaylorFinklea/tap/spotlight-caffeinate-cli` and the curl-tarball
+    install path both work.
+- `package_signed_release.sh` script's `xcodebuild -exportArchive`
+  step fails with newer Xcode toolchains because the auto-signed
+  archive uses an Apple Development cert from a different Apple ID
+  team (the user's personal team N8SUK4L228) while entitlements
+  declare K7CBQW6MPG. The 1.0.0 cut bypassed `exportArchive` and
+  did manual codesign + notarytool. The script needs an update so
+  it manual-signs the archived `.app` with `Developer ID Application`
+  directly instead of relying on `exportArchive`.
 - App Privacy answer in `docs/app-store-metadata.md` is still a draft;
   needs to be submitted through App Store Connect when the App Store
   upload happens.
