@@ -143,16 +143,37 @@ cli_path="$app_path/Contents/Resources/cli/spotlight-caffeinate-cli"
 cli_entitlements="$repo_root/SpotlightCaffeinateCLI/SpotlightCaffeinateCLI.entitlements"
 app_entitlements="$repo_root/SpotlightCaffeinate/SpotlightCaffeinate.entitlements"
 
+# Spell out the full identity name so codesign does not pick the
+# Apple Distribution cert for the same team (which happens with the
+# bare team-id form when both certs are in the keychain).
+codesign_identity=$(security find-identity -v -p codesigning \
+  | awk -v team="$team_id" '
+    /Developer ID Application/ && $0 ~ ("\\(" team "\\)") {
+      if (match($0, /"[^"]+"/)) {
+        print substr($0, RSTART + 1, RLENGTH - 2)
+        exit
+      }
+    }
+  ')
+
+if [[ -z "$codesign_identity" ]]; then
+  cat >&2 <<EOF
+No "Developer ID Application" signing identity for team ${team_id} is in the keychain.
+Create or download that certificate first, then rerun this script.
+EOF
+  exit 1
+fi
+
 codesign_cli_cmd=(
   codesign --force --options runtime --timestamp
-  --sign "$team_id"
+  --sign "$codesign_identity"
   --entitlements "$cli_entitlements"
   "$cli_path"
 )
 
 codesign_app_cmd=(
   codesign --force --options runtime --timestamp
-  --sign "$team_id"
+  --sign "$codesign_identity"
   --entitlements "$app_entitlements"
   "$app_path"
 )
@@ -166,14 +187,6 @@ if [[ $dry_run -eq 1 ]]; then
     printf 'Notary profile: %s\n' "$notary_profile"
   fi
   exit 0
-fi
-
-if ! security find-identity -v -p codesigning | grep -q "Developer ID Application.*${team_id}"; then
-  cat >&2 <<EOF
-No "Developer ID Application" signing identity for team ${team_id} is in the keychain.
-Create or download that certificate first, then rerun this script.
-EOF
-  exit 1
 fi
 
 rm -rf "$derived_data_path" "$archive_path" "$export_path" "$zip_path"
