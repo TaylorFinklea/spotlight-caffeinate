@@ -8,6 +8,11 @@ Each release heading matches the Git tag pushed for that version.
 
 Nothing user-facing yet. Drafts land here and are promoted to the next version section at tag time.
 
+## [1.0.3] — 2026-05-06
+
+### Changed
+- Menu bar bolt-tile now uses a much rounder corner radius (45% of the tile, up from 30%) so the squircle reads as round at the small 15pt menu bar size where the prior radius still felt blocky. The app icon corner stays at 30% — it already read as round at full icon sizes.
+
 ## [1.0.2] — 2026-05-06
 
 ### Changed

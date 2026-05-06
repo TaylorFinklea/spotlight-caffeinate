@@ -18,8 +18,14 @@ private struct BoltShape: Shape {
 
 private struct BoltIconMetrics {
     let size: CGFloat
+    let style: BoltIconStyle
 
-    var cornerRadius: CGFloat { size * 0.30 }
+    var cornerRadius: CGFloat {
+        switch style {
+        case .app: return size * 0.30
+        case .menuBarTemplate: return size * 0.45
+        }
+    }
     var strokeWidth: CGFloat { max(1.5, size * 0.18) }
     var innerInset: CGFloat { strokeWidth + max(0.5, size * 0.03) }
     var boltInset: CGFloat { size * 0.19 }
@@ -40,7 +46,7 @@ private struct BoltFillMaskView: View {
     }
 }
 
-private enum BoltIconStyle {
+private enum BoltIconStyle: Sendable {
     case app
     case menuBarTemplate
 }
@@ -55,7 +61,7 @@ private struct ProgressBoltIconView: View {
     }
 
     private var metrics: BoltIconMetrics {
-        BoltIconMetrics(size: size)
+        BoltIconMetrics(size: size, style: style)
     }
 
     private var tileShape: RoundedRectangle {
@@ -118,7 +124,14 @@ private struct ProgressBoltIconView: View {
             }
 
             tileShape
-                .stroke(.black, lineWidth: metrics.strokeWidth)
+                .stroke(
+                    .black,
+                    style: StrokeStyle(
+                        lineWidth: metrics.strokeWidth,
+                        lineCap: .round,
+                        lineJoin: .round
+                    )
+                )
         }
     }
 
@@ -158,7 +171,14 @@ private struct ProgressBoltIconView: View {
             }
 
             tileShape
-                .stroke(.black, lineWidth: metrics.strokeWidth)
+                .stroke(
+                    .black,
+                    style: StrokeStyle(
+                        lineWidth: metrics.strokeWidth,
+                        lineCap: .round,
+                        lineJoin: .round
+                    )
+                )
         }
         .compositingGroup()
     }
