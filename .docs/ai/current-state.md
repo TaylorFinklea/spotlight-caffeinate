@@ -59,8 +59,11 @@ polish"). Plan source: `~/.claude/plans/wise-imagining-platypus.md`.
 ## Milestone Snapshot
 
 - **M1 Quality hardening** — done.
-- **M2 1.0 release** — version cut and integration tests re-enabled;
-  signing, App Store, Homebrew secret, and tag/push remain user-gated.
+- **M2 1.0 release** — **shipped.** v1.0.0 tagged, signed, notarized,
+  stapled, GitHub release published, Homebrew cask + formula updated
+  via the auto-update workflow, and all three install paths
+  (`brew install --cask`, formula, curl-tarball) verified launching
+  on Apple Silicon. App Store submission still queued.
 - **M3 Menu bar / UX polish** — glyph polish slice done. Remaining
   slices (global hotkey, accessibility pass, preset list
   enhancements, onboarding) still queued.
@@ -70,63 +73,36 @@ polish"). Plan source: `~/.claude/plans/wise-imagining-platypus.md`.
 
 ## Known Limitations
 
-- **v1.0.0 signed app does not launch on Apple Silicon.** macOS
-  refuses the spawn with `taskgated-helper: Disallowing
-  dev.finklea.spotlightcaffeinate because no eligible
-  provisioning profiles found` and `amfid: ... "No matching profile
-  found"`. Cause: 1.0.0 added `com.apple.security.app-sandbox` +
-  `com.apple.security.application-groups`, which are team-restricted
-  entitlements that require an embedded Developer ID provisioning
-  profile authorising the App Group for non-MAS distribution.
-  v0.4.0 didn't have App Group, so it never tripped this check;
-  this is the first Developer ID build of the new entitlement set.
-  - **Fix path (user-only, Apple Developer portal):** confirm the
-    App Groups capability is enabled for the
-    `dev.finklea.spotlightcaffeinate` App ID, then create a
-    **Distribution → Developer ID** provisioning profile pinned to
-    the **Developer ID Application** certificate for K7CBQW6MPG and
-    download it. Once embedded into the bundle and re-signed +
-    re-notarized + restapled, the launch will succeed.
-  - The current `build/Export/Spotlight Caffeinate.app` and the
-    `SpotlightCaffeinate.zip` asset on the v1.0.0 GitHub release
-    are notarized but unlaunchable until the profile is embedded.
-  - The Homebrew tap formula for `spotlight-caffeinate-cli`
-    (CLI-only) is unaffected; `brew install
-    TaylorFinklea/tap/spotlight-caffeinate-cli` and the curl-tarball
-    install path both work.
-- `package_signed_release.sh` script's `xcodebuild -exportArchive`
-  step fails with newer Xcode toolchains because the auto-signed
-  archive uses an Apple Development cert from a different Apple ID
-  team (the user's personal team N8SUK4L228) while entitlements
-  declare K7CBQW6MPG. The 1.0.0 cut bypassed `exportArchive` and
-  did manual codesign + notarytool. The script needs an update so
-  it manual-signs the archived `.app` with `Developer ID Application`
-  directly instead of relying on `exportArchive`.
-- App Privacy answer in `docs/app-store-metadata.md` is still a draft;
-  needs to be submitted through App Store Connect when the App Store
-  upload happens.
-- The new bolt geometry has not yet been validated on a signed
-  `/Applications` install or in App Store screenshots.
+- App Store submission has not happened yet for v1.0.0. App Privacy
+  answer in `docs/app-store-metadata.md` is still a draft; the App
+  Store Connect record needs to be re-created against the new
+  `dev.finklea.spotlightcaffeinate` bundle ID (the placeholder
+  `io.taylorfinklea.*` record never had a build uploaded).
+- The new bolt geometry has not yet been validated on the App Store
+  screenshots (the signed `/Applications` install was verified during
+  the v1.0.0 cut).
 
-## Changed Files In Current Session
+## v1.0.0 Release Receipts
 
-- `SpotlightCaffeinate/App/BoltIconView.swift` (new bolt + ring +
-  compact-bolt + composed renderer + mode dots)
-- `SpotlightCaffeinate/App/CaffeinateController.swift` (glyphStyle,
-  pulseThreshold, pulseOpacity, isNearExpiry, pulse task)
-- `SpotlightCaffeinate/App/SpotlightCaffeinateApp.swift` (use
-  `MenuBarGlyphView`; apply `.opacity(controller.pulseOpacity)`)
-- `SpotlightCaffeinate/App/SettingsView.swift` (Menu Bar Appearance
-  card)
-- `SpotlightCaffeinate/Models/GlyphStyle.swift` (new)
-- `SpotlightCaffeinate/Models/PulseThreshold.swift` (new)
-- `SpotlightCaffeinateTests/GlyphStyleTests.swift` (new)
-- `SpotlightCaffeinateTests/PulseThresholdTests.swift` (new)
-- `SpotlightCaffeinate/Assets.xcassets/AppIcon.appiconset/*.png`
-  (10 PNGs regenerated)
-- `scripts/generate_app_icon.swift` (new)
-- `SpotlightCaffeinate.xcodeproj/project.pbxproj` (regenerated)
-- `.docs/ai/roadmap.md` (M3 glyph slice marked done)
+- Tag: `v1.0.0` pushed to `origin`.
+- GitHub release: <https://github.com/TaylorFinklea/spotlight-caffeinate/releases/tag/v1.0.0>
+- Asset SHA256:
+  - `SpotlightCaffeinate.zip` —
+    `97e5f76394dcd0f9088758210b5eda1fc6e9d3b1edc87546b949ae3f95db8569`
+  - `spotlight-caffeinate-cli.tar.gz` —
+    `607862a85557edbdba42ff589d205b95337fcbf0df66436c4889b7452fe1e166`
+- Tap (`TaylorFinklea/homebrew-tap`) cask + formula updated by
+  `update-homebrew-tap.yml` workflow runs (`workflow_dispatch` and
+  `release` triggers, both succeeded).
+- Verified install paths:
+  1. `brew install --cask TaylorFinklea/tap/spotlight-caffeinate` →
+     `/Applications/Spotlight Caffeinate.app` launches without amfid
+     rejection (`spctl --assess`: `accepted source=Notarized
+     Developer ID`).
+  2. `brew install TaylorFinklea/tap/spotlight-caffeinate-cli` →
+     `spotlight-caffeinate-cli` and `caf` on `$PATH`, `status` works.
+  3. `curl ... | tar -xz` from the release tarball → CLI runs
+     directly.
 
 ## Current Blockers
 

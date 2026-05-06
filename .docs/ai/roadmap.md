@@ -4,20 +4,17 @@
 
 Active items. Trim as completed.
 
-### Now (Developer ID profile against new `dev.finklea.*` bundle ID, then re-cut v1.0.0)
-- **User-only:** at https://developer.apple.com/account, register a new **App ID** for `dev.finklea.spotlightcaffeinate` (description: "Spotlight Caffeinate"), enable the **App Groups** capability, and create / attach the App Group `group.dev.finklea.spotlightcaffeinate`. Then create a **Distribution → Developer ID** provisioning profile bound to the new App ID, pinned to the **Developer ID Application** certificate for K7CBQW6MPG. Download the `.provisionprofile` and tell the next agent the path. (The legacy `io.taylorfinklea.spotlightcaffeinate` App ID can be left dormant or deleted at the user's discretion — no v1.0.0 install of it succeeded.)
-- The broken v1.0.0 GitHub release and tag have been deleted (the asset on it could not launch). The `[1.0.0]` heading remains in `CHANGELOG.md` so `release_preflight.sh` stays green; we will re-cut and re-tag v1.0.0 once the profile arrives.
-- After the profile arrives: build a fresh archive against the new bundle ID, embed the profile at `Contents/embedded.provisionprofile`, re-codesign the bundled CLI + the app wrapper with the Developer ID Application identity, ditto-zip, notarize, staple. Then tag `v1.0.0` and push, create the GitHub release, attach `SpotlightCaffeinate.zip` and `spotlight-caffeinate-cli.tar.gz`, and run `gh workflow run update-homebrew-tap.yml -f tag=v1.0.0`. Verify all three install paths (`brew install --cask`, `brew install` formula, curl-tarball).
-- Once the signed install launches: M1 manual QA (corrupt automations.json + automation log line; delete app group container, cold-launch, notification auth prompt) and M3 glyph QA (switch glyph styles, exercise pulse threshold values, confirm new app icon).
-- Update `scripts/package_signed_release.sh` to manual-codesign the archived app with `Developer ID Application` instead of relying on the broken `xcodebuild -exportArchive` path. See decisions doc for the working command sequence.
+### Now (post-1.0.0)
+- **App Store submission.** v1.0.0 is live via Homebrew + signed direct download. The App Store track is still pending — re-create the App Store Connect record against the new `dev.finklea.spotlightcaffeinate` bundle ID, finalise App Privacy ("No data collected") + Review Notes, capture refreshed screenshots that show the new bolt geometry, and submit via `./scripts/package_app_store_release.sh --team-id K7CBQW6MPG` + Xcode Organizer / Transporter.
+- **Manual QA on the live install.** With v1.0.0 launching cleanly from `/Applications`, walk through:
+  1. M1 — corrupt the App Group `automations.json`, toggle an automation enabled, run `log stream --predicate 'subsystem == "dev.finklea.spotlightcaffeinate" && category == "automation"'` to confirm the new error line appears.
+  2. M1 — delete `~/Library/Group Containers/group.dev.finklea.spotlightcaffeinate`, cold-launch the app, toggle notifications on, confirm the macOS auth prompt appears reliably.
+  3. M3 — cycle through glyph styles (Bolt fill / Ring / Bolt + Time), exercise each pulse threshold, confirm the new bolt geometry on the Dock / Launchpad / Finder previews.
+- **Optional cleanup.** The legacy `io.taylorfinklea.spotlightcaffeinate` App ID at developer.apple.com can be deleted at the user's discretion — no v1.0.0 install of it succeeded; the new bundle ID `dev.finklea.spotlightcaffeinate` is the only live identity.
 
-### Next (M2 user-owned execution queue)
-1. Pre-flight on the 1.0.0 cut: `./scripts/release_preflight.sh` — must pass clean.
-2. Signed `/Applications` release-checklist pass: build via `./scripts/package_signed_release.sh --team-id K7CBQW6MPG --notary-profile <PROFILE>`, install into `/Applications`, walk through every bullet in `docs/release-checklist.md`.
-3. App Store Connect: capture/refresh screenshots (main menu active/idle, presets, automations, settings); set pricing; submit App Privacy answers ("No data collected" — draft in `docs/app-store-metadata.md`); submit App Review notes; build archive via `./scripts/package_app_store_release.sh --team-id K7CBQW6MPG`; upload from Xcode Organizer or Transporter.
-4. Homebrew tap automation: add the `HOMEBREW_TAP_PAT` repo secret (GitHub PAT with push rights to `TaylorFinklea/homebrew-tap`); confirm `.github/workflows/update-homebrew-tap.yml` runs on release publish.
-5. GitHub release: rebuild CLI tarball with `./scripts/package_cli_release.sh`, tag `v1.0.0`, push, attach `build/SpotlightCaffeinate.zip` and `build/spotlight-caffeinate-cli.tar.gz` to the release.
-6. Post-publish verification: `brew install --cask TaylorFinklea/tap/spotlight-caffeinate` installs and launches; `brew install TaylorFinklea/tap/spotlight-caffeinate-cli` installs the CLI; the curl-tarball install path works; App Store listing is live.
+### Next (after manual QA + App Store)
+- Pick the next M3 slice (global hotkey, accessibility pass, preset list enhancements, or onboarding) per the brainstorming queue.
+- Optional: zap improvements to the cask (the current `zap trash:` only references the legacy Application Support path; the App Group container at `~/Library/Group Containers/group.dev.finklea.spotlightcaffeinate` should also be in the zap list so `brew uninstall --zap` cleans up fully).
 
 ### Later
 - Keep `.docs/ai/current-state.md`, `.docs/ai/roadmap.md` Now/Next/Later, and `.docs/ai/decisions.md` current at the end of each session.

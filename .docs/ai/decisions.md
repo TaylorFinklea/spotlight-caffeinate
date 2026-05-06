@@ -132,3 +132,17 @@
 - This is a clean break: the broken v1.0.0 GitHub release and tag were deleted, the changelog re-dated, and the new Apple Developer App ID will be registered against the new bundle ID. There is no migration path because there were no successful installs of the old v1.0.0 (signed app failed to launch — see prior entry).
 - Touched: `project.yml`, both `.entitlements` files, `SpotlightCaffeinatePaths.swift`, `Logger` subsystems in `CaffeinateController` / `AutomationService` / `CaffeinateNotificationService`, two `notificationIdentifier` constants in the notification service, and `SpotlightCaffeinatePathsTests` fixture paths. The Homebrew tap repo (`TaylorFinklea/homebrew-tap`) and GitHub-Pages support/privacy URLs (`taylorfinklea.github.io/...`) were left as-is — those track GitHub username/handles, not the app bundle namespace.
 - After this rename, the Developer Apple ID work happens against the new bundle ID: the Distribution → Developer ID provisioning profile must be created for `dev.finklea.spotlightcaffeinate` (with App Groups capability and `group.dev.finklea.spotlightcaffeinate` enabled), and the App Store Connect record needs to be re-created (the old one was for the placeholder bundle ID and never had a build uploaded).
+
+### v1.0.0 cut succeeded with manual codesign + embedded Developer ID profile
+
+- Working sequence (now captured in `scripts/package_signed_release.sh`):
+  1. `xcodebuild ... -archivePath build/SpotlightCaffeinate.xcarchive ... -allowProvisioningUpdates DEVELOPMENT_TEAM=K7CBQW6MPG archive` — same archive command as before.
+  2. Copy the archived `.app` from `build/SpotlightCaffeinate.xcarchive/Products/Applications/` to `build/Export/`.
+  3. `cp <profile>.provisionprofile build/Export/.../Contents/embedded.provisionprofile`.
+  4. `codesign --force --options runtime --timestamp --sign K7CBQW6MPG --entitlements <CLI ent> <bundled CLI binary>`.
+  5. `codesign --force --options runtime --timestamp --sign K7CBQW6MPG --entitlements <app ent> <app bundle>`.
+  6. `codesign --verify --deep --strict --verbose=2`, `ditto -c -k --keepParent`, `xcrun notarytool submit ... --keychain-profile spotlight-caffeinate-notarytool --wait`, `xcrun stapler staple`, `spctl --assess`, re-zip with stapled bundle.
+- Critical detail: the bundled CLI must be signed BEFORE the wrapper, so the wrapper signature seals over the new CLI signature and the embedded profile. Skipping the embed step or signing the wrapper before the CLI both reproduce the v1.0.0-first-cut amfid rejection.
+- `codesign --sign K7CBQW6MPG <path>` resolves the team's Developer ID Application identity from the keychain automatically (no need to spell out the full "Developer ID Application: Taylor Finklea (K7CBQW6MPG)" string).
+- The `--keychain-profile spotlight-caffeinate-notarytool` is the notarytool profile name set up via `xcrun notarytool store-credentials` on this machine. It is keychain-local; new machines need `scripts/configure_notarytool_profile.sh` first.
+- All three install paths verified post-publish: cask launches without amfid rejection, formula CLI runs, curl-tarball CLI runs.
