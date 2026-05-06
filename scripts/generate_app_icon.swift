@@ -48,8 +48,8 @@ private func renderIcon(pixels: Int) -> Data {
     context.translateBy(x: 0, y: s)
     context.scaleBy(x: 1, y: -1)
 
-    let cornerRadius = s * 0.24
-    let strokeWidth = max(1.5, s * 0.14)
+    let cornerRadius = s * 0.30
+    let strokeWidth = max(1.5, s * 0.18)
     let boltInset = s * 0.19
     let boltCornerStroke = max(0.5, s * 0.04)
 
@@ -99,8 +99,8 @@ private func renderIcon(pixels: Int) -> Data {
 
     context.setStrokeColor(red: 0, green: 0, blue: 0, alpha: 1)
     context.setLineWidth(strokeWidth)
-    context.setLineCap(.butt)
-    context.setLineJoin(.miter)
+    context.setLineCap(.round)
+    context.setLineJoin(.round)
     context.addPath(tilePath)
     context.strokePath()
 

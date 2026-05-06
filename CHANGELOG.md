@@ -8,6 +8,11 @@ Each release heading matches the Git tag pushed for that version.
 
 Nothing user-facing yet. Drafts land here and are promoted to the next version section at tag time.
 
+## [1.0.2] — 2026-05-06
+
+### Changed
+- Softer corner radius and a touch more weight on the bolt-tile outline. The squircle radius moves from 24% to 30% of the tile, and the outer stroke from 14% to 18%, so the menu bar mark feels less angular.
+
 ## [1.0.1] — 2026-05-06
 
 ### Changed
