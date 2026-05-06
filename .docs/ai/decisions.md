@@ -25,7 +25,7 @@
 ### Apple team `K7CBQW6MPG` is the default local signing team
 
 - `project.yml` now defaults the app and CLI signing path to Apple team `K7CBQW6MPG`.
-- The App Group `group.io.taylorfinklea.spotlightcaffeinate` is expected to exist on that team for local signed validation and App Store packaging.
+- The App Group `group.dev.finklea.spotlightcaffeinate` is expected to exist on that team for local signed validation and App Store packaging.
 
 ### App Store packaging stops at the archive
 
@@ -115,7 +115,7 @@
 
 - The signed v1.0.0 build was notarized successfully and Gatekeeper accepted it (`source=Notarized Developer ID`), but every launch attempt was killed by macOS with `taskgated-helper: Disallowing ... because no eligible provisioning profiles found` (POSIX error 163, "Launchd job spawn failed"). amfid logged `"No matching profile found"` against `com.apple.developer.team-identifier`.
 - Cause: `com.apple.security.application-groups` is a team-restricted entitlement. For non-MAS distribution macOS requires an embedded Developer ID provisioning profile that explicitly authorises the App Group for the team's Developer ID Application certificate. v0.4.0 never tripped this because it didn't have App Group.
-- Fix: at Apple Developer portal, create a **Distribution → Developer ID** provisioning profile bound to `io.taylorfinklea.spotlightcaffeinate`, pinned to the K7CBQW6MPG Developer ID Application cert, with App Groups capability enabled. Embed the downloaded `.provisionprofile` into the bundle as `Contents/embedded.provisionprofile`, then re-codesign + notarize + staple.
+- Fix: at Apple Developer portal, create a **Distribution → Developer ID** provisioning profile bound to `dev.finklea.spotlightcaffeinate`, pinned to the K7CBQW6MPG Developer ID Application cert, with App Groups capability enabled. Embed the downloaded `.provisionprofile` into the bundle as `Contents/embedded.provisionprofile`, then re-codesign + notarize + staple.
 - The Apple Development "Mac Team Provisioning Profile" that Xcode auto-generates for archive builds is **not** a valid replacement; it is associated with Apple Development certs only and amfid rejects it for Developer ID-signed binaries.
 
 ### `package_signed_release.sh`'s exportArchive path is broken on the current Xcode toolchain
@@ -123,3 +123,12 @@
 - The automatic-signing archive uses an Apple Development certificate from whichever team the developer's Apple ID is on (in this case, the personal team N8SUK4L228) while the entitlements declare K7CBQW6MPG. Xcode 26 then refuses `xcodebuild -exportArchive -exportOptionsPlist ... method=developer-id` with `expected one {} but found developer-id`, meaning zero valid distribution methods.
 - Workaround for the 1.0.0 cut: copy the archived `.app` aside, re-codesign it manually with `codesign --force --options runtime --timestamp --sign "Developer ID Application: Taylor Finklea (K7CBQW6MPG)" --entitlements <entitlements>` (sign the bundled CLI first, then the wrapper), zip via `/usr/bin/ditto -c -k --keepParent`, submit to `notarytool`, and `stapler staple`.
 - The script should be updated to do this manually instead of relying on `exportArchive`. See backlog.
+
+## 2026-05-06
+
+### Bundle identifier renamed from `io.taylorfinklea.*` to `dev.finklea.*`
+
+- `io.taylorfinklea.spotlightcaffeinate` was always a placeholder reverse-DNS for a domain that wasn't owned. The user's actual domain is `finklea.dev`, so the canonical bundle ID is `dev.finklea.spotlightcaffeinate` (CLI: `dev.finklea.spotlightcaffeinate.cli`; App Group: `group.dev.finklea.spotlightcaffeinate`).
+- This is a clean break: the broken v1.0.0 GitHub release and tag were deleted, the changelog re-dated, and the new Apple Developer App ID will be registered against the new bundle ID. There is no migration path because there were no successful installs of the old v1.0.0 (signed app failed to launch — see prior entry).
+- Touched: `project.yml`, both `.entitlements` files, `SpotlightCaffeinatePaths.swift`, `Logger` subsystems in `CaffeinateController` / `AutomationService` / `CaffeinateNotificationService`, two `notificationIdentifier` constants in the notification service, and `SpotlightCaffeinatePathsTests` fixture paths. The Homebrew tap repo (`TaylorFinklea/homebrew-tap`) and GitHub-Pages support/privacy URLs (`taylorfinklea.github.io/...`) were left as-is — those track GitHub username/handles, not the app bundle namespace.
+- After this rename, the Developer Apple ID work happens against the new bundle ID: the Distribution → Developer ID provisioning profile must be created for `dev.finklea.spotlightcaffeinate` (with App Groups capability and `group.dev.finklea.spotlightcaffeinate` enabled), and the App Store Connect record needs to be re-created (the old one was for the placeholder bundle ID and never had a build uploaded).

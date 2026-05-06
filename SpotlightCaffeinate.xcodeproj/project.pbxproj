@@ -653,7 +653,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				PRODUCT_BUNDLE_IDENTIFIER = io.taylorfinklea.spotlightcaffeinate;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.finklea.spotlightcaffeinate;
 				PRODUCT_NAME = "Spotlight Caffeinate";
 				SDKROOT = macosx;
 			};
@@ -764,7 +764,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				PRODUCT_BUNDLE_IDENTIFIER = io.taylorfinklea.spotlightcaffeinate;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.finklea.spotlightcaffeinate;
 				PRODUCT_NAME = "Spotlight Caffeinate";
 				SDKROOT = macosx;
 			};
@@ -782,7 +782,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				PRODUCT_BUNDLE_IDENTIFIER = io.taylorfinklea.spotlightcaffeinate.cli;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.finklea.spotlightcaffeinate.cli;
 				PRODUCT_NAME = "spotlight-caffeinate-cli";
 				SDKROOT = macosx;
 			};
@@ -800,7 +800,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				PRODUCT_BUNDLE_IDENTIFIER = io.taylorfinklea.spotlightcaffeinate.cli;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.finklea.spotlightcaffeinate.cli;
 				PRODUCT_NAME = "spotlight-caffeinate-cli";
 				SDKROOT = macosx;
 			};

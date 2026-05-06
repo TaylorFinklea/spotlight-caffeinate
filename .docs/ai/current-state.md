@@ -3,9 +3,21 @@
 ## Branch
 
 - Active branch: `main`
-- Ahead of `origin/main` by 22 commits (15 from prior 1.0.0 prep + 7 from this M3 glyph polish slice).
+- Ahead of `origin/main` by the prior commits plus the bundle-ID rename slice
+  landed on 2026-05-06.
 
 ## Recent Progress
+
+### Bundle ID rename (2026-05-06)
+
+`io.taylorfinklea.*` was always a placeholder reverse-DNS for a domain
+that wasn't owned. Renamed across the source tree and docs to
+`dev.finklea.spotlightcaffeinate` (CLI: `dev.finklea.spotlightcaffeinate.cli`;
+App Group: `group.dev.finklea.spotlightcaffeinate`). All 78 tests pass on
+the new bundle ID. The broken v1.0.0 GitHub release and tag were deleted —
+nothing to migrate from since the prior 1.0.0 signed app could not launch.
+A new Developer ID provisioning profile must be created against the new
+bundle ID (see decisions.md and the roadmap Now block).
 
 ### M3 — Menu bar glyph polish (done 2026-04-30)
 
@@ -60,7 +72,7 @@ polish"). Plan source: `~/.claude/plans/wise-imagining-platypus.md`.
 
 - **v1.0.0 signed app does not launch on Apple Silicon.** macOS
   refuses the spawn with `taskgated-helper: Disallowing
-  io.taylorfinklea.spotlightcaffeinate because no eligible
+  dev.finklea.spotlightcaffeinate because no eligible
   provisioning profiles found` and `amfid: ... "No matching profile
   found"`. Cause: 1.0.0 added `com.apple.security.app-sandbox` +
   `com.apple.security.application-groups`, which are team-restricted
@@ -70,7 +82,7 @@ polish"). Plan source: `~/.claude/plans/wise-imagining-platypus.md`.
   this is the first Developer ID build of the new entitlement set.
   - **Fix path (user-only, Apple Developer portal):** confirm the
     App Groups capability is enabled for the
-    `io.taylorfinklea.spotlightcaffeinate` App ID, then create a
+    `dev.finklea.spotlightcaffeinate` App ID, then create a
     **Distribution → Developer ID** provisioning profile pinned to
     the **Developer ID Application** certificate for K7CBQW6MPG and
     download it. Once embedded into the bundle and re-signed +
@@ -127,10 +139,10 @@ Two M1 items are still queued (unchanged from prior session):
 
 1. **Automation logging.** Install the Debug build, corrupt the real
    App Group `automations.json`, toggle an automation enabled, and run
-   `log stream --predicate 'subsystem == "io.taylorfinklea.spotlightcaffeinate" && category == "automation"'`
+   `log stream --predicate 'subsystem == "dev.finklea.spotlightcaffeinate" && category == "automation"'`
    to confirm the new error line appears.
 2. **Notification activation.** Delete
-   `~/Library/Group Containers/group.io.taylorfinklea.spotlightcaffeinate`,
+   `~/Library/Group Containers/group.dev.finklea.spotlightcaffeinate`,
    cold-launch the app, toggle notifications on from the menu, confirm
    the macOS auth prompt appears reliably.
 

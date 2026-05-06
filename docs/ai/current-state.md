@@ -7,7 +7,7 @@
 ## Recent Progress
 
 - Fixed native assertion-backed sessions so they time out correctly and can be stopped or archived after relaunch using persisted assertion IDs.
-- Stopped probing `~/Library/Containers/io.taylorfinklea.spotlightcaffeinate` directly during startup; legacy sandbox-path detection now only uses the current process application-support location when it is already sandboxed.
+- Stopped probing `~/Library/Containers/dev.finklea.spotlightcaffeinate` directly during startup; legacy sandbox-path detection now only uses the current process application-support location when it is already sandboxed.
 - Added regression tests covering expired assertion cleanup, cross-instance assertion stop behavior, and automation harness compatibility with the assertion-backed process controller.
 - Added App Group-based shared storage resolution so the signed app and bundled CLI can sync state again.
 - Added one-time migration logic for legacy app and standalone CLI data into the shared container.
@@ -88,14 +88,14 @@
   - signed app Debug build with `-allowProvisioningUpdates` passed
   - entitlements inspection confirmed:
     - app sandbox enabled
-    - App Group `group.io.taylorfinklea.spotlightcaffeinate`
+    - App Group `group.dev.finklea.spotlightcaffeinate`
     - calendar entitlement on the app target
   - signed `/Applications` runtime validation passed for the bundled CLI sync path:
     - `start`
     - `status`
     - `extend`
     - `stop`
-  - App Group container files were created under `~/Library/Group Containers/group.io.taylorfinklea.spotlightcaffeinate/SpotlightCaffeinate`
+  - App Group container files were created under `~/Library/Group Containers/group.dev.finklea.spotlightcaffeinate/SpotlightCaffeinate`
 - For the App Store packaging flow:
   - `./scripts/package_app_store_release.sh --team-id K7CBQW6MPG` passed
   - archive created at `build/SpotlightCaffeinateAppStore.xcarchive`

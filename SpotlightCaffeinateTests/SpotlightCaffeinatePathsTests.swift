@@ -9,7 +9,7 @@ struct SpotlightCaffeinatePathsTests {
         let sharedGroupRoot = root.appending(path: "AppGroup", directoryHint: .isDirectory)
         let userApplicationSupportDirectory = root.appending(path: "Application Support", directoryHint: .isDirectory)
         let sandboxApplicationSupportDirectory = root
-            .appending(path: "Containers/io.taylorfinklea.spotlightcaffeinate/Data/Library/Application Support", directoryHint: .isDirectory)
+            .appending(path: "Containers/dev.finklea.spotlightcaffeinate/Data/Library/Application Support", directoryHint: .isDirectory)
 
         let standaloneDirectory = userApplicationSupportDirectory.appending(path: SpotlightCaffeinatePaths.appDirectoryName, directoryHint: .isDirectory)
         let sandboxDirectory = sandboxApplicationSupportDirectory.appending(path: SpotlightCaffeinatePaths.appDirectoryName, directoryHint: .isDirectory)
@@ -148,7 +148,7 @@ struct SpotlightCaffeinatePathsTests {
         let sharedGroupRoot = root.appending(path: "AppGroup", directoryHint: .isDirectory)
         let userApplicationSupportDirectory = root.appending(path: "Application Support", directoryHint: .isDirectory)
         let sandboxApplicationSupportDirectory = root
-            .appending(path: "Containers/io.taylorfinklea.spotlightcaffeinate/Data/Library/Application Support", directoryHint: .isDirectory)
+            .appending(path: "Containers/dev.finklea.spotlightcaffeinate/Data/Library/Application Support", directoryHint: .isDirectory)
         let sharedDirectory = sharedGroupRoot.appending(path: SpotlightCaffeinatePaths.appDirectoryName, directoryHint: .isDirectory)
         let standaloneDirectory = userApplicationSupportDirectory.appending(path: SpotlightCaffeinatePaths.appDirectoryName, directoryHint: .isDirectory)
 
@@ -244,7 +244,7 @@ struct SpotlightCaffeinatePathsTests {
         let root = fileManager.temporaryDirectory.appending(path: UUID().uuidString, directoryHint: .isDirectory)
         let userApplicationSupportDirectory = root.appending(path: "Application Support", directoryHint: .isDirectory)
         let sandboxApplicationSupportDirectory = root
-            .appending(path: "Containers/io.taylorfinklea.spotlightcaffeinate/Data/Library/Application Support", directoryHint: .isDirectory)
+            .appending(path: "Containers/dev.finklea.spotlightcaffeinate/Data/Library/Application Support", directoryHint: .isDirectory)
         let sandboxDirectory = sandboxApplicationSupportDirectory.appending(path: SpotlightCaffeinatePaths.appDirectoryName, directoryHint: .isDirectory)
 
         try fileManager.createDirectory(at: sandboxDirectory, withIntermediateDirectories: true)

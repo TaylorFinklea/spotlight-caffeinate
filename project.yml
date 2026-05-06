@@ -44,7 +44,7 @@ targets:
           fi
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: io.taylorfinklea.spotlightcaffeinate
+        PRODUCT_BUNDLE_IDENTIFIER: dev.finklea.spotlightcaffeinate
         PRODUCT_NAME: Spotlight Caffeinate
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: SpotlightCaffeinate/Info.plist
@@ -81,7 +81,7 @@ targets:
     settings:
       base:
         PRODUCT_NAME: spotlight-caffeinate-cli
-        PRODUCT_BUNDLE_IDENTIFIER: io.taylorfinklea.spotlightcaffeinate.cli
+        PRODUCT_BUNDLE_IDENTIFIER: dev.finklea.spotlightcaffeinate.cli
         CODE_SIGN_ENTITLEMENTS: SpotlightCaffeinateCLI/SpotlightCaffeinateCLI.entitlements
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: K7CBQW6MPG

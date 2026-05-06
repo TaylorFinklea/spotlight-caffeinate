@@ -15,13 +15,13 @@ First stable release. Ships to Homebrew (cask and formula) and signed direct dow
 ### Added
 - App Sandbox support in the menu bar app so it can be distributed through the Mac App Store.
 - Bundled CLI in the app bundle at `Contents/Resources/cli/spotlight-caffeinate-cli`, with `install-cli.sh` to put it on `$PATH`.
-- App Group sync (`group.io.taylorfinklea.spotlightcaffeinate`) so the signed menu bar app and the bundled CLI share presets, automations, session state, and history.
+- App Group sync (`group.dev.finklea.spotlightcaffeinate`) so the signed menu bar app and the bundled CLI share presets, automations, session state, and history.
 - Standalone CLI warning when a sandboxed app install is present but the standalone CLI is using its own local state.
 - Binary-only CLI installer: `scripts/install_cli_release.sh` downloads the published tarball and drops `spotlight-caffeinate-cli` plus a `caf` alias into `~/.local/bin`.
 - Homebrew tap auto-update workflow: `.github/workflows/update-homebrew-tap.yml` renders the cask and formula for `TaylorFinklea/homebrew-tap` from the published release assets when `HOMEBREW_TAP_PAT` is configured.
 - Developer ID signing + notarization workflow (`scripts/package_signed_release.sh`, `scripts/configure_notarytool_profile.sh`).
 - Mac App Store packaging workflow (`scripts/package_app_store_release.sh`) producing `build/SpotlightCaffeinateAppStore.xcarchive` for upload through Xcode Organizer or Transporter.
-- Structured `os.Logger` output for automation evaluation failures (subsystem `io.taylorfinklea.spotlightcaffeinate`, category `automation`).
+- Structured `os.Logger` output for automation evaluation failures (subsystem `dev.finklea.spotlightcaffeinate`, category `automation`).
 - Structured `os.Logger` output for the notification enable flow (category `controller`) with a warning when app activation does not land inside the 500 ms budget.
 - New bolt logo: bolder geometric proportions with rounded line joins/caps, regenerated across every app-icon size.
 - Selectable menu bar glyph style in Settings → Menu Bar Appearance: **Bolt** (drain fill, default), **Ring** (circular progress arc with a static bolt), or **Bolt + Time** (compact bolt next to remaining-time text).

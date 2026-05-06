@@ -17,7 +17,7 @@ What still remains is the release execution work in App Store Connect and the fi
 ## App Basics
 
 - App name: `Spotlight Caffeinate`
-- Bundle ID: `io.taylorfinklea.spotlightcaffeinate`
+- Bundle ID: `dev.finklea.spotlightcaffeinate`
 - Platform: macOS
 - Category: Utilities
 - App model: menu-bar-only app using `LSUIElement`
@@ -36,8 +36,8 @@ Before your first App Store release, make sure these are done:
 
 1. Your Apple Developer Program membership is active.
 2. App Store Connect agreements, banking, and tax information are complete.
-3. The app record exists in App Store Connect for `io.taylorfinklea.spotlightcaffeinate`.
-4. The App Group `group.io.taylorfinklea.spotlightcaffeinate` exists in Apple Developer and is attached to the app ID.
+3. The app record exists in App Store Connect for `dev.finklea.spotlightcaffeinate`.
+4. The App Group `group.dev.finklea.spotlightcaffeinate` exists in Apple Developer and is attached to the app ID.
 5. Your Support URL is live at `https://taylorfinklea.github.io/spotlight-caffeinate/support/`.
 6. Your Privacy Policy URL is live at `https://taylorfinklea.github.io/spotlight-caffeinate/privacy/`.
 7. You have macOS screenshots ready.
@@ -217,7 +217,7 @@ Paste something close to this into the App Review information field:
 Do this in App Store Connect before you submit the build.
 
 1. Create the app record if it does not exist yet.
-2. Confirm the bundle ID is `io.taylorfinklea.spotlightcaffeinate`.
+2. Confirm the bundle ID is `dev.finklea.spotlightcaffeinate`.
 3. Set the primary category to Utilities.
 4. Fill in the listing metadata.
 5. Add the Support URL.

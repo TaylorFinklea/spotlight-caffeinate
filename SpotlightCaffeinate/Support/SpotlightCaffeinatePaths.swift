@@ -14,8 +14,8 @@ struct SpotlightCaffeinateStorageEnvironment: Sendable {
 
 enum SpotlightCaffeinatePaths {
     static let appDirectoryName = "SpotlightCaffeinate"
-    static let bundleIdentifier = "io.taylorfinklea.spotlightcaffeinate"
-    static let appGroupIdentifier = "group.io.taylorfinklea.spotlightcaffeinate"
+    static let bundleIdentifier = "dev.finklea.spotlightcaffeinate"
+    static let appGroupIdentifier = "group.dev.finklea.spotlightcaffeinate"
 
     /// When set to a non-empty path, forces the legacy (non-shared-container)
     /// storage branch and routes all reads and writes into the override directory.

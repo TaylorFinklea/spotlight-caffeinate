@@ -19,9 +19,9 @@ actor CaffeinateNotificationService: CaffeinateNotificationScheduling {
     static let shared = CaffeinateNotificationService()
 
     private static let notificationsEnabledKey = "notifyOnCompletion"
-    private let logger = Logger(subsystem: "io.taylorfinklea.spotlightcaffeinate", category: "notifications")
-    private let notificationIdentifier = "io.taylorfinklea.spotlightcaffeinate.completion"
-    private let enabledNotificationIdentifier = "io.taylorfinklea.spotlightcaffeinate.notifications-enabled"
+    private let logger = Logger(subsystem: "dev.finklea.spotlightcaffeinate", category: "notifications")
+    private let notificationIdentifier = "dev.finklea.spotlightcaffeinate.completion"
+    private let enabledNotificationIdentifier = "dev.finklea.spotlightcaffeinate.notifications-enabled"
     private let center: UNUserNotificationCenter
     private let defaults: UserDefaults
 

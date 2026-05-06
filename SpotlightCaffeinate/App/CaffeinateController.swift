@@ -7,7 +7,7 @@ import OSLog
 @Observable
 final class CaffeinateController {
     private static let logger = Logger(
-        subsystem: "io.taylorfinklea.spotlightcaffeinate",
+        subsystem: "dev.finklea.spotlightcaffeinate",
         category: "controller"
     )
 

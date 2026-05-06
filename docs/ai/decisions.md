@@ -25,7 +25,7 @@
 ### Apple team `K7CBQW6MPG` is the default local signing team
 
 - `project.yml` now defaults the app and CLI signing path to Apple team `K7CBQW6MPG`.
-- The App Group `group.io.taylorfinklea.spotlightcaffeinate` is expected to exist on that team for local signed validation and App Store packaging.
+- The App Group `group.dev.finklea.spotlightcaffeinate` is expected to exist on that team for local signed validation and App Store packaging.
 
 ### App Store packaging stops at the archive
 
@@ -57,6 +57,6 @@
 
 ### Startup should not probe other apps' container directories
 
-- Do not construct or probe `~/Library/Containers/io.taylorfinklea.spotlightcaffeinate/...` directly during default environment resolution.
+- Do not construct or probe `~/Library/Containers/dev.finklea.spotlightcaffeinate/...` directly during default environment resolution.
 - When legacy sandbox storage needs to be inferred, only reuse the current process application-support directory if the process is already running inside that sandbox path.
 - This avoids the macOS "would like to access data from other apps" prompt during normal launch.

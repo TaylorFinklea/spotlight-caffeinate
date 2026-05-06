@@ -4,9 +4,10 @@
 
 Active items. Trim as completed.
 
-### Now (Developer ID profile + post-1.0.0 fix-in-place)
-- **User-only:** at https://developer.apple.com/account, create a **Distribution → Developer ID** provisioning profile for `io.taylorfinklea.spotlightcaffeinate` pinned to the **Developer ID Application** certificate for K7CBQW6MPG, with App Groups capability enabled. Download the `.provisionprofile` and tell the next agent the path.
-- After the profile arrives: embed it at `Contents/embedded.provisionprofile`, re-codesign the bundled CLI + the app wrapper with the existing Developer ID Application identity, re-zip, re-notarize, re-staple, replace the `SpotlightCaffeinate.zip` asset on the v1.0.0 GitHub release (`gh release upload v1.0.0 ... --clobber`), retrigger `update-homebrew-tap.yml` (`gh workflow run update-homebrew-tap.yml -f tag=v1.0.0`), then `brew reinstall --cask taylorfinklea/tap/spotlight-caffeinate` and confirm the menu bar app launches.
+### Now (Developer ID profile against new `dev.finklea.*` bundle ID, then re-cut v1.0.0)
+- **User-only:** at https://developer.apple.com/account, register a new **App ID** for `dev.finklea.spotlightcaffeinate` (description: "Spotlight Caffeinate"), enable the **App Groups** capability, and create / attach the App Group `group.dev.finklea.spotlightcaffeinate`. Then create a **Distribution → Developer ID** provisioning profile bound to the new App ID, pinned to the **Developer ID Application** certificate for K7CBQW6MPG. Download the `.provisionprofile` and tell the next agent the path. (The legacy `io.taylorfinklea.spotlightcaffeinate` App ID can be left dormant or deleted at the user's discretion — no v1.0.0 install of it succeeded.)
+- The broken v1.0.0 GitHub release and tag have been deleted (the asset on it could not launch). The `[1.0.0]` heading remains in `CHANGELOG.md` so `release_preflight.sh` stays green; we will re-cut and re-tag v1.0.0 once the profile arrives.
+- After the profile arrives: build a fresh archive against the new bundle ID, embed the profile at `Contents/embedded.provisionprofile`, re-codesign the bundled CLI + the app wrapper with the Developer ID Application identity, ditto-zip, notarize, staple. Then tag `v1.0.0` and push, create the GitHub release, attach `SpotlightCaffeinate.zip` and `spotlight-caffeinate-cli.tar.gz`, and run `gh workflow run update-homebrew-tap.yml -f tag=v1.0.0`. Verify all three install paths (`brew install --cask`, `brew install` formula, curl-tarball).
 - Once the signed install launches: M1 manual QA (corrupt automations.json + automation log line; delete app group container, cold-launch, notification auth prompt) and M3 glyph QA (switch glyph styles, exercise pulse threshold values, confirm new app icon).
 - Update `scripts/package_signed_release.sh` to manual-codesign the archived app with `Developer ID Application` instead of relying on the broken `xcodebuild -exportArchive` path. See decisions doc for the working command sequence.
 
@@ -106,7 +107,7 @@ Candidate work:
 - Keep the product narrowly focused on `/usr/bin/caffeinate`.
 - `project.yml` is the Xcode project source of truth — regenerate with `xcodegen generate` after changes.
 - Menu bar app remains sandboxed for App Store submission.
-- Signed app + bundled CLI share state via the `group.io.taylorfinklea.spotlightcaffeinate` App Group; standalone CLI installs remain independent with clear user messaging.
+- Signed app + bundled CLI share state via the `group.dev.finklea.spotlightcaffeinate` App Group; standalone CLI installs remain independent with clear user messaging.
 - Shared AI docs in `.docs/ai/` are the source of truth for repo state and next actions.
 
 ## Non-Goals

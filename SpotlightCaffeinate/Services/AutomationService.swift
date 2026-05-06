@@ -45,7 +45,7 @@ actor AutomationService {
     private let calendarStore: any AutomationCalendarStoreControlling
     private let now: @Sendable () -> Date
     private let logger = Logger(
-        subsystem: "io.taylorfinklea.spotlightcaffeinate",
+        subsystem: "dev.finklea.spotlightcaffeinate",
         category: "automation"
     )
 
