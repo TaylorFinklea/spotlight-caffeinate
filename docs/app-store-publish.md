@@ -4,15 +4,25 @@ Use this document as the single source of truth for publishing `Spotlight Caffei
 
 ## Current State
 
-The app is already prepared for Mac App Store distribution in the key areas that required code changes:
+As of 2026-05-06, v1.0.0 has shipped via Homebrew and signed direct download. The remaining channel is the Mac App Store. Code-side, the app is ready:
 
-- the app is sandboxed
+- the app is sandboxed (`com.apple.security.app-sandbox`)
 - the app uses native IOKit power assertions instead of launching `/usr/bin/caffeinate`
-- the app declares the Utilities category
-- there is an App Store archive script
-- there is a metadata draft and App Review notes draft
+- the app declares the Utilities category and `LSUIElement = true`
+- App Group `group.dev.finklea.spotlightcaffeinate` is enabled and an App ID at developer.apple.com has been registered against `dev.finklea.spotlightcaffeinate`
+- the App Store archive script (`./scripts/package_app_store_release.sh`) builds clean
+- a 1.0.0 archive at `build/SpotlightCaffeinateAppStore.xcarchive` is current and uploadable
 
-What still remains is the release execution work in App Store Connect and the final signed upload.
+What still remains is App Store Connect record creation, screenshot capture, App Privacy answers, and the upload via Xcode Organizer.
+
+### Pre-submission checklist (this submission)
+
+1. **Capture fresh screenshots.** The bundled `docs/screenshots/*` predate the M3 bolt redesign (Mar 14 / Mar 10 versus the May redesign). Re-capture all five before listing.
+2. **Re-create the App Store Connect record.** The legacy `io.taylorfinklea.*` placeholder record (if it ever existed) is obsolete — the bundle ID is now `dev.finklea.spotlightcaffeinate`. Create a fresh app record in App Store Connect against the new bundle ID.
+3. **Build the archive.** `./scripts/package_app_store_release.sh --team-id K7CBQW6MPG` produces `build/SpotlightCaffeinateAppStore.xcarchive`.
+4. **Upload via Xcode Organizer.** Window → Organizer → select the archive → Distribute App → App Store Connect → Upload. Xcode re-signs the archive with the Apple Distribution cert and the Mac App Store distribution profile during this step.
+5. **Fill the App Store Connect listing fields** with the metadata in `docs/app-store-metadata.md`, including App Privacy, App Review notes, and screenshots.
+6. **Submit for review.**
 
 ## App Basics
 
