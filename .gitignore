@@ -10,3 +10,7 @@ build
 *.xcworkspace/xcuserdata
 *.xcodeproj/xcuserdata
 .claude/
+
+# Apple provisioning profiles must never be committed.
+*.provisionprofile
+*.mobileprovision
