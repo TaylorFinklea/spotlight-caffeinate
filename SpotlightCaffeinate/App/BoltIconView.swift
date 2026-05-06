@@ -20,7 +20,7 @@ private struct BoltIconMetrics {
     let size: CGFloat
 
     var cornerRadius: CGFloat { size * 0.24 }
-    var strokeWidth: CGFloat { max(1, size * 0.08) }
+    var strokeWidth: CGFloat { max(1.5, size * 0.14) }
     var innerInset: CGFloat { strokeWidth + max(0.5, size * 0.03) }
     var boltInset: CGFloat { size * 0.19 }
     var boltCornerStroke: CGFloat { max(0.5, size * 0.04) }

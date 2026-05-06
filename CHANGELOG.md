@@ -8,6 +8,11 @@ Each release heading matches the Git tag pushed for that version.
 
 Nothing user-facing yet. Drafts land here and are promoted to the next version section at tag time.
 
+## [1.0.1] — 2026-05-06
+
+### Changed
+- Thicker outline around the menu bar bolt and the app icon's rounded square. The previous 8% stroke read as a hairline at menu bar size; bumped to 14% so it visually matches the bolt's body weight.
+
 ## [1.0.0] — 2026-05-05
 
 First stable release. Ships to Homebrew (cask and formula) and signed direct download on the same day. App Store submission follows under separate cover.

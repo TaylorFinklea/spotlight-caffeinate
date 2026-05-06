@@ -49,7 +49,7 @@ private func renderIcon(pixels: Int) -> Data {
     context.scaleBy(x: 1, y: -1)
 
     let cornerRadius = s * 0.24
-    let strokeWidth = max(1, s * 0.08)
+    let strokeWidth = max(1.5, s * 0.14)
     let boltInset = s * 0.19
     let boltCornerStroke = max(0.5, s * 0.04)
 
